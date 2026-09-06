@@ -53,6 +53,22 @@
     {{ $dataTable->scripts() }}
     <script>
 
+        $(document).ready(function () {
+            const toastMessage = sessionStorage.getItem('brandToast');
+            if (toastMessage) {
+                Toastify({
+                    text: toastMessage,
+                    duration: 4000,
+                    gravity: "top",
+                    position: "right",
+                    close: true,
+                    className: "success-toast",
+                    stopOnFocus: true
+                }).showToast();
+                sessionStorage.removeItem('brandToast');
+            }
+        });
+
         $(document).on('click', '.restore-brand', function() {
             const brandID = $(this).data('brand-id');
             console.log(brandID);
@@ -70,8 +86,8 @@
                         method: 'POST',
                         data: { "_token": "{{ csrf_token() }}" },
                         success: function(response) {
-                            Swal.fire('Restored', 'The Record has been Restored.', 'success')
-                                .then(() => { window.location.href = '/brand/trash'; });
+                            sessionStorage.setItem('brandToast', response.message || 'Brand Restored Successfully');
+                            window.location.href = '/brand/trash';
                         },
                         error: function(xhr, status, error) {
                             Swal.fire('Error!', 'There was an Issue on Restoring the Record.', 'error');
@@ -99,8 +115,8 @@
                         method: 'DELETE',
                         data: { "_token": "{{ csrf_token() }}"},
                         success: function (response) {
-                            Swal.fire('Deleted', 'The Record has been Deleted.', 'success')
-                                .then(() => { window.location.href = '/brand/trash'; });
+                            sessionStorage.setItem('brandToast', response.message || 'Brand Deleted Successfully');
+                            window.location.href = '/brand/trash';
                         },
                         error: function (xhr, status, error) {
                             Swal.fire('Error!', 'There was an Issue on Deleting the Record.', 'error');

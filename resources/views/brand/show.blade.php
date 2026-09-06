@@ -29,18 +29,48 @@
                                         <tr><th class="text-end pe-2">{{ __('Name') }}</th><td class="text-start ps-2">{{ $brand->name }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Slug') }}</th><td class="text-start ps-2">{{ $brand->slug }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Priority Order') }}</th><td class="text-start ps-2">{{ $brand->priority_order }}</td></tr>
-                                        <tr><th class="text-end pe-2">{{ __('Status') }}</th>
+                                        <tr><th class="text-end pe-2">{{ __('Is Active') }}</th>
                                             <td class="text-start ps-2">
                                                 @if($brand->is_active == 1)
-                                                    <span class="badge bg-success">{{ __('Active') }}</span>
+                                                    <span class="badge bg-success">{{ __('Yes') }}</span>
                                                 @elseif($brand->is_active == 0)
-                                                    <span class="badge bg-warning">{{ __('Not Active') }}</span>
+                                                    <span class="badge bg-warning">{{ __('No') }}</span>
                                                 @else
                                                     <span class="badge bg-secondary">{{ __('Unknown') }}</span>
                                                 @endif
                                             </td>
                                         </tr>
                                         <tr><th class="text-end pe-2">{{ __('Description') }}</th><td class="text-start ps-2">{{ ucwords($brand->description) }}</td></tr>
+                                        <tr>
+                                            <th class="text-end pe-2 justify-content-between">{{ __('Status') }}</th>
+                                            <td class="text-start d-flex justify-content-between align-items-center">
+                                                <div class="text-start">
+                                                    @php
+                                                        $status = $brand->status;
+                                                        $map = [
+                                                            'pending'  => ['class' => 'text-warning', 'icon' => 'ri-loader-4-line', 'label' => 'Pending'],
+                                                            'approved' => ['class' => 'text-success', 'icon' => 'ri-checkbox-circle-line', 'label' => 'Approved'],
+                                                            'rejected' => ['class' => 'text-danger', 'icon'  => 'ri-close-circle-line', 'label' => 'Rejected'],
+                                                            'archived' => ['class' => 'text-primary', 'icon' => 'ri-search-eye-line', 'label' => 'Archived'],
+                                                        ];
+                                                    @endphp
+
+                                                    @if($status && isset($map[$status]))
+                                                        <span class="{{ $map[$status]['class'] }}"><i class="{{ $map[$status]['icon'] }}"></i> {{ __($map[$status]['label']) }}</span>
+                                                    @else
+                                                        {{ '--' }}
+                                                    @endif
+                                                </div>
+                                                <div class="text-end">
+                                                    <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#statusUpdateModal">
+                                                        <i class="ri-fingerprint-line"></i>
+                                                        <span class="btn-text d-none d-sm-inline">{{ __('Update Status') }}</span>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+
                                         <tr><th class="text-end pe-2">{{ __('Created By') }}</th><td class="text-start ps-2">{{ $brand->creator?->name ?? '' }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Created At') }}</th><td class="text-start ps-2">{{ $brand->created_at->format('Y-m-d H:i:s') }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Updated By') }}</th><td class="text-start ps-2">{{ $brand->updater?->name ?? '' }}</td></tr>
@@ -64,7 +94,115 @@
                                     </div>
                                 </div>
                             </div>
+
                         </div>
+                    </div>
+                </div>
+            </div>
+
+
+            {{--TODO: Have to Complete EmplyeeStatusUpdate Process--}}
+{{--            <div class="modal fade" id="statusUpdateModal" tabindex="-1" aria-labelledby="statusUpdateModalLabel" aria-hidden="true">--}}
+{{--                <div class="modal-dialog modal-dialog-centered">--}}
+{{--                    <div class="modal-content">--}}
+{{--                        <form action="{{ route('brand.update-status', $brand->id) }}" method="POST">--}}
+{{--                            @csrf--}}
+{{--                            <div class="modal-header">--}}
+{{--                                <h5 class="modal-title" id="statusUpdateModalLabel">{{ __('Update Brand Status') }}</h5>--}}
+{{--                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>--}}
+{{--                            </div>--}}
+
+{{--                            <hr>--}}
+
+{{--                            <div class="modal-body">--}}
+
+{{--                                <div class="">--}}
+{{--                                    <div class="col-12 col-md-12">--}}
+
+{{--                                        <div class="row mb-2">--}}
+{{--                                            <label for="status" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Select Status') }}</label>--}}
+{{--                                            <div class="col-12 col-md-8">--}}
+{{--                                                <div class="form-check form-check-inline pt-2 mb-2">--}}
+{{--                                                    <input class="form-check-input" type="radio" name="status" value="approved">--}}
+{{--                                                    <label class="form-check-label" for="status">{{ __('Approve') }}</label>--}}
+{{--                                                </div>--}}
+{{--                                                <div class="form-check form-check-inline pt-2 mb-2">--}}
+{{--                                                    <input class="form-check-input" type="radio" name="status" value="rejected">--}}
+{{--                                                    <label class="form-check-label" for="status">{{ __('Reject') }}</label>--}}
+{{--                                                </div>--}}
+{{--                                            </div>--}}
+{{--                                        </div>--}}
+
+{{--                                        <div class="row">--}}
+{{--                                            <label for="remarks" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Add Remarks') }}</label>--}}
+{{--                                            <div class="col-12 col-md-8 pt-2">--}}
+{{--                                                <textarea id="remarks" name="remarks" class="form-control" rows="2"></textarea>--}}
+{{--                                            </div>--}}
+{{--                                        </div>--}}
+
+{{--                                    </div>--}}
+{{--                                </div>--}}
+
+{{--                                <input type="hidden" name="brand_id" value="{{ $brand->id }}">--}}
+{{--                            </div>--}}
+
+{{--                            <hr>--}}
+
+{{--                            <div class="modal-footer">--}}
+{{--                                <button type="button" class="btn btn-sm btn-danger" data-bs-dismiss="modal">{{ __('Cancel') }}</button>--}}
+{{--                                <button type="reset" class="btn btn-sm btn-warning">{{ __('Reset') }}</button>--}}
+{{--                                <button type="submit" class="btn btn-sm btn-info">{{ __('Update Status') }}</button>--}}
+{{--                            </div>--}}
+{{--                        </form>--}}
+{{--                    </div>--}}
+{{--                </div>--}}
+{{--            </div>--}}
+
+
+            <div class="modal fade" id="statusUpdateModal" tabindex="-1" aria-labelledby="statusUpdateModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <form id="statusUpdateForm" action="{{ route('brand.update-status', $brand->id) }}" method="POST">
+                            @csrf
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="statusUpdateModalLabel"> {{ __('Update Brand Status') }} </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" ></button>
+                            </div>
+                            <hr>
+                            <div class="modal-body">
+                                <div id="statusUpdateError" class="alert alert-danger d-none"></div>
+                                <div class="row mb-2">
+                                    <label class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory"> {{ __('Select Status') }} </label>
+                                    <div class="col-12 col-md-8">
+                                        <div class="form-check form-check-inline pt-2 mb-2">
+                                            <input class="form-check-input" type="radio" name="status" id="statusPending" value="pending" >
+                                            <label class="form-check-label" for="statusPending"> {{ __('Pending') }} </label>
+                                        </div>
+                                        <div class="form-check form-check-inline pt-2 mb-2">
+                                            <input class="form-check-input" type="radio" name="status" id="statusApproved" value="approved" >
+                                            <label class="form-check-label" for="statusApproved"> {{ __('Approve') }} </label>
+                                        </div>
+                                        <div class="form-check form-check-inline pt-2 mb-2">
+                                            <input class="form-check-input" type="radio" name="status" id="statusRejected" value="rejected" >
+                                            <label class="form-check-label" for="statusRejected"> {{ __('Reject') }} </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <label for="remarks" class="col-12 col-md-4 col-form-label text-md-end text-start" > {{ __('Add Remarks') }} </label>
+                                    <div class="col-12 col-md-8 pt-2">
+                                        <textarea id="remarks" name="remarks" class="form-control" rows="2" ></textarea>
+                                    </div>
+                                </div>
+                                <input type="hidden" name="brand_id" value="{{ $brand->id }}">
+                            </div>
+                            <hr>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-sm btn-danger" data-bs-dismiss="modal" > {{ __('Cancel') }} </button>
+                                <button type="reset" class="btn btn-sm btn-warning" > {{ __('Reset') }} </button>
+                                <button type="submit" class="btn btn-sm btn-info" id="updateStatusBtn" > {{ __('Update Status') }} </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -162,6 +300,54 @@
                         });
                     } else {
                         Swal.fire('Cancelled', 'Your Record is in Trash Box.', 'info');
+                    }
+                });
+            });
+
+            $('#statusUpdateForm').on('submit', function (e) {
+                e.preventDefault();
+                const form = $(this);
+                const button = $('#updateStatusBtn');
+                const errorBox = $('#statusUpdateError');
+                errorBox.addClass('d-none').html('');
+                button.prop('disabled', true);
+                button.html('<i class="ri-loader-4-line ri-spin"></i> {{ __("Updating...") }}');
+
+                $.ajax({
+                    url: form.attr('action'),
+                    type: 'POST',
+                    data: form.serialize(),
+                    success: function (response) {
+                        if (response.success) {
+                            Toastify({
+                                text: response.message || "Validate Mobile OTP Successfully",
+                                duration: 4000,
+                                gravity: "top",
+                                position: "right",
+                                close: true,
+                                className: "success-toast",
+                                stopOnFocus: true
+                            }).showToast();
+
+                            $('#statusUpdateModal').modal('hide');
+                            setTimeout(() => location.reload(), 1200);
+                        }
+                    },
+                    error: function (xhr) {
+                        if (xhr.status === 422) {
+                            let errors = xhr.responseJSON.errors;
+                            let messages = [];
+                            $.each(errors, function (field, errorMessages) {
+                                messages.push(errorMessages[0]);
+                            });
+                            errorBox.html(messages.join('<br>')).removeClass('d-none');
+                            return;
+                        }
+                        errorBox.html(xhr.responseJSON?.message || '{{ __("Something went wrong. Please try again.") }}').removeClass('d-none');
+                    },
+                    complete: function () {
+                        button.prop('disabled', false);
+                        button.html('{{ __("Update Status") }}');
                     }
                 });
             });

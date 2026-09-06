@@ -11,6 +11,7 @@ use App\Services\BrandService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 use Exception;
@@ -74,6 +75,17 @@ class BrandsController extends Controller
             Log::error('Unexpected Error on Updating Brand: ' . $exception->getMessage());
             return back()->withInput()->with('error', 'Unexpected Error Occurred. Try Again.');
         }
+    }
+
+    /**
+     * @throws Throwable
+     * @throws GeneralException
+     */
+    public function updateStatus(Request $request, $id) : JsonResponse
+    {
+        $validated = $request->validate(['status' => ['required', 'in:pending,approved,rejected'], 'remarks' => ['nullable', 'string']]);
+        $this->brandService->updateBrandStatus((int)$id, $validated['status'], $validated['remarks'] ?? null );
+        return response()->json(['success' => true, 'message' => __('Brand Status Updated Successfully.')]);
     }
 
     public function destroy($id) : JsonResponse

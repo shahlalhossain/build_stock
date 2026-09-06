@@ -45,11 +45,56 @@
         <!-- End Container-Fluid -->
     </div>
     <!-- End Page Content -->
+
+
+    @if (session('success'))
+        <script>
+            Toastify({
+                text: @json(session('success')),
+                duration: 4000,
+                gravity: "top",
+                position: "right",
+                close: true,
+                className: "success-toast",
+                stopOnFocus: true
+            }).showToast();
+        </script>
+    @endif
+    @if (session('error'))
+        <script>
+            Toastify({
+                text: @json(session('success')),
+                duration: 4000,
+                gravity: "top",
+                position: "right",
+                close: true,
+                className: "failed-toast",
+                stopOnFocus: true
+            }).showToast();
+        </script>
+    @endif
+
 @endsection
 
 @push('scripts')
     {{ $dataTable->scripts(attributes: ['type' => 'module']) }}
     <script>
+        $(document).ready(function () {
+            const toastMessage = sessionStorage.getItem('destroySuccess');
+            if (toastMessage) {
+                Toastify({
+                    text: toastMessage,
+                    duration: 4000,
+                    gravity: "top",
+                    position: "right",
+                    close: true,
+                    className: "failed-toast",
+                    stopOnFocus: true
+                }).showToast();
+                sessionStorage.removeItem('destroySuccess');
+            }
+        });
+
         $(document).on('click', '.destroy-brand', function() {
             const brandID = $(this).data('brand-id');
             Swal.fire({
@@ -66,8 +111,8 @@
                         method: 'DELETE',
                         data: { "_token": "{{ csrf_token() }}"},
                         success: function (response) {
-                            Swal.fire('Destroyed', 'The Record has been Destroyed.', 'success')
-                                .then(() => { window.location.href = '/brand'; });
+                            sessionStorage.setItem('destroySuccess', response.message || 'Brand Destroyed Successfully');
+                            window.location.href = '/brand';
                         },
                         error: function (xhr, status, error) {
                             Swal.fire('Error!', 'There was an Issue on Destroying the Record.', 'error');

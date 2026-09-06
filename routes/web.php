@@ -105,6 +105,7 @@ Route::middleware('auth:web')->group(function () {
             Route::get('/', [BrandsController::class, 'show'])->name('show')->withTrashed();
             Route::get('edit', [BrandsController::class, 'edit'])->name('edit');
             Route::patch('/', [BrandsController::class, 'update'])->name('update');
+            Route::post('update-status', [BrandsController::class, 'updateStatus'])->name('update-status');
             Route::delete('/', [BrandsController::class, 'destroy'])->name('destroy');
             Route::post('restore', [BrandsController::class, 'restore'])->name('restore');
             Route::delete('force-delete', [BrandsController::class, 'delete'])->name('delete');

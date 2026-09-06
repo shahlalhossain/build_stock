@@ -3,8 +3,10 @@
 namespace App\Services;
 
 use App\Events\Brand\BrandCreated;
+use App\Events\Brand\BrandStatusUpdated;
 use App\Events\Brand\BrandUpdated;
 use App\Events\Brand\BrandDeleted;
+use App\Models\ApprovalLog;
 use App\Models\Brand;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Auth;
@@ -63,11 +65,11 @@ class BrandService extends BaseService
                 'slug'              => $data['slug'] ?? null,
                 'description'       => $data['description'] ?? null,
                 'priority_order'    => $data['priority_order'] ?? null,
-                'updated_by'    => Auth::id(),
+                'updated_by'        => Auth::id(),
             ]);
 
             DB::commit();
-
+            //event(new BrandUpdated($brand));
         } catch (Exception $exception) {
             Log::alert($exception->getMessage());
             DB::rollBack();
@@ -75,6 +77,41 @@ class BrandService extends BaseService
         }
 
         return $brand;
+    }
+
+    /**
+     * @param $id
+     * @return bool
+     *
+     * @throws GeneralException
+     * @throws Throwable
+     */
+    public function updateBrandStatus( int $id, string $status, ?string $remarks = null ): bool
+    {
+        DB::beginTransaction();
+        try {
+            $brand = Brand::findOrFail((int)$id);
+            $brand->status = $status;
+            $result = $brand->save();
+
+            ApprovalLog::create([
+                'model_type'    => Brand::class,
+                'model_id'      => $brand->id,
+                'action_name'   => $status,
+                'actioned_by'   => Auth::id(),
+                'actioned_at'   => now(),
+                'remarks'       => $remarks
+            ]);
+            //event(new BrandStatusUpdated($brand));
+            DB::commit();
+            return $result;
+        } catch (ModelNotFoundException $exception) {
+            DB::rollBack(); throw $exception;
+        } catch (Throwable $exception) {
+            DB::rollBack();
+            Log::error('Brand Status Update Failed in Service:' . $exception->getMessage());
+            throw new GeneralException(__('There was an issue on Brand Status Update'));
+        }
     }
 
     /**

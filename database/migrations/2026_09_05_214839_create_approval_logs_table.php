@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('approval_logs', function (Blueprint $table) {
             $table->bigIncrements('id');
 
-            $table->string('model_name');
+            $table->string('model_type');
             $table->unsignedBigInteger('model_id');
 
             $table->enum('action_name', ['approved', 'rejected']);

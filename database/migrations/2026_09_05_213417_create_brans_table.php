@@ -26,7 +26,7 @@ return new class extends Migration
 
             $table->integer('priority_order')->default(0);
 
-            $table->boolean('is_active')->default(false);
+            $table->boolean('is_active')->default(true);
 
             $table->integer('created_by')->nullable();
             $table->integer('updated_by')->nullable();

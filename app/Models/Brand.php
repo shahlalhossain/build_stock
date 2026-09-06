@@ -67,4 +67,9 @@ class Brand extends Model
     {
         return $this->belongsTo(User::class, 'deleted_by');
     }
+
+    public function approvalLogs()
+    {
+        return $this->morphMany(ApprovalLog::class, 'model');
+    }
 }
