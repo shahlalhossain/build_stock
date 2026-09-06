@@ -2,9 +2,9 @@
 
 namespace App\Listeners;
 
-use App\Events\Role\PermissionCreated;
+use App\Events\Role\RoleCreated;
 use App\Events\Role\RoleDeleted;
-use App\Events\Role\PermissionUpdated;
+use App\Events\Role\RoleUpdated;
 
 /**
  * Class RoleEventListener.
@@ -62,8 +62,8 @@ class RoleEventListener
      */
     public function subscribe($events)
     {
-        $events->listen(PermissionCreated::class, 'App\Domains\Auth\Listeners\RoleEventListener@onCreated');
-        $events->listen(PermissionUpdated::class, 'App\Domains\Auth\Listeners\RoleEventListener@onUpdated');
-        $events->listen(RoleDeleted::class, 'App\Domains\Auth\Listeners\RoleEventListener@onDeleted');
+        $events->listen(RoleCreated::class, 'App\Listeners\RoleEventListener@onCreated');
+        $events->listen(RoleUpdated::class, 'App\Listeners\RoleEventListener@onUpdated');
+        $events->listen(RoleDeleted::class, 'App\Listeners\RoleEventListener@onDeleted');
     }
 }

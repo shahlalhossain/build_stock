@@ -2,12 +2,12 @@
 
 namespace App\Listeners;
 
-use App\Events\Permission\BranCreated;
-use App\Events\Permission\BrandDeleted;
-use App\Events\Permission\BrandUpdated;
+use App\Events\Permission\PermissionCreated;
+use App\Events\Permission\PermissionDeleted;
+use App\Events\Permission\PermissionUpdated;
 
 /**
- * Class RoleEventListener.
+ * Class PermissionEventListener.
  */
 class PermissionEventListener
 {
@@ -16,16 +16,15 @@ class PermissionEventListener
      */
     public function onCreated($event)
     {
-        activity('role')
-            ->performedOn($event->role)
+        activity('permission')
+            ->performedOn($event->permission)
             ->withProperties([
-                'role' => [
-                    'type' => $event->role->type,
-                    'name' => $event->role->name,
+                'permission' => [
+                    'type' => $event->permission->type,
+                    'name' => $event->permission->name,
                 ],
-                'permissions' => $event->role->permissions->count() ? $event->role->permissions->pluck('description')->implode(', ') : 'None',
             ])
-            ->log(':causer.name created role :subject.name with permissions: :properties.permissions');
+            ->log(':causer.name created permission :subject.name with permissions: :properties.permissions');
     }
 
     /**
@@ -33,16 +32,15 @@ class PermissionEventListener
      */
     public function onUpdated($event)
     {
-        activity('role')
-            ->performedOn($event->role)
+        activity('permission')
+            ->performedOn($event->permission)
             ->withProperties([
-                'role' => [
-                    'type' => $event->role->type,
-                    'name' => $event->role->name,
+                'permission' => [
+                    'type' => $event->permission->type,
+                    'name' => $event->permission->name,
                 ],
-                'permissions' => $event->role->permissions->count() ? $event->role->permissions->pluck('description')->implode(', ') : 'None',
             ])
-            ->log(':causer.name updated role :subject.name with permissions: :properties.permissions');
+            ->log(':causer.name updated permission :subject.name with permissions: :properties.permissions');
     }
 
     /**
@@ -50,9 +48,9 @@ class PermissionEventListener
      */
     public function onDeleted($event)
     {
-        activity('role')
-            ->performedOn($event->role)
-            ->log(':causer.name deleted role :subject.name');
+        activity('permission')
+            ->performedOn($event->permission)
+            ->log(':causer.name deleted permission :subject.name');
     }
 
     /**
@@ -62,8 +60,8 @@ class PermissionEventListener
      */
     public function subscribe($events)
     {
-        $events->listen(RoleCreated::class, 'App\Domains\Auth\Listeners\RoleEventListener@onCreated');
-        $events->listen(RoleUpdated::class, 'App\Domains\Auth\Listeners\RoleEventListener@onUpdated');
-        $events->listen(RoleDeleted::class, 'App\Domains\Auth\Listeners\RoleEventListener@onDeleted');
+        $events->listen(PermissionCreated::class, 'App\Listeners\PermissionEventListener@onCreated');
+        $events->listen(PermissionUpdated::class, 'App\Listeners\PermissionEventListener@onUpdated');
+        $events->listen(PermissionDeleted::class, 'App\Listeners\PermissionEventListener@onDeleted');
     }
 }

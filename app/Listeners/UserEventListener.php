@@ -5,7 +5,6 @@ namespace App\Listeners;
 use App\Events\User\UserCreated;
 use App\Events\User\UserDeleted;
 use App\Events\User\UserDestroyed;
-use App\Events\User\UserLoggedIn;
 use App\Events\User\UserRestored;
 use App\Events\User\UserUpdated;
 use Illuminate\Auth\Events\PasswordReset;
@@ -130,14 +129,13 @@ class UserEventListener
      */
     public function subscribe($events)
     {
-        $events->listen(UserLoggedIn::class, 'App\Listeners\UserEventListener@onLoggedIn');
         $events->listen(PasswordReset::class, 'App\Listeners\UserEventListener@onPasswordReset');
         $events->listen(UserCreated::class, 'App\Listeners\UserEventListener@onCreated');
         $events->listen(UserUpdated::class, 'App\Listeners\UserEventListener@onUpdated');
         $events->listen(UserDeleted::class, 'App\Listeners\UserEventListener@onDeleted');
         $events->listen(UserRestored::class, 'App\Listeners\UserEventListener@onRestored');
         $events->listen(UserDestroyed::class, 'App\Listeners\UserEventListener@onDestroyed');
-        //TODO: UserRoleAssigned
-        //TODO: UserPermissionAssigned
+        //TODO: UserRoleAssigned & UserRoleUpdated
+        //TODO: UserPermissionAssigned & UserPermissionUpdated
     }
 }
