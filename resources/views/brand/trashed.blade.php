@@ -1,6 +1,6 @@
 @extends('layout.master')
 
-@section('title', __('Permission'))
+@section('title', __('Brand'))
 
 @section('content')
 
@@ -13,10 +13,10 @@
                 <div class="col-lg-12">
                     <div class="card">
                         <div class="card-header align-items-center d-flex">
-                            <h4 class="card-title mb-0 flex-grow-1">{{ __('Permission Trashbox') }}</h4>
+                            <h4 class="card-title mb-0 flex-grow-1">{{ __('Brand Trashbox') }}</h4>
                             <div class="flex-shrink-0">
-                                <a href="{{ route('permission.create') }}" class="btn btn-sm btn-success"><i class="ri-add-line"></i><span class="d-none d-sm-inline"> {{ __('Add New') }}</span></a>
-                                <a href="{{ route('permission.index') }}" class="btn btn-sm btn-primary"><i class="ri-list-check-2"></i><span class="d-none d-sm-inline"> {{ __('Back to List') }}</span></a>
+                                <a href="{{ route('brand.create') }}" class="btn btn-sm btn-success"><i class="ri-add-line"></i><span class="d-none d-sm-inline"> {{ __('Add New') }}</span></a>
+                                <a href="{{ route('brand.index') }}" class="btn btn-sm btn-primary"><i class="ri-list-check-2"></i><span class="d-none d-sm-inline"> {{ __('Back to List') }}</span></a>
                             </div>
                         </div>
 
@@ -34,7 +34,7 @@
                                 </div>
                             @endif
 
-                            <table id="permissions-table" class="table table-hover table-bordered dt-responsive nowrap table-striped align-middle" style="width:100%">
+                            <table id="brands-table" class="table table-hover table-bordered dt-responsive nowrap table-striped align-middle" style="width:100%">
 
                             </table>
                         </div>
@@ -53,9 +53,9 @@
     {{ $dataTable->scripts() }}
     <script>
 
-        $(document).on('click', '.restore-permission', function() {
-            const permissionID = $(this).data('permission-id');
-            console.log(permissionID);
+        $(document).on('click', '.restore-brand', function() {
+            const brandID = $(this).data('brand-id');
+            console.log(brandID);
             Swal.fire({
                 title: 'Are You Sure?',
                 text: 'You want to Restore this Data',
@@ -66,12 +66,12 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     $.ajax({
-                        url: '/admin/permission/' + permissionID + '/restore',
+                        url: '/brand/' + brandID + '/restore',
                         method: 'POST',
                         data: { "_token": "{{ csrf_token() }}" },
                         success: function(response) {
                             Swal.fire('Restored', 'The Record has been Restored.', 'success')
-                                .then(() => { window.location.href = '/admin/permission/trash'; });
+                                .then(() => { window.location.href = '/brand/trash'; });
                         },
                         error: function(xhr, status, error) {
                             Swal.fire('Error!', 'There was an Issue on Restoring the Record.', 'error');
@@ -83,8 +83,8 @@
             });
         });
 
-        $(document).on('click', '.delete-permission', function() {
-            const permissionID = $(this).data('permission-id');
+        $(document).on('click', '.delete-brand', function() {
+            const brandID = $(this).data('brand-id');
             Swal.fire({
                 title: 'Are You Sure?',
                 text: 'You want to Delete this Data',
@@ -95,12 +95,12 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     $.ajax({
-                        url: '/admin/permission/' + permissionID + '/force-delete',
+                        url: '/brand/' + brandID + '/force-delete',
                         method: 'DELETE',
                         data: { "_token": "{{ csrf_token() }}"},
                         success: function (response) {
                             Swal.fire('Deleted', 'The Record has been Deleted.', 'success')
-                                .then(() => { window.location.href = '/admin/permission/trash'; });
+                                .then(() => { window.location.href = '/brand/trash'; });
                         },
                         error: function (xhr, status, error) {
                             Swal.fire('Error!', 'There was an Issue on Deleting the Record.', 'error');

@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Brand extends Model
 {
-        use SoftDeletes;
+    use SoftDeletes;
 
     protected $table = 'brands';
 
@@ -20,7 +20,9 @@ class Brand extends Model
      */
     protected $fillable = [
         'name',
+        'slug',
         'description',
+        'priority_order',
         'is_active',
         'created_by',
         'updated_by',

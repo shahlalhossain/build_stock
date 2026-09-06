@@ -34,14 +34,13 @@ class BrandService extends BaseService
         DB::beginTransaction();
         try {
             $brandData = [
-                'type'          => $data['type'] ?? null,
-                'guard_name'    => $data['guard_name'] ?? null,
-                'name'          => $data['name'] ?? null,
-                'description'   => $data['description'] ?? null,
-                'parent_id'     => $data['parent_id'] ?? null,
-                'is_active'     => true,
-                'created_by'    => Auth::id(),
-                'updated_by'    => Auth::id(),
+                'name'              => $data['name'] ?? null,
+                'slug'              => $data['slug'] ?? null,
+                'description'       => $data['description'] ?? null,
+                'priority_order'    => $data['priority_order'] ?? null,
+                'is_active'         => true,
+                'created_by'        => Auth::id(),
+                'updated_by'        => Auth::id(),
             ];
             $brand = $this->model::create($brandData);
             DB::commit();
@@ -49,7 +48,7 @@ class BrandService extends BaseService
         } catch (Exception $exception) {
             Log::alert($exception->getMessage());
             DB::rollBack();
-            throw new GeneralException(__('There was a Problem on Creating the Brand.'));
+            throw new GeneralException(__('There was a Problem on Creating New Brand.'));
         }
         return $brand;
     }
@@ -60,11 +59,10 @@ class BrandService extends BaseService
 
         try {
             $brand->update([
-                'type'          => $data['type'] ?? null,
-                'guard_name'    => $data['guard_name'] ?? null,
-                'name'          => $data['name'] ?? null,
-                'description'   => $data['description'] ?? null,
-                'parent_id'     => $data['parent_id'] ?? null,
+                'name'              => $data['name'] ?? null,
+                'slug'              => $data['slug'] ?? null,
+                'description'       => $data['description'] ?? null,
+                'priority_order'    => $data['priority_order'] ?? null,
                 'updated_by'    => Auth::id(),
             ]);
 
@@ -151,8 +149,6 @@ class BrandService extends BaseService
         DB::beginTransaction();
         try {
             $brand = Brand::withTrashed()->findOrFail($id);
-            $brand->roles()->detach();
-            $brand->users()->detach();
             $result = $brand->forceDelete();
             DB::commit();
             // event(new BrandDeleted($brand));

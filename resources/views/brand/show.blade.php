@@ -45,6 +45,11 @@
                                         <tr><th class="text-end pe-2">{{ __('Created At') }}</th><td class="text-start ps-2">{{ $brand->created_at->format('Y-m-d H:i:s') }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Updated By') }}</th><td class="text-start ps-2">{{ $brand->updater?->name ?? '' }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Updated At') }}</th><td class="text-start ps-2">{{ $brand->updated_at->format('Y-m-d H:i:s') }}</td></tr>
+
+                                        @if($brand->trashed())
+                                            <tr><th class="text-end pe-2">{{ __('Deleted By') }}</th><td class="text-start ps-2">{{ $brand->deleter?->name ?? '' }}</td></tr>
+                                            <tr><th class="text-end pe-2">{{ __('Deleted At') }}</th><td class="text-start ps-2">{{ $brand->deleted_at->format('Y-m-d H:i:s') }}</td></tr>
+                                        @endif
                                         </tbody>
                                     </table>
 

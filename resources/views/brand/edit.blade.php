@@ -25,72 +25,82 @@
                         <div class="card-header align-items-center d-flex">
                             <h4 class="card-title mb-0 flex-grow-1">{{ __('Brand Edit & Update') }}</h4>
                             <div class="flex-shrink-0">
-                                <a href="{{ route('permission.edit', $permission->id) }}" class="btn btn-sm btn-warning">
+                                <a href="{{ route('brand.edit', $brand->id) }}" class="btn btn-sm btn-warning">
                                     <i class="ri-refresh-line"></i><span class="d-none d-sm-inline"> {{ __('Reload') }}</span>
                                 </a>
-                                <a href="{{ route('permission.index') }}" class="btn btn-sm btn-primary">
+                                <a href="{{ route('brand.index') }}" class="btn btn-sm btn-primary">
                                     <i class="ri-list-check-2"></i><span class="d-none d-sm-inline"> {{ __('Back to List') }}</span>
                                 </a>
                             </div>
                         </div>
 
-                        <form action="{{ route('permission.update', $permission) }}" method="POST" enctype="multipart/form-data">
+                        ```blade
+                        <form action="{{ route('brand.update', $brand->id) }}" method="POST" enctype="multipart/form-data">
                             @csrf
                             @method('PATCH')
 
                             <div class="card-body">
 
+                                <!-- Start Page Error Section -->
+                                @if ($errors->any())
+                                    @foreach ($errors->all() as $error)
+                                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                            {{ $error }}
+                                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                        </div>
+                                    @endforeach
+                                @endif
+                                <!-- End Page Error Section -->
+
+
                                 <div class="row">
-                                    <div class="col-12">
-                                        <div class="row g-3">
-                                            <div class="col-md-4">
-                                                <label for="type" class="form-label form-mandatory">{{ __('Type') }}</label>
-                                                <select class="form-select @error('type') is-invalid @enderror" id="type" name="type" required>
-                                                    <option value="admin" {{ old('type', $permission->type) == 'admin' ? 'selected' : '' }} >{{ __('Admin') }}</option>
-                                                    <option value="user" {{ old('type', $permission->type) == 'users' ? 'selected' : '' }}>{{ __('User') }}</option>
-                                                    <option value="employee" {{ old('type', $permission->type) == 'employee' ? 'selected' : '' }}>{{ __('Employee') }}</option>
-                                                    <option value="member" {{ old('type', $permission->type) == 'member' ? 'selected' : '' }}>{{ __('Member') }}</option>
-                                                </select>
-                                                @error('type')<small class="text-danger">{{ $message }}</small>@enderror
-                                            </div>
-                                            <div class="col-md-4">
-                                                <label for="guard" class="form-label form-mandatory">Guard</label>
-                                                <select class="form-select @error('guard_name') is-invalid @enderror" id="guard" name="guard_name" required>
-                                                    <option value="web" {{ old('guard_name', $permission->type) == 'web' ? 'selected' : '' }}>{{ __('Web') }}</option>
-                                                    <option value="api" {{ old('guard_name', $permission->type) == 'api' ? 'selected' : '' }}>{{ __('API') }}</option>
-                                                </select>
-                                                @error('guard_name')<small class="text-danger">{{ $message }}</small>@enderror
-                                            </div>
-                                            <div class="col-md-4">
-                                                <label for="parent" class="form-label">{{ __('Parent Brand') }}</label>
-                                                <select class="form-select @error('parent_id') is-invalid @enderror" id="parent" name="parent_id">
-                                                    <option value="">{{ __('Choose...') }}</option>
-                                                    @foreach($parentBrands as $parentBrand)
-                                                        <option value="{{ $parentBrand->id }}"{{ old('parent_id', $permission->parent_id) == $parentBrand->id ? 'selected' : '' }}> {{ $parentBrand->description }}</option>
-                                                    @endforeach
-                                                </select>
-                                                @error('parent_id')<small class="text-danger">{{ $message }}</small>@enderror
-                                            </div>
-                                            <div class="col-md-4">
-                                                <label for="name" class="form-label form-mandatory">{{ __('Brand Name') }}</label>
-                                                <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name', $permission->name) }}" required placeholder="user.index">
+                                    <!-- Start Left Column -->
+                                    <div class="col-12 col-md-7">
+
+                                        <div class="row mb-2">
+                                            <label for="name" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Brand Name') }}</label>
+                                            <div class="col-12 col-md-8">
+                                                <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name', $brand->name) }}" required>
                                                 @error('name')<small class="text-danger">{{ $message }}</small>@enderror
                                             </div>
-                                            <div class="col-md-8">
-                                                <label for="description" class="form-label form-mandatory">{{ __('Description') }}</label>
-                                                <input type="text" class="form-control @error('description') is-invalid @enderror" id="description" name="description" value="{{ old('description', $permission->description) }}" required placeholder="User List">
+                                        </div>
+
+                                        <div class="row mb-2">
+                                            <label for="slug" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Slug') }}</label>
+                                            <div class="col-12 col-md-8">
+                                                <input type="text" class="form-control @error('slug') is-invalid @enderror" id="slug" name="slug" value="{{ old('slug', $brand->slug) }}" required>
+                                                @error('slug')<small class="text-danger">{{ $message }}</small>@enderror
+                                            </div>
+                                        </div>
+
+                                        <div class="row mb-2">
+                                            <label for="priority_order" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Priority Order') }}</label>
+                                            <div class="col-12 col-md-8">
+                                                <input type="text" class="form-control @error('priority_order') is-invalid @enderror" id="priority_order" name="priority_order" value="{{ old('priority_order', $brand->priority_order) }}" required>
+                                                @error('priority_order')<small class="text-danger">{{ $message }}</small>@enderror
+                                            </div>
+                                        </div>
+
+                                        <div class="row mb-2">
+                                            <label for="description" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Description') }}</label>
+                                            <div class="col-12 col-md-8">
+                                                <input type="text" class="form-control @error('description') is-invalid @enderror" id="description" name="description" value="{{ old('description', $brand->description) }}">
                                                 @error('description')<small class="text-danger">{{ $message }}</small>@enderror
                                             </div>
                                         </div>
+
                                     </div>
+                                    <!-- End Left Column -->
+
                                 </div>
-
-
                             </div>
+
+
                             <div class="card-footer">
                                 <div class="row">
                                     <div class="col-6 text-start">
-                                        <a href="{{ route('permission.index') }}" class="btn btn-sm btn-danger">{{ __('Cancel') }}</a>
+                                        <a href="{{ route('brand.index') }}" class="btn btn-sm btn-danger">{{ __('Cancel') }}</a>
+                                        <button type="reset" class="btn btn-sm btn-warning">{{ __('Reset') }}</button>
                                     </div>
                                     <div class="col-6 text-end">
                                         <button type="submit" class="btn btn-sm btn-info">{{ __('Update') }}</button>
@@ -98,6 +108,7 @@
                                 </div>
                             </div>
                         </form>
+
                     </div>
                 </div>
             </div>

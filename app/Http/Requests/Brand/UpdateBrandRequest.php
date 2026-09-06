@@ -29,38 +29,34 @@ class UpdateBrandRequest extends FormRequest
      */
     public function rules() : array
     {
-        // If using route model binding
-        $permissionId = $this->route('permission')?->id ?? $this->route('permission');
+        $brand = $this->route('brand');
 
         return [
-            'type'          => ['required', Rule::in([User::TYPE_ADMIN, User::TYPE_USER])],
-            'guard_name'    => ['required', 'string', 'max:255'],
-            'name'          => ['required', 'string', 'max:255', Rule::unique('permissions')->ignore($permissionId)->where('guard_name', $this->guard_name)->whereNull('deleted_at')],
-            'description'   => ['nullable', 'string', 'max:255'],
-            'parent_id'     => ['nullable', 'exists:permissions,id', Rule::notIn([$permissionId])],
+            'name'              => [ 'required', 'string', 'max:255', Rule::unique('brands', 'name')->ignore($brand)],
+            'slug'              => [ 'required', 'string', 'max:255', Rule::unique('brands', 'slug')->ignore($brand)],
+            'description'       => [ 'nullable', 'string', 'max:255', ],
+            'priority_order'    => [ 'nullable', 'integer', 'min:0', ],
         ];
     }
 
     public function messages() : array
     {
         return [
-            'type.required'       => 'Brand type is Required',
-            'type.in'             => 'Selected Brand Type is Invalid.',
+            'name.required'             => __('Brand Name is Required'),
+            'name.string'               => __('Brand Name must be a Valid String'),
+            'name.max'                  => __('Brand Name may not exceed 255 Characters'),
+            'name.unique'               => __('This Brand already Exists'),
 
-            'guard_name.required' => 'Guard Name is Required',
-            'guard_name.string'   => 'Guard Name must be a Valid String',
-            'guard_name.max'      => 'Guard Name may not exceed 255 Characters',
+            'slug.required'             => __('Brand Slug is Required'),
+            'slug.string'               => __('Brand Slug must be a Valid String'),
+            'slug.max'                  => __('Brand Slug may not exceed 255 Characters'),
+            'slug.unique'               => __('This Brand Slug already Exists'),
 
-            'name.required'       => 'Brand Name is Required',
-            'name.string'         => 'Brand Name must be a Valid String',
-            'name.max'            => 'Brand Name may not exceed 255 Characters',
-            'name.unique'         => 'This Brand already Exists for the Selected Guard',
+            'description.string'        => __('Description must be a Valid String'),
+            'description.max'           => __('Description may not exceed 255 Characters'),
 
-            'description.string'  => 'Description must be a Valid String',
-            'description.max'     => 'Description may not exceed 255 Characters',
-
-            'parent_id.exists'    => 'Selected Parent Brand does not Exist',
-            'parent_id.not_in'    => 'A Brand cannot be its own Parent',
+            'priority_order.integer'    => __('Priority Order must be a Valid Number'),
+            'priority_order.min'        => __('Priority Order must be 0 or greater'),
         ];
     }
 }

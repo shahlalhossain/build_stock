@@ -40,7 +40,7 @@ class BrandsController extends Controller
     {
         try {
             $this->brandService->storeBrand($brandRequest->validated());
-            return redirect()->route('admin.brand.index')->with('success', 'New Brand Created Successfully.');
+            return redirect()->route('brand.index')->with('success', 'New Brand Created Successfully.');
         } catch (GeneralException $generalException) {
             Log::error('Brand Creation Failed: ' . $generalException->getMessage());
             return back()->withInput()->with('error', $generalException->getMessage());
@@ -59,7 +59,6 @@ class BrandsController extends Controller
     public function edit(Brand $brand) : View
     {
         $data['brand'] = $brand;
-        $data['parentBrands'] = Brand::whereNull('parent_id')->where('id', '!=', 1)->get();
         return view('brand.edit', $data);
     }
 
@@ -67,7 +66,7 @@ class BrandsController extends Controller
     {
         try {
             $this->brandService->updateBrand($brand, $brandRequest->validated());
-            return redirect()->route('admin.brand.index')->with('success', 'Brand Updated Successfully.');
+            return redirect()->route('brand.index')->with('success', 'Brand Updated Successfully.');
         } catch (GeneralException $generalException) {
             Log::error('Brand Update Failed: ' . $generalException->getMessage());
             return back()->withInput()->with('error', $generalException->getMessage());
@@ -81,7 +80,7 @@ class BrandsController extends Controller
     {
         try {
             $this->brandService->destroyBrand($id);
-            return response()->json(['success' => true, 'message' => 'Brand Deleted Successfully.']);
+            return response()->json(['success' => true, 'message' => 'Brand Destroyed Successfully.']);
         } catch (ModelNotFoundException $exception) {
             Log::warning('Brand Not Found' . $exception->getMessage());
             return response()->json(['success' => false, 'message' => 'Brand Not Found.'], 404);
