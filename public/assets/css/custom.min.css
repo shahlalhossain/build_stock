@@ -1,0 +1,13 @@
+
+/*# sourceMappingURL=custom.min.css.map */
+
+/* Velzon Horizontal Layout - Full Width */
+@media (min-width: 1024.1px) {
+    [data-layout="horizontal"] .container-fluid,
+    [data-layout="horizontal"] .layout-width {
+        max-width: 100% !important;
+        width: 100%;
+        margin-left: 0;
+        margin-right: 0;
+    }
+}
