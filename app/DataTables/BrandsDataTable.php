@@ -30,6 +30,21 @@ class BrandsDataTable extends DataTable
             ->editColumn('Name', function(Brand $brand) {
                 return ucwords($brand->name);
             })
+            ->addColumn('is_active', function (Brand $brand) {
+                return $brand->is_active ? '<span class="badge bg-success">Yes</span>' : '<span class="badge bg-danger">No</span>';
+            })
+            ->editColumn('status', function (Brand $brand) {
+                if ($brand->status === 'pending') {
+                    return '<span class="badge bg-warning">' . ucwords($brand->status) . '</span>';
+                } elseif ($brand->status === 'approved') {
+                    return '<span class="badge bg-success">' . ucwords($brand->status) . '</span>';
+                } elseif ($brand->status === 'rejected') {
+                    return '<span class="badge bg-danger">' . ucwords($brand->status) . '</span>';
+                } else {
+                    return '<span class="badge bg-secondary">' . ucwords('Unknown') . '</span>';
+                }
+            })
+
             ->editColumn('Created By', function(Brand $brand) {
                 return ucwords($brand->creator?->name);
             })
@@ -48,7 +63,8 @@ class BrandsDataTable extends DataTable
                     return view('brand.actions_trashed', ['brand' => $brand]);
                 }
                 return view('brand.actions', ['brand' => $brand]);
-            });
+            })
+            ->rawColumns(['status', 'is_active']);
     }
 
     /**
@@ -91,8 +107,10 @@ class BrandsDataTable extends DataTable
             //Column::make('id')->orderable(true)->searchable(true)->addClass('text-center'),
             Column::computed('DT_RowIndex')->title('SN')->orderable(false)->searchable(false)->addClass('text-center'),
             Column::make('name')->orderable(true)->searchable(true),
+            Column::computed('is_active')->title('Active')->orderable(false)->searchable(false)->addClass('text-center'),
             Column::make('Created By', 'creator')->orderable(false)->searchable(false),
             Column::make('Updated By', 'updater')->orderable(false)->searchable(false),
+            Column::computed('status')->title('Status')->orderable(false)->searchable(false)->addClass('text-center'),
             Column::make('created_at')->orderable(true)->searchable(true)->addClass('text-center'),
             Column::make('updated_at')->orderable(true)->searchable(true)->addClass('text-center'),
             Column::computed('actions')

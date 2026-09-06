@@ -53,7 +53,7 @@ class BrandsController extends Controller
 
     public function show(Brand $brand)
     {
-        $data['brand'] = $brand->load(['creator', 'updater', 'deleter']);
+        $data['brand'] = $brand->load(['creator', 'updater', 'deleter', 'approvalLogs.actionedBy']);
         return view('brand.show', $data);
     }
 
@@ -78,14 +78,30 @@ class BrandsController extends Controller
     }
 
     /**
-     * @throws Throwable
-     * @throws GeneralException
+     * @param Request $request
+     * @param $id
+     * @return JsonResponse
      */
-    public function updateStatus(Request $request, $id) : JsonResponse
+    public function updateStatus(Request $request, $id): JsonResponse
     {
-        $validated = $request->validate(['status' => ['required', 'in:pending,approved,rejected'], 'remarks' => ['nullable', 'string']]);
-        $this->brandService->updateBrandStatus((int)$id, $validated['status'], $validated['remarks'] ?? null );
-        return response()->json(['success' => true, 'message' => __('Brand Status Updated Successfully.')]);
+        $validated = $request->validate([
+            'status'    => ['required', 'in:pending,approved,rejected'],
+            'remarks'   => ['nullable', 'string'],
+        ]);
+
+        try {
+            $this->brandService->updateBrandStatus((int) $id, $validated['status'], $validated['remarks'] ?? null);
+            return response()->json(['success' => true, 'message' => 'Brand Status Updated Successfully.']);
+        } catch (ModelNotFoundException $exception) {
+            Log::warning('Brand Not Found: ' . $exception->getMessage());
+            return response()->json(['success' => false, 'message' => 'Brand Not Found.'], 404);
+        } catch (GeneralException $exception) {
+            Log::error('Brand Status Update Failed: ' . $exception->getMessage());
+            return response()->json(['success' => false, 'message' => $exception->getMessage()], 422);
+        } catch (Throwable $exception) {
+            Log::error('Unexpected Error on Updating Brand Status: ' . $exception->getMessage());
+            return response()->json(['success' => false, 'message' => 'Unexpected Error Occurred on Updating the Brand Status.'], 500);
+        }
     }
 
     public function destroy($id) : JsonResponse
