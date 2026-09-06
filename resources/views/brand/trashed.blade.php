@@ -51,10 +51,21 @@
 
 @push('scripts')
     {{ $dataTable->scripts() }}
-    <script>
 
+    <script>
         $(document).ready(function () {
-            const toastMessage = sessionStorage.getItem('brandToast');
+            const csrfToken = "{{ csrf_token() }}";
+
+            /*
+            |--------------------------------------------------------------------------
+            | PAGE LOAD TOAST
+            |--------------------------------------------------------------------------
+            | Shows Success/Failed Toast After Page Reload
+            |--------------------------------------------------------------------------
+            */
+            const toastMessage = sessionStorage.getItem('brandToastMessage');
+            const toastType = sessionStorage.getItem('brandToastType');
+
             if (toastMessage) {
                 Toastify({
                     text: toastMessage,
@@ -62,71 +73,94 @@
                     gravity: "top",
                     position: "right",
                     close: true,
-                    className: "success-toast",
+                    className: toastType === 'success' ? 'success-toast' : 'failed-toast',
                     stopOnFocus: true
                 }).showToast();
-                sessionStorage.removeItem('brandToast');
+
+                // Remove After Display Toast Message
+                sessionStorage.removeItem('brandToastMessage');
+                sessionStorage.removeItem('brandToastType');
             }
-        });
 
-        $(document).on('click', '.restore-brand', function() {
-            const brandID = $(this).data('brand-id');
-            console.log(brandID);
-            Swal.fire({
-                title: 'Are You Sure?',
-                text: 'You want to Restore this Data',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: 'Yes, Restore',
-                cancelButtonText: 'No, Cancel',
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.ajax({
-                        url: '/brand/' + brandID + '/restore',
-                        method: 'POST',
-                        data: { "_token": "{{ csrf_token() }}" },
-                        success: function(response) {
-                            sessionStorage.setItem('brandToast', response.message || 'Brand Restored Successfully');
-                            window.location.href = '/brand/trash';
-                        },
-                        error: function(xhr, status, error) {
-                            Swal.fire('Error!', 'There was an Issue on Restoring the Record.', 'error');
-                        }
-                    });
-                } else {
-                    Swal.fire('Cancelled', 'Your Record is in Trash', 'info');
-                }
+            /*
+            |--------------------------------------------------------------------------
+            | RESTORE BRAND
+            |--------------------------------------------------------------------------
+            */
+            $(document).on('click', '.restore-brand', function () {
+                const brandID = $(this).data('brand-id');
+                Swal.fire({
+                    title: 'Are You Sure?',
+                    text: 'You want to Restore this Data',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, Restore',
+                    cancelButtonText: 'No, Cancel',
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: '/brand/' + brandID + '/restore',
+                            method: 'POST',
+                            data: { _token: csrfToken},
+                            success: function (response) {
+                                // Save Success Toast Type and Message
+                                sessionStorage.setItem('brandToastMessage', response.message || 'Brand Restored Successfully');
+                                sessionStorage.setItem('brandToastType', 'success');
+                                window.location.href = '/brand/trash';
+                            },
+                            error: function (xhr) {
+                                // Save Failed Toast
+                                sessionStorage.setItem('brandToastMessage', xhr.responseJSON?.message || 'There was an Issue on Restoring the Record.');
+                                sessionStorage.setItem('brandToastType', 'failed');
+                                // Reload Current Page
+                                window.location.reload();
+                            }
+                        });
+                    } else {
+                        Swal.fire('Cancelled', 'Your Record is in Trash', 'info');
+                    }
+                });
+            });
+
+            /*
+            |--------------------------------------------------------------------------
+            | PERMANENT DELETE BRAND
+            |--------------------------------------------------------------------------
+            */
+            $(document).on('click', '.delete-brand', function () {
+                const brandID = $(this).data('brand-id');
+                Swal.fire({
+                    title: 'Are You Sure?',
+                    text: 'You want to Delete this Data',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, Delete',
+                    cancelButtonText: 'No, Cancel',
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: '/brand/' + brandID + '/force-delete',
+                            method: 'DELETE',
+                            data: { _token: csrfToken },
+                            success: function (response) {
+                                // Save Success Toast Type and Message
+                                sessionStorage.setItem('brandToastMessage', response.message || 'Brand Deleted Successfully');
+                                sessionStorage.setItem('brandToastType', 'success');
+                                window.location.href = '/brand/trash';
+                            },
+                            error: function (xhr) {
+                                // Save Failed Toast Type and Message
+                                sessionStorage.setItem('brandToastMessage', xhr.responseJSON?.message || 'There was an Issue on Deleting the Record.');
+                                sessionStorage.setItem('brandToastType', 'failed');
+                                // Reload Current Page
+                                window.location.reload();
+                            }
+                        });
+                    } else {
+                        Swal.fire('Cancelled', 'Your Record is Back to Trash', 'info');
+                    }
+                });
             });
         });
-
-        $(document).on('click', '.delete-brand', function() {
-            const brandID = $(this).data('brand-id');
-            Swal.fire({
-                title: 'Are You Sure?',
-                text: 'You want to Delete this Data',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Yes, Delete',
-                cancelButtonText: 'No, Cancel',
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.ajax({
-                        url: '/brand/' + brandID + '/force-delete',
-                        method: 'DELETE',
-                        data: { "_token": "{{ csrf_token() }}"},
-                        success: function (response) {
-                            sessionStorage.setItem('brandToast', response.message || 'Brand Deleted Successfully');
-                            window.location.href = '/brand/trash';
-                        },
-                        error: function (xhr, status, error) {
-                            Swal.fire('Error!', 'There was an Issue on Deleting the Record.', 'error');
-                        }
-                    });
-                } else {
-                    Swal.fire('Cancelled', 'Your Record is Back to Trash', 'info');
-                }
-            });
-        });
-
     </script>
 @endpush

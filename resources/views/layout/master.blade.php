@@ -133,6 +133,26 @@
             right: 22px !important;
         }
 
+        .success-toast {
+            background: linear-gradient(135deg, #00c9a7, #1f3c88);
+            color: #fff;
+            border-radius: 6px;
+            padding: 14px 18px;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        .failed-toast {
+            background: linear-gradient(135deg, #ff922b, #e8590c);
+            color: #fff;
+            border-radius: 6px;
+            padding: 14px 18px;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+        }
+
     </style>
 
     @stack('styles')

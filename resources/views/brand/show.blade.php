@@ -100,65 +100,6 @@
                 </div>
             </div>
 
-
-            {{--TODO: Have to Complete EmplyeeStatusUpdate Process--}}
-{{--            <div class="modal fade" id="statusUpdateModal" tabindex="-1" aria-labelledby="statusUpdateModalLabel" aria-hidden="true">--}}
-{{--                <div class="modal-dialog modal-dialog-centered">--}}
-{{--                    <div class="modal-content">--}}
-{{--                        <form action="{{ route('brand.update-status', $brand->id) }}" method="POST">--}}
-{{--                            @csrf--}}
-{{--                            <div class="modal-header">--}}
-{{--                                <h5 class="modal-title" id="statusUpdateModalLabel">{{ __('Update Brand Status') }}</h5>--}}
-{{--                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>--}}
-{{--                            </div>--}}
-
-{{--                            <hr>--}}
-
-{{--                            <div class="modal-body">--}}
-
-{{--                                <div class="">--}}
-{{--                                    <div class="col-12 col-md-12">--}}
-
-{{--                                        <div class="row mb-2">--}}
-{{--                                            <label for="status" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Select Status') }}</label>--}}
-{{--                                            <div class="col-12 col-md-8">--}}
-{{--                                                <div class="form-check form-check-inline pt-2 mb-2">--}}
-{{--                                                    <input class="form-check-input" type="radio" name="status" value="approved">--}}
-{{--                                                    <label class="form-check-label" for="status">{{ __('Approve') }}</label>--}}
-{{--                                                </div>--}}
-{{--                                                <div class="form-check form-check-inline pt-2 mb-2">--}}
-{{--                                                    <input class="form-check-input" type="radio" name="status" value="rejected">--}}
-{{--                                                    <label class="form-check-label" for="status">{{ __('Reject') }}</label>--}}
-{{--                                                </div>--}}
-{{--                                            </div>--}}
-{{--                                        </div>--}}
-
-{{--                                        <div class="row">--}}
-{{--                                            <label for="remarks" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Add Remarks') }}</label>--}}
-{{--                                            <div class="col-12 col-md-8 pt-2">--}}
-{{--                                                <textarea id="remarks" name="remarks" class="form-control" rows="2"></textarea>--}}
-{{--                                            </div>--}}
-{{--                                        </div>--}}
-
-{{--                                    </div>--}}
-{{--                                </div>--}}
-
-{{--                                <input type="hidden" name="brand_id" value="{{ $brand->id }}">--}}
-{{--                            </div>--}}
-
-{{--                            <hr>--}}
-
-{{--                            <div class="modal-footer">--}}
-{{--                                <button type="button" class="btn btn-sm btn-danger" data-bs-dismiss="modal">{{ __('Cancel') }}</button>--}}
-{{--                                <button type="reset" class="btn btn-sm btn-warning">{{ __('Reset') }}</button>--}}
-{{--                                <button type="submit" class="btn btn-sm btn-info">{{ __('Update Status') }}</button>--}}
-{{--                            </div>--}}
-{{--                        </form>--}}
-{{--                    </div>--}}
-{{--                </div>--}}
-{{--            </div>--}}
-
-
             <div class="modal fade" id="statusUpdateModal" tabindex="-1" aria-labelledby="statusUpdateModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
@@ -214,17 +155,46 @@
 @push('scripts')
     <script>
         $(document).ready(function () {
-
             const csrfToken = "{{ csrf_token() }}";
+            /*
+            |--------------------------------------------------------------------------
+            | PAGE LOAD TOAST
+            |--------------------------------------------------------------------------
+            | Shows Success/Failed Toast After Page Reload
+            |--------------------------------------------------------------------------
+            */
+            const toastMessage = sessionStorage.getItem('brandToastMessage');
+            const toastType = sessionStorage.getItem('brandToastType');
 
+            if (toastMessage) {
+                Toastify({
+                    text: toastMessage,
+                    duration: 4000,
+                    gravity: "top",
+                    position: "right",
+                    close: true,
+                    className: toastType === 'success' ? 'success-toast' : 'failed-toast',
+                    stopOnFocus: true
+                }).showToast();
+
+                // Remove After Display the Toast Message
+                sessionStorage.removeItem('brandToastMessage');
+                sessionStorage.removeItem('brandToastType');
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | DESTROY / SOFT DELETE BRAND
+            |--------------------------------------------------------------------------
+            */
             $(document).on('click', '.destroy-brand', function () {
-                var brandID = $(this).data('brand-id');
+                const brandID = $(this).data('brand-id');
                 Swal.fire({
                     title: 'Are You Sure?',
                     text: 'You want to Destroy this Data.',
                     icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonText: 'Yes, Delete',
+                    confirmButtonText: 'Yes, Destroy',
                     cancelButtonText: 'No, Cancel',
                 }).then((result) => {
                     if (result.isConfirmed) {
@@ -233,11 +203,19 @@
                             type: 'DELETE',
                             data: { _token: csrfToken },
                             success: function (response) {
-                                Swal.fire('Destroyed', 'The Record has been Destroyed.', 'success')
-                                    .then(() => { window.location.href = '/brand'; });
+                                // Store Success Toast Type and Message
+                                sessionStorage.setItem('brandToastMessage', response.message || 'Brand Destroyed Successfully.');
+                                sessionStorage.setItem('brandToastType', 'success');
+                                // Reload Page
+                                window.location.href = '/brand/trash';
                             },
-                            error: function (xhr, status, error) {
-                                Swal.fire('Error!', 'There was an issue deleting the Record.', 'error');
+                            error: function (xhr) {
+                                const message = xhr.responseJSON?.message || 'There was an issue destroying the Record.';
+                                // Store Failed Toast Type and Message
+                                sessionStorage.setItem('brandToastMessage', message);
+                                sessionStorage.setItem('brandToastType', 'failed');
+                                // Reload Page
+                                window.location.reload();
                             }
                         });
                     } else {
@@ -246,11 +224,16 @@
                 });
             });
 
+            /*
+            |--------------------------------------------------------------------------
+            | RESTORE BRAND
+            |--------------------------------------------------------------------------
+            */
             $(document).on('click', '.restore-brand', function () {
                 const brandID = $(this).data('brand-id');
                 Swal.fire({
                     title: 'Are You Sure?',
-                    text: 'You want to Restore Record?',
+                    text: 'You want to Restore this Data.',
                     icon: 'question',
                     showCancelButton: true,
                     confirmButtonText: 'Yes, Restore',
@@ -260,13 +243,21 @@
                         $.ajax({
                             url: '/brand/' + brandID + '/restore',
                             method: 'POST',
-                            data: { "_token": csrfToken },
+                            data: { _token: csrfToken },
                             success: function (response) {
-                                Swal.fire('Deleted', 'The Record is Now in Active List.', 'success')
-                                    .then(() => { window.location.href = '/brand/trash'; });
+                                // Store Success Toast Type and Message
+                                sessionStorage.setItem('brandToastMessage', response.message || 'Brand Restored Successfully.');
+                                sessionStorage.setItem('brandToastType', 'success');
+                                // Reload Trash Page
+                                window.location.href = '/brand/trash';
                             },
-                            error: function (xhr, status, error) {
-                                Swal.fire('Error!', 'There was an Issue on Restoring the Record.', 'error');
+                            error: function (xhr) {
+                                const message = xhr.responseJSON?.message || 'There was an issue restoring the Record.';
+                                // Store Failed Toast Type and Message
+                                sessionStorage.setItem('brandToastMessage', message);
+                                sessionStorage.setItem('brandToastType', 'failed');
+                                // Reload Trash Page
+                                window.location.reload();
                             }
                         });
                     } else {
@@ -275,11 +266,16 @@
                 });
             });
 
+            /*
+            |--------------------------------------------------------------------------
+            | PERMANENT DELETE BRAND
+            |--------------------------------------------------------------------------
+            */
             $(document).on('click', '.delete-brand', function () {
                 const brandID = $(this).data('brand-id');
                 Swal.fire({
                     title: 'Are You Sure?',
-                    text: 'You want to Delete this Data',
+                    text: 'You want to Permanently Delete this Data.',
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonText: 'Yes, Delete',
@@ -289,69 +285,118 @@
                         $.ajax({
                             url: '/brand/' + brandID + '/force-delete',
                             method: 'DELETE',
-                            data: { "_token": csrfToken },
+                            data: { _token: csrfToken },
                             success: function (response) {
-                                Swal.fire('Deleted', 'The Record has been Deleted.', 'success')
-                                    .then(() => { window.location.href = '/brand/trash'; });
+                                // Store Success Toast Type and Message
+                                sessionStorage.setItem('brandToastMessage', response.message || 'Brand Deleted Permanently.');
+                                sessionStorage.setItem('brandToastType', 'success');
+                                // Reload Trash Page
+                                window.location.href = '/brand/trash';
                             },
-                            error: function (xhr, status, error) {
-                                Swal.fire('Error!', 'There was an Issue on Deleting the Record.', 'error');
+                            error: function (xhr) {
+                                const message = xhr.responseJSON?.message || 'There was an issue deleting the Record.';
+                                // Store Failed Toast Type and Message
+                                sessionStorage.setItem('brandToastMessage', message);
+                                sessionStorage.setItem('brandToastType', 'failed');
+                                // Reload Trash Page
+                                window.location.reload();
                             }
                         });
+
                     } else {
                         Swal.fire('Cancelled', 'Your Record is in Trash Box.', 'info');
                     }
                 });
             });
 
+            /*
+            |--------------------------------------------------------------------------
+            | UPDATE BRAND STATUS
+            |--------------------------------------------------------------------------
+            */
             $('#statusUpdateForm').on('submit', function (e) {
                 e.preventDefault();
                 const form = $(this);
                 const button = $('#updateStatusBtn');
                 const errorBox = $('#statusUpdateError');
+                // Clear Previous Errors
                 errorBox.addClass('d-none').html('');
+
+                // Disable Button
                 button.prop('disabled', true);
+
                 button.html('<i class="ri-loader-4-line ri-spin"></i> {{ __("Updating...") }}');
 
                 $.ajax({
                     url: form.attr('action'),
                     type: 'POST',
                     data: form.serialize(),
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | STATUS UPDATE SUCCESS
+                    |--------------------------------------------------------------------------
+                    */
                     success: function (response) {
                         if (response.success) {
-                            Toastify({
-                                text: response.message || "Validate Mobile OTP Successfully",
-                                duration: 4000,
-                                gravity: "top",
-                                position: "right",
-                                close: true,
-                                className: "success-toast",
-                                stopOnFocus: true
-                            }).showToast();
-
+                            // Store Success Toast Type and Message
+                            sessionStorage.setItem('brandToastMessage', response.message || 'Brand Status Updated Successfully.');
+                            sessionStorage.setItem('brandToastType', 'success');
+                            // Hide Modal
                             $('#statusUpdateModal').modal('hide');
-                            setTimeout(() => location.reload(), 1200);
+                            // Reload Page
+                            window.location.reload();
                         }
                     },
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | STATUS UPDATE ERROR
+                    |--------------------------------------------------------------------------
+                    */
                     error: function (xhr) {
+                        /*
+                        |--------------------------------------------------------------------------
+                        | VALIDATION ERROR - KEEP INSIDE MODAL
+                        |--------------------------------------------------------------------------
+                        */
                         if (xhr.status === 422) {
-                            let errors = xhr.responseJSON.errors;
-                            let messages = [];
+                            const errors = xhr.responseJSON?.errors || {};
+                            const messages = [];
                             $.each(errors, function (field, errorMessages) {
-                                messages.push(errorMessages[0]);
+                                if (errorMessages.length > 0) {
+                                    messages.push(errorMessages[0]);
+                                }
                             });
                             errorBox.html(messages.join('<br>')).removeClass('d-none');
                             return;
                         }
-                        errorBox.html(xhr.responseJSON?.message || '{{ __("Something went wrong. Please try again.") }}').removeClass('d-none');
+
+                        /*
+                        |--------------------------------------------------------------------------
+                        | OTHER ERROR - SHOW FAILED TOAST AFTER RELOAD
+                        |--------------------------------------------------------------------------
+                        */
+                        const message = xhr.responseJSON?.message || 'Something went wrong. Please try again.';
+
+                        // Store Failed Toast Type and Message
+                        sessionStorage.setItem('brandToastMessage', message);
+                        sessionStorage.setItem('brandToastType', 'failed');
+                        // Reload Page
+                        window.location.reload();
                     },
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | AJAX COMPLETE
+                    |--------------------------------------------------------------------------
+                    */
                     complete: function () {
                         button.prop('disabled', false);
                         button.html('{{ __("Update Status") }}');
                     }
                 });
             });
-
         });
     </script>
 @endpush

@@ -80,7 +80,18 @@
     {{ $dataTable->scripts(attributes: ['type' => 'module']) }}
     <script>
         $(document).ready(function () {
-            const toastMessage = sessionStorage.getItem('destroySuccess');
+            const csrfToken = "{{ csrf_token() }}";
+
+            /*
+            |--------------------------------------------------------------------------
+            | PAGE LOAD TOAST
+            |--------------------------------------------------------------------------
+            | Shows Success/Failed Toast After Page Reload
+            |--------------------------------------------------------------------------
+            */
+            const toastMessage = sessionStorage.getItem('brandToastMessage');
+            const toastType = sessionStorage.getItem('brandToastType');
+
             if (toastMessage) {
                 Toastify({
                     text: toastMessage,
@@ -88,40 +99,52 @@
                     gravity: "top",
                     position: "right",
                     close: true,
-                    className: "failed-toast",
+                    className: toastType === 'success' ? 'success-toast' : 'failed-toast',
                     stopOnFocus: true
                 }).showToast();
-                sessionStorage.removeItem('destroySuccess');
-            }
-        });
 
-        $(document).on('click', '.destroy-brand', function() {
-            const brandID = $(this).data('brand-id');
-            Swal.fire({
-                title: 'Are You Sure?',
-                text: 'You want to Destroy this Data',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Yes, Destroy',
-                cancelButtonText: 'No, Cancel',
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.ajax({
-                        url: '/brand/' + brandID,
-                        method: 'DELETE',
-                        data: { "_token": "{{ csrf_token() }}"},
-                        success: function (response) {
-                            sessionStorage.setItem('destroySuccess', response.message || 'Brand Destroyed Successfully');
-                            window.location.href = '/brand';
-                        },
-                        error: function (xhr, status, error) {
-                            Swal.fire('Error!', 'There was an Issue on Destroying the Record.', 'error');
-                        }
-                    });
-                } else {
-                    Swal.fire('Cancelled', 'Your Record is Safe.', 'info');
-                }
+                // Remove After Display the Toast Message
+                sessionStorage.removeItem('brandToastMessage');
+                sessionStorage.removeItem('brandToastType');
+            }
+
+            $(document).on('click', '.destroy-brand', function() {
+                const brandID = $(this).data('brand-id');
+                Swal.fire({
+                    title: 'Are You Sure?',
+                    text: 'You want to Destroy this Data',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, Destroy',
+                    cancelButtonText: 'No, Cancel',
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: '/brand/' + brandID,
+                            method: 'DELETE',
+                            data: { _token: csrfToken},
+                            success: function (response) {
+                                // Store Success Toast Message & Type
+                                sessionStorage.setItem( 'brandToastMessage', response.message || 'Brand Destroyed Successfully' );
+                                sessionStorage.setItem( 'brandToastType', 'success' );
+                                // Reload/Redirect to Brand List Page
+                                window.location.href = '/brand';
+                            },
+                            error: function (xhr, status, error) {
+                                // Get Laravel Error Message if Available
+                                const message = xhr.responseJSON?.message || 'There was an Issue on Destroying the Record.';
+                                // Store Failed Toast Message and Type
+                                sessionStorage.setItem( 'brandToastMessage', message ); sessionStorage.setItem( 'brandToastType', 'failed' );
+                                // Reload/Redirect to Brand List Page
+                                window.location.href = '/brand';
+                            }
+                        });
+                    } else {
+                        Swal.fire('Cancelled', 'Your Record is Safe.', 'info');
+                    }
+                });
             });
         });
+
     </script>
 @endpush
