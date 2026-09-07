@@ -48,7 +48,7 @@ class BrandService extends BaseService
             ];
             $brand = $this->model::create($brandData);
             DB::commit();
-            event(new BrandCreated($brand));
+//            event(new BrandCreated($brand));
         } catch (Exception $exception) {
             Log::alert($exception->getMessage());
             DB::rollBack();
@@ -104,6 +104,19 @@ class BrandService extends BaseService
                 'actioned_at'   => now(),
                 'remarks'       => $remarks
             ]);
+
+            /*
+             * Custom Activity: statusUpdate
+             */
+//            if ($oldStatus !== $newStatus) {
+//                activity('brand')
+//                    ->performedOn($brand)
+//                    ->causedBy(Auth::user())
+//                    ->event('statusUpdate')
+//                    ->withProperties(['old_status' => $oldStatus, 'new_status' => $newStatus])
+//                    ->log('Brand status updated');
+//            }
+
             //event(new BrandStatusUpdated($brand));
             DB::commit();
             return $result;
@@ -159,12 +172,15 @@ class BrandService extends BaseService
         DB::beginTransaction();
         try {
             $brand = Brand::withTrashed()->findOrFail($id);
-            $brand->restore();
+
             $brand->is_active = true;
             $brand->deleted_by = null;
+            $brand->deleted_at = null;
 
             $result = $brand->save();
-            event(new BrandRestored($brand));
+
+            //event(new BrandRestored($brand));
+
             DB::commit();
             return $result;
         } catch (ModelNotFoundException $exception) {

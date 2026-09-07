@@ -302,6 +302,112 @@
     function topFunction() {
         $('html, body').animate({ scrollTop: 0 }, 600);
     }
+
+    {{-- TODO: Notification  Management --}}
+    {{--$(document).on('click', '.mark-notification-read', function (e) {--}}
+
+    {{--    e.preventDefault();--}}
+    {{--    e.stopPropagation();--}}
+
+    {{--    let button = $(this);--}}
+    {{--    let notificationId = button.data('id');--}}
+    {{--    let notification = button.closest('.notification-item');--}}
+
+    {{--    $.ajax({--}}
+    {{--        --}}{{--url: "{{ route('notifications.markAsRead') }}",--}}
+    {{--        url: "#",--}}
+    {{--        type: "POST",--}}
+    {{--        data: { _token: "{{ csrf_token() }}", id: notificationId },--}}
+    {{--        success: function (response) {--}}
+    {{--            // Remove unread state--}}
+    {{--            notification.removeClass('notification-unread');--}}
+    {{--            // Hide Mark as Read button--}}
+    {{--            button.addClass('d-none');--}}
+    {{--            // Update unread count--}}
+    {{--            updateNotificationCount();--}}
+    {{--        },--}}
+    {{--        error: function (xhr) {--}}
+    {{--            console.error(xhr.responseText);--}}
+    {{--            // Optional Velzon/Toastr notification--}}
+    {{--            if (typeof toastr !== 'undefined') {--}}
+    {{--                toastr.error('Unable to mark notification as read.');--}}
+    {{--            }--}}
+    {{--        }--}}
+    {{--    });--}}
+    {{--});--}}
+
+    {{--$(document).on('click', '.delete-notification', function (e) {--}}
+
+    {{--    e.preventDefault();--}}
+    {{--    e.stopPropagation();--}}
+
+    {{--    let button = $(this);--}}
+    {{--    let notificationId = button.data('id');--}}
+    {{--    let notification = button.closest('.notification-item');--}}
+
+    {{--    $.ajax({--}}
+    {{--        --}}{{--url: "{{ route('notifications.delete') }}",--}}
+    {{--        url: "",--}}
+    {{--        type: "DELETE",--}}
+    {{--        data: { _token: "{{ csrf_token() }}",  id: notificationId },--}}
+    {{--        success: function (response) {--}}
+    {{--            // Remove notification from dropdown--}}
+    {{--            notification.fadeOut(200, function () {--}}
+    {{--                $(this).remove();--}}
+    {{--                updateNotificationCount();--}}
+    {{--                checkNotificationEmpty();--}}
+    {{--            });--}}
+    {{--        },--}}
+    {{--        error: function (xhr) {--}}
+    {{--            console.error(xhr.responseText);--}}
+    {{--            if (typeof toastr !== 'undefined') {--}}
+    {{--                toastr.error('Unable to delete notification.');--}}
+    {{--            }--}}
+    {{--        }--}}
+    {{--    });--}}
+    {{--});--}}
+
+    {{--/*--}}
+    {{--|----------------------------------------------------------------------------}}
+    {{--| Update Unread Count--}}
+    {{--|----------------------------------------------------------------------------}}
+    {{--*/--}}
+    {{--function updateNotificationCount() {--}}
+
+    {{--    let unreadCount = $('#notification-list .notification-unread').length;--}}
+
+    {{--    // Bell badge--}}
+    {{--    $('#notification-count').text(unreadCount);--}}
+
+    {{--    // Header badge--}}
+    {{--    $('#notification-header-count').text(unreadCount);--}}
+
+    {{--    // Hide badge when there are no unread notifications--}}
+    {{--    if (unreadCount === 0) {--}}
+    {{--        $('#notification-count').addClass('d-none');--}}
+    {{--        $('#notification-header-count').closest('.badge').addClass('d-none');--}}
+    {{--    } else {--}}
+    {{--        $('#notification-count').removeClass('d-none');--}}
+    {{--        $('#notification-header-count').closest('.badge').removeClass('d-none');--}}
+    {{--    }--}}
+    {{--}--}}
+
+    {{--/*--}}
+    {{--|----------------------------------------------------------------------------}}
+    {{--| Empty Notification Check--}}
+    {{--|----------------------------------------------------------------------------}}
+    {{--*/--}}
+    {{--function checkNotificationEmpty() {--}}
+    {{--    let notificationCount = $('#notification-list .notification-item').length;--}}
+    {{--    if (notificationCount === 0) {--}}
+    {{--        $('#notification-empty').removeClass('d-none');--}}
+    {{--        $('#notification-list').addClass('d-none');--}}
+    {{--    } else {--}}
+    {{--        $('#notification-empty').addClass('d-none');--}}
+    {{--        $('#notification-list').removeClass('d-none');--}}
+    {{--    }--}}
+    {{--}--}}
+
 </script>
 
 </body>
