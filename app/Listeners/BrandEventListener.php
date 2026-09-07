@@ -51,8 +51,9 @@ class BrandEventListener
     {
         activity('brand')
             ->performedOn($event->brand)
+            ->event('destroyed')
             ->withProperties(['brand' => ['name' => $event->brand->name]])
-            ->log(':causer.name permanently destroyed brand :subject.name');
+            ->log(':causer.name destroyed brand :subject.name');
     }
 
     /**

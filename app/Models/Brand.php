@@ -5,11 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Brand extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, LogsActivity;
 
     protected $table = 'brands';
 
@@ -47,10 +48,20 @@ class Brand extends Model
         return ['created_at' => 'datetime', 'updated_at' => 'datetime',];
     }
 
-    protected static $recordEvents = ['created', 'updated', 'deleted'];
+//    protected static $recordEvents = [
+//        'created',
+//        'updated',
+//        'deleted',
+//        'restored',
+//        'forceDeleted',
+//    ];
+
     public function getActivitylogOptions() : LogOptions
     {
-        return LogOptions::defaults()->logOnly(['*']);
+        return LogOptions::defaults()
+            ->useLogName('brand')
+            ->logAll()
+            ->logOnlyDirty();
     }
 
     public function creator() : BelongsTo

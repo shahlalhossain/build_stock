@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Events\Brand\BrandCreated;
+use App\Events\Brand\BrandDestroyed;
+use App\Events\Brand\BrandRestored;
 use App\Events\Brand\BrandStatusUpdated;
 use App\Events\Brand\BrandUpdated;
 use App\Events\Brand\BrandDeleted;
@@ -46,7 +48,7 @@ class BrandService extends BaseService
             ];
             $brand = $this->model::create($brandData);
             DB::commit();
-            //event(new BrandCreated($brand));
+            event(new BrandCreated($brand));
         } catch (Exception $exception) {
             Log::alert($exception->getMessage());
             DB::rollBack();
@@ -69,7 +71,7 @@ class BrandService extends BaseService
             ]);
 
             DB::commit();
-            //event(new BrandUpdated($brand));
+            event(new BrandUpdated($brand));
         } catch (Exception $exception) {
             Log::alert($exception->getMessage());
             DB::rollBack();
@@ -133,7 +135,7 @@ class BrandService extends BaseService
             $brand->deleted_at  = now();
 
             $result = $brand->save();
-            // event(new BrandDestroyed($brand));
+            event(new BrandDestroyed($brand));
             DB::commit();
             return $result;
         } catch (ModelNotFoundException $exception) {
@@ -162,7 +164,7 @@ class BrandService extends BaseService
             $brand->deleted_by = null;
 
             $result = $brand->save();
-            // event(new BrandRestored($brand));
+            event(new BrandRestored($brand));
             DB::commit();
             return $result;
         } catch (ModelNotFoundException $exception) {
@@ -188,7 +190,7 @@ class BrandService extends BaseService
             $brand = Brand::withTrashed()->findOrFail($id);
             $result = $brand->forceDelete();
             DB::commit();
-            // event(new BrandDeleted($brand));
+            event(new BrandDeleted($brand));
             return $result;
         } catch (ModelNotFoundException $exception) {
             DB::rollBack();
