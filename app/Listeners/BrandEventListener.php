@@ -16,10 +16,7 @@ class BrandEventListener
      */
     public function onCreated(BrandCreated $event): void
     {
-        activity('brand')
-            ->performedOn($event->brand)
-            ->withProperties(['brand' => ['name' => $event->brand->name]])
-            ->log(':causer.name created brand :subject.name');
+        //
     }
 
     /**
@@ -27,10 +24,7 @@ class BrandEventListener
      */
     public function onUpdated(BrandUpdated $event): void
     {
-        activity('brand')
-            ->performedOn($event->brand)
-            ->withProperties(['brand' => ['name' => $event->brand->name]])
-            ->log(':causer.name updated brand :subject.name');
+        //
     }
 
     /**
@@ -38,10 +32,7 @@ class BrandEventListener
      */
     public function onStatusUpdated(BrandStatusUpdated $event): void
     {
-        activity('brand')
-            ->performedOn($event->brand)
-            ->withProperties(['brand' => ['name' => $event->brand->name, 'old_status' => $event->oldStatus, 'new_status' => $event->newStatus]])
-            ->log(':causer.name changed status of brand :subject.name');
+        //
     }
 
     /**
@@ -49,11 +40,7 @@ class BrandEventListener
      */
     public function onDestroyed(BrandDestroyed $event): void
     {
-        activity('brand')
-            ->performedOn($event->brand)
-            ->event('destroyed')
-            ->withProperties(['brand' => ['name' => $event->brand->name]])
-            ->log(':causer.name destroyed brand :subject.name');
+        //
     }
 
     /**
@@ -61,10 +48,7 @@ class BrandEventListener
      */
     public function onRestored(BrandRestored $event): void
     {
-        activity('brand')
-            ->performedOn($event->brand)
-            ->withProperties(['brand' => ['name' => $event->brand->name]])
-            ->log(':causer.name restored brand :subject.name');
+        //
     }
 
     /**
@@ -72,10 +56,7 @@ class BrandEventListener
      */
     public function onDeleted(BrandDeleted $event): void
     {
-        activity('brand')
-            ->performedOn($event->brand)
-            ->withProperties(['brand' => ['name' => $event->brand->name]])
-            ->log(':causer.name deleted brand :subject.name');
+        //
     }
 
     /**

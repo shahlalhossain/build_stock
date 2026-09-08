@@ -33,6 +33,12 @@ class BrandService extends BaseService
         $this->model = $brand;
     }
 
+    /**
+     * @param array $data
+     * @return Brand
+     * @throws GeneralException
+     * @throws Throwable
+     */
     public function storeBrand(array $data = []) : Brand
     {
         DB::beginTransaction();
@@ -47,16 +53,25 @@ class BrandService extends BaseService
                 'updated_by'        => Auth::id(),
             ];
             $brand = $this->model::create($brandData);
+
+            event(new BrandCreated($brand));
+
             DB::commit();
-//            event(new BrandCreated($brand));
+            return $brand;
         } catch (Exception $exception) {
             Log::alert($exception->getMessage());
             DB::rollBack();
             throw new GeneralException(__('There was a Problem on Creating New Brand.'));
         }
-        return $brand;
     }
 
+    /**
+     * @param Brand $brand
+     * @param array $data
+     * @return Brand
+     * @throws GeneralException
+     * @throws Throwable
+     */
     public function updateBrand(Brand $brand, array $data = []) : Brand
     {
         DB::beginTransaction();
@@ -70,15 +85,15 @@ class BrandService extends BaseService
                 'updated_by'        => Auth::id(),
             ]);
 
+            event(new BrandUpdated($brand));
+
             DB::commit();
-//            event(new BrandUpdated($brand));
+            return $brand;
         } catch (Exception $exception) {
             Log::alert($exception->getMessage());
             DB::rollBack();
             throw new GeneralException(__('There was a Problem on Updating the Brand.'));
         }
-
-        return $brand;
     }
 
     /**
@@ -126,7 +141,8 @@ class BrandService extends BaseService
                 ])
                 ->log('statusUpdated');
 
-            //event(new BrandStatusUpdated($brand));
+            event(new BrandStatusUpdated($brand));
+
             DB::commit();
             return $result;
         } catch (ModelNotFoundException $exception) {
@@ -162,7 +178,8 @@ class BrandService extends BaseService
 
             $result = $brand->delete();
 
-//            event(new BrandDestroyed($brand));
+            event(new BrandDestroyed($brand));
+
             DB::commit();
             return $result;
         } catch (ModelNotFoundException $exception) {
@@ -197,7 +214,7 @@ class BrandService extends BaseService
             // SoftDeletes Restores deleted_at and Fires "restored"
             $result = $brand->restore();
 
-            //event(new BrandRestored($brand));
+            event(new BrandRestored($brand));
 
             DB::commit();
             return $result;
@@ -236,8 +253,9 @@ class BrandService extends BaseService
                 ->causedBy(Auth::user())
                 ->log('forceDeleted');
 
+            event(new BrandDeleted($brand));
+
             DB::commit();
-//            event(new BrandDeleted($brand));
             return true;
         } catch (ModelNotFoundException $exception) {
             DB::rollBack();
