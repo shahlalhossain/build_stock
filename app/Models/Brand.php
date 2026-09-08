@@ -57,10 +57,8 @@ class Brand extends Model
     protected static $recordEvents = [
         'created',
         'updated',
-//        'statusUpdated',
-//        'destroyed',
+        'deleted',
         'restored',
-        'forceDeleted',
     ];
 
     public function getActivitylogOptions() : LogOptions
@@ -70,31 +68,6 @@ class Brand extends Model
             ->logAll()
             ->logOnlyDirty();
     }
-
-//    public function updateStatus(string $status): bool
-//    {
-//        $oldStatus = $this->status;
-//
-//        if ($oldStatus === $status) {
-//            return false;
-//        }
-//
-//        $this->update([
-//            'status' => $status,
-//        ]);
-//
-//        activity('brand')
-//            ->performedOn($this)
-//            ->causedBy(auth()->user())
-//            ->event('statusUpdate')
-//            ->withProperties([
-//                'old_status' => $oldStatus,
-//                'new_status' => $status,
-//            ])
-//            ->log('Brand status updated');
-//
-//        return true;
-//    }
 
     public function creator() : BelongsTo
     {

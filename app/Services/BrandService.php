@@ -71,7 +71,7 @@ class BrandService extends BaseService
             ]);
 
             DB::commit();
-            event(new BrandUpdated($brand));
+//            event(new BrandUpdated($brand));
         } catch (Exception $exception) {
             Log::alert($exception->getMessage());
             DB::rollBack();
@@ -92,9 +92,18 @@ class BrandService extends BaseService
     {
         DB::beginTransaction();
         try {
-            $brand = Brand::findOrFail((int)$id);
+
+            $brand = Brand::findOrFail($id);
+
+            $oldStatus = $brand->status;
+
+            if ($oldStatus === $status) {
+                return true;
+            }
+
+            // Update without Triggering Spatie's "updated" Activity Log
             $brand->status = $status;
-            $result = $brand->save();
+            $result = $brand->saveQuietly();
 
             ApprovalLog::create([
                 'model_type'    => Brand::class,
@@ -105,17 +114,17 @@ class BrandService extends BaseService
                 'remarks'       => $remarks
             ]);
 
-            /*
-             * Custom Activity: statusUpdate
-             */
-//            if ($oldStatus !== $newStatus) {
-//                activity('brand')
-//                    ->performedOn($brand)
-//                    ->causedBy(Auth::user())
-//                    ->event('statusUpdate')
-//                    ->withProperties(['old_status' => $oldStatus, 'new_status' => $newStatus])
-//                    ->log('Brand status updated');
-//            }
+            activity()
+                ->performedOn($brand)
+                ->causedBy(Auth::user())
+                ->useLog('brand')
+                ->event('statusUpdated')
+                ->withProperties([
+                    'old_status' => $oldStatus,
+                    'new_status' => $status,
+                    'remarks'    => $remarks,
+                ])
+                ->log('statusUpdated');
 
             //event(new BrandStatusUpdated($brand));
             DB::commit();
@@ -143,12 +152,17 @@ class BrandService extends BaseService
         try {
             $brand = Brand::findOrFail((int)$id);
 
-            $brand->is_active   = false;
-            $brand->deleted_by  = Auth::id();
-            $brand->deleted_at  = now();
+            $brand->is_active  = false;
+            $brand->deleted_by = Auth::id();
 
-            $result = $brand->save();
-            event(new BrandDestroyed($brand));
+            // Prevent the Custom Fields from Generating an "updated" Activity Log
+            activity()->withoutLogs(function () use ($brand) {
+                $brand->save();
+            });
+
+            $result = $brand->delete();
+
+//            event(new BrandDestroyed($brand));
             DB::commit();
             return $result;
         } catch (ModelNotFoundException $exception) {
@@ -171,13 +185,17 @@ class BrandService extends BaseService
     {
         DB::beginTransaction();
         try {
+
             $brand = Brand::withTrashed()->findOrFail($id);
 
-            $brand->is_active = true;
+            $brand->is_active  = true;
             $brand->deleted_by = null;
-            $brand->deleted_at = null;
 
-            $result = $brand->save();
+            // Update Custom Fields without Generating an "updated" Activity Log
+            $brand->saveQuietly();
+
+            // SoftDeletes Restores deleted_at and Fires "restored"
+            $result = $brand->restore();
 
             //event(new BrandRestored($brand));
 
@@ -204,10 +222,23 @@ class BrandService extends BaseService
         DB::beginTransaction();
         try {
             $brand = Brand::withTrashed()->findOrFail($id);
-            $result = $brand->forceDelete();
+
+            // Permanently Delete without Automatic Activity Logging.
+            activity()->withoutLogs(function () use ($brand) {
+                $brand->forceDelete();
+            });
+
+            // Log the Permanent Deletion Explicitly.
+            activity()
+                ->useLog('brand')
+                ->event('forceDeleted')
+                ->performedOn($brand)
+                ->causedBy(Auth::user())
+                ->log('forceDeleted');
+
             DB::commit();
-            event(new BrandDeleted($brand));
-            return $result;
+//            event(new BrandDeleted($brand));
+            return true;
         } catch (ModelNotFoundException $exception) {
             DB::rollBack();
             throw $exception;
