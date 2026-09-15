@@ -33,7 +33,7 @@ class UpdatePermissionRequest extends FormRequest
         $permissionId = $this->route('permission')?->id ?? $this->route('permission');
 
         return [
-            'type'          => ['required', Rule::in([User::TYPE_ADMIN, User::TYPE_MEMBER])],
+            'type'          => ['required', Rule::in([User::TYPE_ADMIN, User::TYPE_USER])],
             'guard_name'    => ['required', 'string', 'max:255'],
             'name'          => ['required', 'string', 'max:255', Rule::unique('permissions')->ignore($permissionId)->where('guard_name', $this->guard_name)->whereNull('deleted_at')],
             'description'   => ['nullable', 'string', 'max:255'],

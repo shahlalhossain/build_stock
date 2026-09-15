@@ -30,7 +30,7 @@ class StoreRoleRequest extends FormRequest
     public function rules() : array
     {
         return [
-            'type'          => ['required', Rule::in([User::TYPE_ADMIN, User::TYPE_MEMBER])],
+            'type'          => ['required', Rule::in([User::TYPE_ADMIN, User::TYPE_USER])],
             'guard_name'    => ['required', Rule::in(['web', 'api'])],
             'name'          => ['required', 'max:100', Rule::unique('roles')],
             'description'   => ['nullable', 'max:255'],

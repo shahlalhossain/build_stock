@@ -31,7 +31,7 @@ class StorePermissionRequest extends FormRequest
     public function rules() : array
     {
         return [
-            'type'          => ['required', Rule::in([User::TYPE_ADMIN, User::TYPE_MEMBER])],
+            'type'          => ['required', Rule::in([User::TYPE_ADMIN, User::TYPE_USER])],
             'guard_name'    => ['required', 'string', 'max:255',],
             'name'          => ['required', 'string', 'max:255', Rule::unique('permissions')],
             'description'   => ['nullable', 'string', 'max:255'],

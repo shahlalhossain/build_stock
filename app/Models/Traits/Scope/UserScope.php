@@ -78,13 +78,4 @@ trait UserScope
     {
         return $query->where('type', $this::TYPE_USER);
     }
-
-    /**
-     * @param $query
-     * @return mixed
-     */
-    public function scopeMembers($query)
-    {
-        return $query->where('type', $this::TYPE_MEMBER);
-    }
 }

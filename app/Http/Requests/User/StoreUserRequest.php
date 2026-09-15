@@ -31,7 +31,7 @@ class StoreUserRequest extends FormRequest
     public function rules() : array
     {
         return [
-            'type'                  => ['required', Rule::in([User::TYPE_ADMIN, User::TYPE_USER, User::TYPE_MEMBER])],
+            'type'                  => ['required', Rule::in([User::TYPE_ADMIN, User::TYPE_USER])],
             'name'                  => ['required', 'string', 'max:255', 'regex:/^[^\d]*$/'],
             'mobile'                => ['required', 'regex:/^01\d{9}$/', Rule::unique('users')],
             'email'                 => ['required', 'email', 'max:255', Rule::unique('users')],

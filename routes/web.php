@@ -112,7 +112,6 @@ Route::middleware('auth:web')->group(function () {
         });
     });
 
-
     //Route::resource('division', DivisionsController::class);
     Route::group(['prefix' => 'division', 'as' => 'division.'], function () {
         Route::get('/', [DivisionsController::class, 'index'])->name('index');
