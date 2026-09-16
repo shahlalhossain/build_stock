@@ -1,27 +1,23 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;
-
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\OTPsController;
-
-use App\Http\Controllers\BrandsController;
-
-use App\Http\Controllers\DivisionsController;
-use App\Http\Controllers\DistrictsController;
-use App\Http\Controllers\ThanasController;
-
-use App\Http\Controllers\PermissionController;
-use App\Http\Controllers\RoleController;
-use App\Http\Controllers\UsersController;
-
-use App\Http\Controllers\FAQsController;
-
 use App\Http\Controllers\ActivitiesController;
 use App\Http\Controllers\AuditLogController;
+use App\Http\Controllers\BrandsController;
+use App\Http\Controllers\CategoriesController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DistrictsController;
+use App\Http\Controllers\DivisionsController;
+use App\Http\Controllers\FAQsController;
+use App\Http\Controllers\PermissionController;
+use App\Http\Controllers\ProductUnitsController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RoleController;
+use App\Http\Controllers\SubCategoriesController;
+use App\Http\Controllers\ThanasController;
+use App\Http\Controllers\UsersController;
 use Arcanedev\LogViewer\Http\Controllers\LogViewerController;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -112,7 +108,52 @@ Route::middleware('auth:web')->group(function () {
         });
     });
 
-    //Route::resource('division', DivisionsController::class);
+    Route::group(['prefix' => 'category', 'as' => 'category.'], function () {
+        Route::get('/', [CategoriesController::class, 'index'])->name('index');
+        Route::get('create', [CategoriesController::class, 'create'])->name('create');
+        Route::post('/', [CategoriesController::class, 'store'])->name('store');
+        Route::get('/trash', [CategoriesController::class, 'trash'])->name('trash');
+        Route::group(['prefix' => '{category}'], function () {
+            Route::get('/', [CategoriesController::class, 'show'])->name('show')->withTrashed();
+            Route::get('edit', [CategoriesController::class, 'edit'])->name('edit');
+            Route::patch('/', [CategoriesController::class, 'update'])->name('update');
+            Route::delete('/', [CategoriesController::class, 'destroy'])->name('destroy');
+            Route::post('restore', [CategoriesController::class, 'restore'])->name('restore');
+            Route::delete('force-delete', [CategoriesController::class, 'delete'])->name('delete');
+        });
+    });
+
+    Route::group(['prefix' => 'sub-category', 'as' => 'sub-category.'], function () {
+        Route::get('/', [SubCategoriesController::class, 'index'])->name('index');
+        Route::get('create', [SubCategoriesController::class, 'create'])->name('create');
+        Route::post('/', [SubCategoriesController::class, 'store'])->name('store');
+        Route::get('/trash', [SubCategoriesController::class, 'trash'])->name('trash');
+        Route::group(['prefix' => '{sub_category}'], function () {
+            Route::get('/', [SubCategoriesController::class, 'show'])->name('show')->withTrashed();
+            Route::get('edit', [SubCategoriesController::class, 'edit'])->name('edit');
+            Route::patch('/', [SubCategoriesController::class, 'update'])->name('update');
+            Route::delete('/', [SubCategoriesController::class, 'destroy'])->name('destroy');
+            Route::post('restore', [SubCategoriesController::class, 'restore'])->name('restore');
+            Route::delete('force-delete', [SubCategoriesController::class, 'delete'])->name('delete');
+        });
+    });
+
+    Route::group(['prefix' => 'product-unit', 'as' => 'product-unit.'], function () {
+        Route::get('/', [ProductUnitsController::class, 'index'])->name('index');
+        Route::get('create', [ProductUnitsController::class, 'create'])->name('create');
+        Route::post('/', [ProductUnitsController::class, 'store'])->name('store');
+        Route::get('/trash', [ProductUnitsController::class, 'trash'])->name('trash');
+        Route::group(['prefix' => '{product_unit}'], function () {
+            Route::get('/', [ProductUnitsController::class, 'show'])->name('show')->withTrashed();
+            Route::get('edit', [ProductUnitsController::class, 'edit'])->name('edit');
+            Route::patch('/', [ProductUnitsController::class, 'update'])->name('update');
+            Route::delete('/', [ProductUnitsController::class, 'destroy'])->name('destroy');
+            Route::post('restore', [ProductUnitsController::class, 'restore'])->name('restore');
+            Route::delete('force-delete', [ProductUnitsController::class, 'delete'])->name('delete');
+        });
+    });
+
+    // Route::resource('division', DivisionsController::class);
     Route::group(['prefix' => 'division', 'as' => 'division.'], function () {
         Route::get('/', [DivisionsController::class, 'index'])->name('index');
         Route::get('create', [DivisionsController::class, 'create'])->name('create');
@@ -128,7 +169,7 @@ Route::middleware('auth:web')->group(function () {
         });
     });
 
-    //Route::resource('district', DistrictsController::class);
+    // Route::resource('district', DistrictsController::class);
     Route::group(['prefix' => 'district', 'as' => 'district.'], function () {
         Route::get('/', [DistrictsController::class, 'index'])->name('index');
         Route::get('create', [DistrictsController::class, 'create'])->name('create');
@@ -145,7 +186,7 @@ Route::middleware('auth:web')->group(function () {
     });
     Route::get('/get-districts-by-division', [DistrictsController::class, 'getDistrictsByDivision'])->name('getDistrictsByDivision');
 
-    //Route::resource('thana', ThanasController::class);
+    // Route::resource('thana', ThanasController::class);
     Route::group(['prefix' => 'thana', 'as' => 'thana.'], function () {
         Route::get('/', [ThanasController::class, 'index'])->name('index');
         Route::get('create', [ThanasController::class, 'create'])->name('create');
