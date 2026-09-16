@@ -154,6 +154,7 @@ Route::middleware('auth:web')->group(function () {
         });
     });
 
+    // TODO: Have to Review the Process and also the Code
     Route::group(['prefix' => 'supplier', 'as' => 'supplier.'], function () {
         Route::get('/', [SuppliersController::class, 'index'])->name('index');
         Route::get('create', [SuppliersController::class, 'create'])->name('create');
