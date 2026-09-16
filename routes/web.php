@@ -13,6 +13,7 @@ use App\Http\Controllers\ProductUnitsController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SubCategoriesController;
+use App\Http\Controllers\SuppliersController;
 use App\Http\Controllers\ThanasController;
 use App\Http\Controllers\UsersController;
 use Arcanedev\LogViewer\Http\Controllers\LogViewerController;
@@ -150,6 +151,21 @@ Route::middleware('auth:web')->group(function () {
             Route::delete('/', [ProductUnitsController::class, 'destroy'])->name('destroy');
             Route::post('restore', [ProductUnitsController::class, 'restore'])->name('restore');
             Route::delete('force-delete', [ProductUnitsController::class, 'delete'])->name('delete');
+        });
+    });
+
+    Route::group(['prefix' => 'supplier', 'as' => 'supplier.'], function () {
+        Route::get('/', [SuppliersController::class, 'index'])->name('index');
+        Route::get('create', [SuppliersController::class, 'create'])->name('create');
+        Route::post('/', [SuppliersController::class, 'store'])->name('store');
+        Route::get('/trash', [SuppliersController::class, 'trash'])->name('trash');
+        Route::group(['prefix' => '{supplier}'], function () {
+            Route::get('/', [SuppliersController::class, 'show'])->name('show')->withTrashed();
+            Route::get('edit', [SuppliersController::class, 'edit'])->name('edit');
+            Route::patch('/', [SuppliersController::class, 'update'])->name('update');
+            Route::delete('/', [SuppliersController::class, 'destroy'])->name('destroy');
+            Route::post('restore', [SuppliersController::class, 'restore'])->name('restore');
+            Route::delete('force-delete', [SuppliersController::class, 'delete'])->name('delete');
         });
     });
 
