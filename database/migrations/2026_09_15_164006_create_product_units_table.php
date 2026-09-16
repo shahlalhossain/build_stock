@@ -14,12 +14,13 @@ return new class extends Migration
         Schema::create('product_units', function (Blueprint $table) {
             $table->id();
 
+            $table->string('group', 255); // Quantity/Weight/Volume/Area/Length/Packaging/Structural/Logistics etc.
+
             $table->string('name', 255);
-            $table->string('slug', 255)->unique();
+            $table->string('symbol', 100);
 
             $table->text('description')->nullable();
-
-            $table->integer('priority_order')->default(0);
+            $table->text('usage')->nullable();
 
             $table->boolean('is_active')->default(true);
 

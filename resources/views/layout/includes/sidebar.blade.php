@@ -31,14 +31,14 @@
                         <i class="ri-apps-2-line"></i><span>{{ __('Dashboards') }}</span>
                     </a>
                 </li>
-
-                <li class="nav-item {{ request()->routeIs('brand.*') ? 'active-menu' : '' }}">
-                    <a class="nav-link" href="{{ route('brand.index') }}">
-                        <i class="ri-apps-2-line"></i><span>{{ __('Manage Brands') }}</span>
-                    </a>
-                </li>
-
                 <div class="divider"></div>
+
+{{--                <li class="nav-item {{ request()->routeIs('brand.*') ? 'active-menu' : '' }}">--}}
+{{--                    <a class="nav-link" href="{{ route('brand.index') }}">--}}
+{{--                        <i class="ri-apps-2-line"></i><span>{{ __('Manage Brands') }}</span>--}}
+{{--                    </a>--}}
+{{--                </li>--}}
+{{--                <div class="divider"></div>--}}
 
                 <li class="nav-item">
                     <a class="nav-link menu-link" href="#manageAccess" data-bs-toggle="collapse" role="button" aria-expanded="{{ request()->routeIs('permission.*', 'role.*', 'user.*') ? 'true' : 'false' }}" aria-controls="manageAccess">
@@ -58,6 +58,34 @@
                             <div class="divider"></div>
                             <li class="nav-item {{ request()->routeIs('user.*') ? 'active-menu' : '' }}">
                                 <a href="{{ route('user.index') }}" class="nav-link"><i class="ri-team-line"></i> {{ __('Manage Users') }}</a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+                <div class="divider"></div>
+
+                <li class="nav-item">
+                    <a class="nav-link menu-link" href="#manageProductSettings" data-bs-toggle="collapse" role="button" aria-expanded="{{ request()->routeIs('category.*', 'sub-category.*', 'product-unit.*', 'brand.*') ? 'true' : 'false' }}" aria-controls="manageProductSettings">
+                        <i class="ri-apps-2-line"></i><span>{{ __('Product Settings') }}</span>
+                    </a>
+
+                    <div class="collapse menu-dropdown {{ request()->routeIs('category.*', 'sub-category.*', 'product-unit.*', 'brand.*') ? 'show' : '' }}" id="manageProductSettings">
+                        <ul class="nav nav-sm flex-column">
+                            <div class="divider"></div>
+                            <li class="nav-item {{ request()->routeIs('category.*') ? 'active-menu' : '' }}">
+                                <a href="{{ route('category.index') }}" class="nav-link"><i class="ri-apps-2-line"></i> {{ __('Product Category') }}</a>
+                            </li>
+                            <div class="divider"></div>
+                            <li class="nav-item {{ request()->routeIs('sub-category.*') ? 'active-menu' : '' }}">
+                                <a href="{{ route('sub-category.index') }}" class="nav-link"><i class="ri-apps-2-line"></i> {{ __('Product Sub-Category') }}</a>
+                            </li>
+                            <div class="divider"></div>
+                            <li class="nav-item {{ request()->routeIs('product-unit.*') ? 'active-menu' : '' }}">
+                                <a href="{{ route('product-unit.index') }}" class="nav-link"><i class="ri-apps-2-line"></i> {{ __('Product Units') }}</a>
+                            </li>
+                            <div class="divider"></div>
+                            <li class="nav-item {{ request()->routeIs('brand.*') ? 'active-menu' : '' }}">
+                                <a href="{{ route('brand.index') }}" class="nav-link"><i class="ri-apps-2-line"></i> {{ __('Manage Brands') }}</a>
                             </li>
                         </ul>
                     </div>

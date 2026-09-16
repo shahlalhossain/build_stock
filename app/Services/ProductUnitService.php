@@ -38,10 +38,11 @@ class ProductUnitService extends BaseService
         DB::beginTransaction();
         try {
             $productUnitData = [
+                'group' => $data['group'] ?? null,
                 'name' => $data['name'] ?? null,
-                'slug' => $data['slug'] ?? null,
+                'symbol' => $data['symbol'] ?? null,
                 'description' => $data['description'] ?? null,
-                'priority_order' => $data['priority_order'] ?? null,
+                'usage' => $data['usage'] ?? null,
                 'is_active' => true,
                 'created_by' => Auth::id(),
                 'updated_by' => Auth::id(),
@@ -70,10 +71,11 @@ class ProductUnitService extends BaseService
 
         try {
             $productUnit->update([
+                'group' => $data['group'] ?? null,
                 'name' => $data['name'] ?? null,
-                'slug' => $data['slug'] ?? null,
+                'symbol' => $data['symbol'] ?? null,
                 'description' => $data['description'] ?? null,
-                'priority_order' => $data['priority_order'] ?? null,
+                'usage' => $data['usage'] ?? null,
                 'updated_by' => Auth::id(),
             ]);
 

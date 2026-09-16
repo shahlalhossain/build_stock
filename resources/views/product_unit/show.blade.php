@@ -26,9 +26,9 @@
                                 <div class="col-12">
                                     <table class="table table-hover table-responsive table-bordered table-sm">
                                         <tbody>
+                                        <tr><th class="text-end pe-2">{{ __('Group') }}</th><td class="text-start ps-2">{{ $productUnit->group }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Name') }}</th><td class="text-start ps-2">{{ $productUnit->name }}</td></tr>
-                                        <tr><th class="text-end pe-2">{{ __('Slug') }}</th><td class="text-start ps-2">{{ $productUnit->slug }}</td></tr>
-                                        <tr><th class="text-end pe-2">{{ __('Priority Order') }}</th><td class="text-start ps-2">{{ $productUnit->priority_order }}</td></tr>
+                                        <tr><th class="text-end pe-2">{{ __('Symbol') }}</th><td class="text-start ps-2">{{ $productUnit->symbol }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Is Active') }}</th>
                                             <td class="text-start ps-2">
                                                 @if($productUnit->is_active == 1)
@@ -41,6 +41,7 @@
                                             </td>
                                         </tr>
                                         <tr><th class="text-end pe-2">{{ __('Description') }}</th><td class="text-start ps-2">{{ ucwords($productUnit->description) }}</td></tr>
+                                        <tr><th class="text-end pe-2">{{ __('Usage') }}</th><td class="text-start ps-2">{{ $productUnit->usage }}</td></tr>
 
                                         <tr><th class="text-end pe-2">{{ __('Created By') }}</th><td class="text-start ps-2">{{ $productUnit->creator?->name ?? '' }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Created At') }}</th><td class="text-start ps-2">{{ $productUnit->created_at->format('Y-m-d H:i:s') }}</td></tr>

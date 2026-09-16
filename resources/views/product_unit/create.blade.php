@@ -37,6 +37,19 @@
                                     <!-- Start Left Column -->
                                     <div class="col-12 col-md-7">
                                         <div class="row mb-2">
+                                            <label for="group" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Group') }}</label>
+                                            <div class="col-12 col-md-8">
+                                                <select id="group" name="group" class="form-select @error('group') is-invalid @enderror" required>
+                                                    <option value="" selected>{{ __('===== Select Group =====') }}</option>
+                                                    @foreach(\App\Models\ProductUnit::GROUPS as $group)
+                                                        <option value="{{ $group }}" @selected(old('group') == $group)>{{ __($group) }}</option>
+                                                    @endforeach
+                                                </select>
+                                                @error('group')<small class="text-danger">{{ $message }}</small>@enderror
+                                            </div>
+                                        </div>
+
+                                        <div class="row mb-2">
                                             <label for="name" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Product-Unit Name') }}</label>
                                             <div class="col-12 col-md-8">
                                                 <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name') }}" required placeholder="">
@@ -45,18 +58,10 @@
                                         </div>
 
                                         <div class="row mb-2">
-                                            <label for="slug" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Slug') }}</label>
+                                            <label for="symbol" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Symbol') }}</label>
                                             <div class="col-12 col-md-8">
-                                                <input type="text" class="form-control @error('slug') is-invalid @enderror" id="slug" name="slug" value="{{ old('slug') }}" required placeholder="">
-                                                @error('slug')<small class="text-danger">{{ $message }}</small>@enderror
-                                            </div>
-                                        </div>
-
-                                        <div class="row mb-2">
-                                            <label for="priority_order" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Priority Order') }}</label>
-                                            <div class="col-12 col-md-8">
-                                                <input type="text" class="form-control @error('priority_order') is-invalid @enderror" id="priority_order" name="priority_order" value="{{ old('priority_order') }}" required placeholder="">
-                                                @error('priority_order')<small class="text-danger">{{ $message }}</small>@enderror
+                                                <input type="text" class="form-control @error('symbol') is-invalid @enderror" id="symbol" name="symbol" value="{{ old('symbol') }}" required placeholder="">
+                                                @error('symbol')<small class="text-danger">{{ $message }}</small>@enderror
                                             </div>
                                         </div>
 
@@ -65,6 +70,14 @@
                                             <div class="col-12 col-md-8">
                                                 <input type="text" class="form-control @error('description') is-invalid @enderror" id="description" name="description" value="{{ old('description') }}" placeholder="">
                                                 @error('description')<small class="text-danger">{{ $message }}</small>@enderror
+                                            </div>
+                                        </div>
+
+                                        <div class="row mb-2">
+                                            <label for="usage" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Usage') }}</label>
+                                            <div class="col-12 col-md-8">
+                                                <input type="text" class="form-control @error('usage') is-invalid @enderror" id="usage" name="usage" value="{{ old('usage') }}" placeholder="">
+                                                @error('usage')<small class="text-danger">{{ $message }}</small>@enderror
                                             </div>
                                         </div>
                                     </div>

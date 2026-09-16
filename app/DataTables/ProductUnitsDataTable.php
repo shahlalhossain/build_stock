@@ -91,6 +91,8 @@ class ProductUnitsDataTable extends DataTable
         return [
             Column::computed('DT_RowIndex')->title('SN')->orderable(false)->searchable(false)->addClass('text-center'),
             Column::make('name')->orderable(true)->searchable(true),
+            Column::make('symbol')->orderable(true)->searchable(true),
+            Column::make('group')->orderable(true)->searchable(true),
             Column::computed('is_active')->title('Active')->orderable(false)->searchable(false)->addClass('text-center'),
             Column::make('Created By', 'creator')->orderable(false)->searchable(false),
             Column::make('Updated By', 'updater')->orderable(false)->searchable(false),
