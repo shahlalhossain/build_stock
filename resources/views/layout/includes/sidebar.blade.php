@@ -92,6 +92,37 @@
                 </li>
                 <div class="divider"></div>
 
+                <li class="nav-item {{ request()->routeIs('supplier.*') ? 'active-menu' : '' }}">
+                    <a class="nav-link" href="{{ route('supplier.index') }}">
+                        <i class="ri-apps-2-line"></i><span>{{ __('Manage Suppliers') }}</span>
+                    </a>
+                </li>
+                <div class="divider"></div>
+
+                <li class="nav-item">
+                    <a class="nav-link menu-link" href="#manageSites" data-bs-toggle="collapse" role="button" aria-expanded="{{ request()->routeIs('project.*', 'store.*', 'warehouse.*') ? 'true' : 'false' }}" aria-controls="manageSites">
+                        <i class="ri-apps-2-line"></i><span>{{ __('Manage Sites') }}</span>
+                    </a>
+
+                    <div class="collapse menu-dropdown {{ request()->routeIs('project.*', 'store.*', 'warehouse.*') ? 'show' : '' }}" id="manageSites">
+                        <ul class="nav nav-sm flex-column">
+                            <div class="divider"></div>
+                            <li class="nav-item {{ request()->routeIs('project.*') ? 'active-menu' : '' }}">
+                                <a href="{{ route('project.index') }}" class="nav-link"><i class="ri-apps-2-line"></i> {{ __('Manage Projects/Sites') }}</a>
+                            </li>
+                            <div class="divider"></div>
+                            <li class="nav-item {{ request()->routeIs('store.*') ? 'active-menu' : '' }}">
+                                <a href="{{ route('store.index') }}" class="nav-link"><i class="ri-apps-2-line"></i> {{ __('Manage Stores') }}</a>
+                            </li>
+                            <div class="divider"></div>
+                            <li class="nav-item {{ request()->routeIs('warehouse.*') ? 'active-menu' : '' }}">
+                                <a href="{{ route('warehouse.index') }}" class="nav-link"><i class="ri-apps-2-line"></i> {{ __('Manage Warehouses') }}</a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+                <div class="divider"></div>
+
                 <li class="nav-item">
                     <a class="nav-link menu-link" href="#manageGeoLocation" data-bs-toggle="collapse" role="button" aria-expanded="{{ request()->routeIs(['division.*', 'district.*', 'thana.*']) ? 'true' : 'false' }}" aria-controls="manageGeoLocation">
                         <i class="ri-apps-2-line"></i><span>{{ __('Manage GeoLocation') }}</span>

@@ -11,11 +11,14 @@ use App\Http\Controllers\FAQsController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\ProductUnitsController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProjectsController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\StoresController;
 use App\Http\Controllers\SubCategoriesController;
 use App\Http\Controllers\SuppliersController;
 use App\Http\Controllers\ThanasController;
 use App\Http\Controllers\UsersController;
+use App\Http\Controllers\WarehousesController;
 use Arcanedev\LogViewer\Http\Controllers\LogViewerController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -167,6 +170,52 @@ Route::middleware('auth:web')->group(function () {
             Route::delete('/', [SuppliersController::class, 'destroy'])->name('destroy');
             Route::post('restore', [SuppliersController::class, 'restore'])->name('restore');
             Route::delete('force-delete', [SuppliersController::class, 'delete'])->name('delete');
+        });
+    });
+
+    Route::group(['prefix' => 'project', 'as' => 'project.'], function () {
+        Route::get('/', [ProjectsController::class, 'index'])->name('index');
+        Route::get('create', [ProjectsController::class, 'create'])->name('create');
+        Route::post('/', [ProjectsController::class, 'store'])->name('store');
+        Route::get('/trash', [ProjectsController::class, 'trash'])->name('trash');
+        Route::group(['prefix' => '{project}'], function () {
+            Route::get('/', [ProjectsController::class, 'show'])->name('show')->withTrashed();
+            Route::get('edit', [ProjectsController::class, 'edit'])->name('edit');
+            Route::patch('/', [ProjectsController::class, 'update'])->name('update');
+            Route::post('update-status', [ProjectsController::class, 'updateStatus'])->name('update-status');
+            Route::delete('/', [ProjectsController::class, 'destroy'])->name('destroy');
+            Route::post('restore', [ProjectsController::class, 'restore'])->name('restore');
+            Route::delete('force-delete', [ProjectsController::class, 'delete'])->name('delete');
+        });
+    });
+
+    Route::group(['prefix' => 'store', 'as' => 'store.'], function () {
+        Route::get('/', [StoresController::class, 'index'])->name('index');
+        Route::get('create', [StoresController::class, 'create'])->name('create');
+        Route::post('/', [StoresController::class, 'store'])->name('store');
+        Route::get('/trash', [StoresController::class, 'trash'])->name('trash');
+        Route::group(['prefix' => '{store}'], function () {
+            Route::get('/', [StoresController::class, 'show'])->name('show')->withTrashed();
+            Route::get('edit', [StoresController::class, 'edit'])->name('edit');
+            Route::patch('/', [StoresController::class, 'update'])->name('update');
+            Route::delete('/', [StoresController::class, 'destroy'])->name('destroy');
+            Route::post('restore', [StoresController::class, 'restore'])->name('restore');
+            Route::delete('force-delete', [StoresController::class, 'delete'])->name('delete');
+        });
+    });
+
+    Route::group(['prefix' => 'warehouse', 'as' => 'warehouse.'], function () {
+        Route::get('/', [WarehousesController::class, 'index'])->name('index');
+        Route::get('create', [WarehousesController::class, 'create'])->name('create');
+        Route::post('/', [WarehousesController::class, 'store'])->name('store');
+        Route::get('/trash', [WarehousesController::class, 'trash'])->name('trash');
+        Route::group(['prefix' => '{warehouse}'], function () {
+            Route::get('/', [WarehousesController::class, 'show'])->name('show')->withTrashed();
+            Route::get('edit', [WarehousesController::class, 'edit'])->name('edit');
+            Route::patch('/', [WarehousesController::class, 'update'])->name('update');
+            Route::delete('/', [WarehousesController::class, 'destroy'])->name('destroy');
+            Route::post('restore', [WarehousesController::class, 'restore'])->name('restore');
+            Route::delete('force-delete', [WarehousesController::class, 'delete'])->name('delete');
         });
     });
 
