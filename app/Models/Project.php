@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -20,17 +21,42 @@ class Project extends Model
      *
      * @var list<string>
      */
+    public const STATE_PROPOSED = 'proposed';
+
+    public const STATE_PLANNING = 'planning';
+
+    public const STATE_DEVELOPING = 'developing';
+
+    public const STATE_POSTPONED = 'postponed';
+
+    public const STATE_COMPLETED = 'completed';
+
+    public const STATE_OPERATIONAL = 'operational';
+
+    public const STATE_ABANDONED = 'abandoned';
+
+    public const CURRENT_STATES = [
+        self::STATE_PROPOSED,
+        self::STATE_PLANNING,
+        self::STATE_DEVELOPING,
+        self::STATE_POSTPONED,
+        self::STATE_COMPLETED,
+        self::STATE_OPERATIONAL,
+        self::STATE_ABANDONED,
+    ];
+
     protected $fillable = [
         'name',
         'slug',
         'description',
-        'site_address',
         'start_date',
         'expected_end_date',
         'estimated_budget',
+        'actual_cost',
         'project_manager_id',
         'priority_order',
         'status',
+        'current_state',
         'is_active',
         'created_by',
         'updated_by',
@@ -53,14 +79,15 @@ class Project extends Model
     protected function casts(): array
     {
         return [
-            'created_at' => 'datetime',
-            'updated_at' => 'datetime',
-            'start_date' => 'date',
-            'expected_end_date' => 'date',
-            'estimated_budget' => 'decimal:2',
-            'project_manager_id' => 'integer',
-            'priority_order' => 'integer',
-            'is_active' => 'boolean',
+            'created_at'            => 'datetime',
+            'updated_at'            => 'datetime',
+            'start_date'            => 'date',
+            'expected_end_date'     => 'date',
+            'estimated_budget'      => 'decimal:2',
+            'actual_cost'           => 'decimal:2',
+            'project_manager_id'    => 'integer',
+            'priority_order'        => 'integer',
+            'is_active'             => 'boolean',
         ];
     }
 
@@ -92,6 +119,11 @@ class Project extends Model
     public function warehouses(): HasMany
     {
         return $this->hasMany(Warehouse::class, 'project_id');
+    }
+
+    public function address(): MorphOne
+    {
+        return $this->morphOne(Address::class, 'model', 'model_name', 'model_id');
     }
 
     public function creator(): BelongsTo

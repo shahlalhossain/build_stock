@@ -12,12 +12,12 @@ class Address extends Model
     protected $fillable = [
         'model_name',
         'model_id',
-        'address_type',
+        'address_type_id',
         'address',
-        'address_bn',
         'latitude',
         'longitude',
         'map_address',
+        'landmark',
         'division_id',
         'division_name',
         'district_id',
@@ -25,6 +25,7 @@ class Address extends Model
         'thana_id',
         'thana_name',
     ];
+
     protected $guarded = [];
 
     public function model(): MorphTo

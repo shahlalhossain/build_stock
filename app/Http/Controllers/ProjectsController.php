@@ -6,6 +6,7 @@ use App\DataTables\ProjectsDataTable;
 use App\Exceptions\GeneralException;
 use App\Http\Requests\Project\StoreProjectRequest;
 use App\Http\Requests\Project\UpdateProjectRequest;
+use App\Models\GeoDivision;
 use App\Models\Project;
 use App\Services\ProjectService;
 use Exception;
@@ -35,7 +36,9 @@ class ProjectsController extends Controller
 
     public function create()
     {
-        return view('project.create');
+        $data['divisions'] = GeoDivision::orderBy('name_en')->get(['id', 'name_en', 'name_bn']);
+
+        return view('project.create', $data);
     }
 
     public function store(StoreProjectRequest $projectRequest)
@@ -57,14 +60,15 @@ class ProjectsController extends Controller
 
     public function show(Project $project)
     {
-        $data['project'] = $project->load(['manager', 'creator', 'updater', 'deleter', 'approvalLogs.actionedBy']);
+        $data['project'] = $project->load(['manager', 'creator', 'updater', 'deleter', 'approvalLogs.actionedBy', 'address']);
 
         return view('project.show', $data);
     }
 
     public function edit(Project $project): View
     {
-        $data['project'] = $project;
+        $data['project'] = $project->load('address');
+        $data['divisions'] = GeoDivision::orderBy('name_en')->get(['id', 'name_en', 'name_bn']);
 
         return view('project.edit', $data);
     }

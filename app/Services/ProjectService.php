@@ -10,6 +10,9 @@ use App\Events\Project\ProjectStatusUpdated;
 use App\Events\Project\ProjectUpdated;
 use App\Exceptions\GeneralException;
 use App\Models\ApprovalLog;
+use App\Models\GeoDistrict;
+use App\Models\GeoDivision;
+use App\Models\GeoThana;
 use App\Models\Project;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -43,17 +46,20 @@ class ProjectService extends BaseService
                 'name' => $data['name'] ?? null,
                 'slug' => $data['slug'] ?? null,
                 'description' => $data['description'] ?? null,
-                'site_address' => $data['site_address'] ?? null,
                 'start_date' => $data['start_date'] ?? null,
                 'expected_end_date' => $data['expected_end_date'] ?? null,
                 'estimated_budget' => $data['estimated_budget'] ?? null,
+                'actual_cost' => $data['actual_cost'] ?? null,
                 'project_manager_id' => $data['project_manager_id'] ?? null,
                 'priority_order' => $data['priority_order'] ?? null,
+                'current_state' => $data['current_state'] ?? null,
                 'is_active' => true,
                 'created_by' => Auth::id(),
                 'updated_by' => Auth::id(),
             ];
             $project = $this->model::create($projectData);
+
+            $this->saveAddress($project, $data);
 
             event(new ProjectCreated($project));
 
@@ -80,14 +86,17 @@ class ProjectService extends BaseService
                 'name' => $data['name'] ?? null,
                 'slug' => $data['slug'] ?? null,
                 'description' => $data['description'] ?? null,
-                'site_address' => $data['site_address'] ?? null,
                 'start_date' => $data['start_date'] ?? null,
                 'expected_end_date' => $data['expected_end_date'] ?? null,
                 'estimated_budget' => $data['estimated_budget'] ?? null,
+                'actual_cost' => $data['actual_cost'] ?? null,
                 'project_manager_id' => $data['project_manager_id'] ?? null,
                 'priority_order' => $data['priority_order'] ?? null,
+                'current_state' => $data['current_state'] ?? null,
                 'updated_by' => Auth::id(),
             ]);
+
+            $this->saveAddress($project, $data);
 
             event(new ProjectUpdated($project));
 
@@ -99,6 +108,36 @@ class ProjectService extends BaseService
             DB::rollBack();
             throw new GeneralException(__('There was a Problem on Updating the Project.'));
         }
+    }
+
+    /**
+     * Persist the Project's Site Address into the polymorphic addresses table,
+     * resolving division/district/thana display names server-side from the
+     * submitted ids so the address row is self-contained and joinless to read.
+     */
+    protected function saveAddress(Project $project, array $data): void
+    {
+        $division   = GeoDivision::find($data['division_id'] ?? null);
+        $district   = GeoDistrict::find($data['district_id'] ?? null);
+        $thana      = GeoThana::find($data['thana_id'] ?? null);
+
+        $project->address()->updateOrCreate(
+            [],
+            [
+                'address_type_id' => 8,
+                'address' => $data['address'] ?? null,
+                'latitude' => $data['latitude'] ?? null,
+                'longitude' => $data['longitude'] ?? null,
+                'map_address' => $data['map_address'] ?? null,
+                'landmark' => $data['landmark'] ?? null,
+                'division_id' => $division?->id,
+                'division_name' => $division?->name_en,
+                'district_id' => $district?->id,
+                'district_name' => $district?->name_en,
+                'thana_id' => $thana?->id,
+                'thana_name' => $thana?->name_en,
+            ]
+        );
     }
 
     /**

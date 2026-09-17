@@ -19,13 +19,14 @@ return new class extends Migration
 
             $table->text('description')->nullable();
 
-            $table->text('site_address')->nullable();
             $table->date('start_date')->nullable();
             $table->date('expected_end_date')->nullable();
             $table->decimal('estimated_budget', 15, 2)->nullable();
+            $table->decimal('actual_cost', 15, 2)->nullable();
             $table->integer('project_manager_id')->nullable();
 
             $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
+            $table->enum('current_state', ['proposed', 'planning', 'developing', 'postponed', 'completed', 'operational', 'abandoned'])->default('proposed');
 
             $table->integer('priority_order')->default(0);
 

@@ -30,10 +30,11 @@
                                         <tr><th class="text-end pe-2">{{ __('Slug') }}</th><td class="text-start ps-2">{{ $project->slug }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Priority Order') }}</th><td class="text-start ps-2">{{ $project->priority_order }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Description') }}</th><td class="text-start ps-2">{{ ucwords($project->description) }}</td></tr>
-                                        <tr><th class="text-end pe-2">{{ __('Site Address') }}</th><td class="text-start ps-2">{{ $project->site_address }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Start Date') }}</th><td class="text-start ps-2">{{ $project->start_date?->format('Y-m-d') }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Expected End Date') }}</th><td class="text-start ps-2">{{ $project->expected_end_date?->format('Y-m-d') }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Estimated Budget') }}</th><td class="text-start ps-2">{{ $project->estimated_budget }}</td></tr>
+                                        <tr><th class="text-end pe-2">{{ __('Actual Cost') }}</th><td class="text-start ps-2">{{ $project->actual_cost }}</td></tr>
+                                        <tr><th class="text-end pe-2">{{ __('Current State') }}</th><td class="text-start ps-2">{{ ucwords($project->current_state) }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Project Manager') }}</th><td class="text-start ps-2">{{ $project->manager?->name ?? '' }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Is Active') }}</th>
                                             <td class="text-start ps-2">
@@ -95,6 +96,24 @@
                                             <button class="btn btn-sm btn-warning destroy-project" id="destroyProject" data-project-id="{{ $project->id }}"><i class="ri-delete-bin-line"></i><span class="d-none d-sm-inline"> {{ __('Destroy') }}</span></button>
                                         @endif
                                     </div>
+
+                                    <h5 class="mt-3">{{ __('Site Address') }}</h5>
+                                    @if($project->address)
+                                        <table class="table table-hover table-responsive table-bordered table-sm">
+                                            <tbody>
+                                            <tr><th class="text-end pe-2">{{ __('Division') }}</th><td class="text-start ps-2">{{ $project->address->division_name }}</td></tr>
+                                            <tr><th class="text-end pe-2">{{ __('District') }}</th><td class="text-start ps-2">{{ $project->address->district_name }}</td></tr>
+                                            <tr><th class="text-end pe-2">{{ __('Thana/Upazila') }}</th><td class="text-start ps-2">{{ $project->address->thana_name }}</td></tr>
+                                            <tr><th class="text-end pe-2">{{ __('Address') }}</th><td class="text-start ps-2">{{ $project->address->address }}</td></tr>
+                                            <tr><th class="text-end pe-2">{{ __('Landmark') }}</th><td class="text-start ps-2">{{ $project->address->landmark }}</td></tr>
+                                            <tr><th class="text-end pe-2">{{ __('Latitude') }}</th><td class="text-start ps-2">{{ $project->address->latitude }}</td></tr>
+                                            <tr><th class="text-end pe-2">{{ __('Longitude') }}</th><td class="text-start ps-2">{{ $project->address->longitude }}</td></tr>
+                                            <tr><th class="text-end pe-2">{{ __('Map Address') }}</th><td class="text-start ps-2">{{ $project->address->map_address }}</td></tr>
+                                            </tbody>
+                                        </table>
+                                    @else
+                                        <p class="text-muted">{{ __('No Site Address Found') }}</p>
+                                    @endif
                                 </div>
                                 <div class="col-12 col-md-5 ps-5 order-2">
                                     @if($project->approvalLogs->isNotEmpty())

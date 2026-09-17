@@ -17,10 +17,9 @@ return new class extends Migration
             $table->string('model_name');
             $table->integer('model_id')->unsigned();
 
-            $table->string('address_type')->default('Present')->comment('Present, Permanent');
+            $table->string('address_type_id');
 
             $table->string('address');
-            $table->string('address_bn')->nullable();
 
             $table->double('latitude')->nullable();
             $table->double('longitude')->nullable();
