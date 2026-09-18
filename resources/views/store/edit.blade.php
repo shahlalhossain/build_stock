@@ -71,6 +71,17 @@
                                                 @error('code')<small class="text-danger">{{ $message }}</small>@enderror
                                             </div>
                                         </div>
+
+                                        <div class="row mb-2">
+                                            <label for="type" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Type') }}</label>
+                                            <div class="col-12 col-md-8">
+                                                <select id="type" name="type" class="form-select @error('type') is-invalid @enderror" required>
+                                                    <option value="store" @selected(old('type', $store->type) === 'store')>{{ __('Store') }}</option>
+                                                    <option value="warehouse" @selected(old('type', $store->type) === 'warehouse')>{{ __('Warehouse') }}</option>
+                                                </select>
+                                                @error('type')<small class="text-danger">{{ $message }}</small>@enderror
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

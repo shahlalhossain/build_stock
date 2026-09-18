@@ -41,6 +41,7 @@ class StoreService extends BaseService
                 'project_id' => $data['project_id'] ?? null,
                 'name' => $data['name'] ?? null,
                 'code' => $data['code'] ?? null,
+                'type' => $data['type'] ?? null,
                 'is_active' => true,
                 'created_by' => Auth::id(),
                 'updated_by' => Auth::id(),
@@ -72,6 +73,7 @@ class StoreService extends BaseService
                 'project_id' => $data['project_id'] ?? null,
                 'name' => $data['name'] ?? null,
                 'code' => $data['code'] ?? null,
+                'type' => $data['type'] ?? null,
                 'updated_by' => Auth::id(),
             ]);
 

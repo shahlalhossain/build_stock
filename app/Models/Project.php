@@ -116,11 +116,6 @@ class Project extends Model
         return $this->hasMany(Store::class, 'project_id');
     }
 
-    public function warehouses(): HasMany
-    {
-        return $this->hasMany(Warehouse::class, 'project_id');
-    }
-
     public function address(): MorphOne
     {
         return $this->morphOne(Address::class, 'model', 'model_name', 'model_id');

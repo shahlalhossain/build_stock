@@ -23,9 +23,19 @@ class Store extends Model
         'project_id',
         'name',
         'code',
+        'type',
         'is_active',
         'created_by',
         'updated_by',
+    ];
+
+    const TYPE_STORE = 'store';
+
+    const TYPE_WAREHOUSE = 'warehouse';
+
+    const TYPES = [
+        self::TYPE_STORE,
+        self::TYPE_WAREHOUSE,
     ];
 
     protected $guarded = ['id', 'created_at', 'updated_at'];
@@ -75,6 +85,16 @@ class Store extends Model
     public function isHeadOffice(): bool
     {
         return is_null($this->project_id);
+    }
+
+    public function isWarehouse(): bool
+    {
+        return $this->type === self::TYPE_WAREHOUSE;
+    }
+
+    public function isStore(): bool
+    {
+        return $this->type === self::TYPE_STORE;
     }
 
     public function creator(): BelongsTo

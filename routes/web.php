@@ -19,7 +19,6 @@ use App\Http\Controllers\SubCategoriesController;
 use App\Http\Controllers\SuppliersController;
 use App\Http\Controllers\ThanasController;
 use App\Http\Controllers\UsersController;
-use App\Http\Controllers\WarehousesController;
 use Arcanedev\LogViewer\Http\Controllers\LogViewerController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -217,21 +216,6 @@ Route::middleware('auth:web')->group(function () {
             Route::delete('/', [StoresController::class, 'destroy'])->name('destroy');
             Route::post('restore', [StoresController::class, 'restore'])->name('restore');
             Route::delete('force-delete', [StoresController::class, 'delete'])->name('delete');
-        });
-    });
-
-    Route::group(['prefix' => 'warehouse', 'as' => 'warehouse.'], function () {
-        Route::get('/', [WarehousesController::class, 'index'])->name('index');
-        Route::get('create', [WarehousesController::class, 'create'])->name('create');
-        Route::post('/', [WarehousesController::class, 'store'])->name('store');
-        Route::get('/trash', [WarehousesController::class, 'trash'])->name('trash');
-        Route::group(['prefix' => '{warehouse}'], function () {
-            Route::get('/', [WarehousesController::class, 'show'])->name('show')->withTrashed();
-            Route::get('edit', [WarehousesController::class, 'edit'])->name('edit');
-            Route::patch('/', [WarehousesController::class, 'update'])->name('update');
-            Route::delete('/', [WarehousesController::class, 'destroy'])->name('destroy');
-            Route::post('restore', [WarehousesController::class, 'restore'])->name('restore');
-            Route::delete('force-delete', [WarehousesController::class, 'delete'])->name('delete');
         });
     });
 

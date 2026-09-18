@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Store;
 
+use App\Models\Store;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -30,6 +31,7 @@ class UpdateStoreRequest extends FormRequest
             'project_id' => ['nullable', 'integer', Rule::exists('projects', 'id')],
             'name' => ['required', 'string', 'max:255'],
             'code' => ['required', 'string', 'max:50', Rule::unique('stores', 'code')->ignore($store)],
+            'type' => ['required', 'string', Rule::in(Store::TYPES)],
         ];
     }
 
@@ -47,6 +49,9 @@ class UpdateStoreRequest extends FormRequest
             'code.string' => __('Store Code must be a Valid String'),
             'code.max' => __('Store Code may not exceed 50 Characters'),
             'code.unique' => __('This Store Code already Exists'),
+
+            'type.required' => __('Type is Required'),
+            'type.in' => __('Selected Type is Invalid'),
         ];
     }
 }

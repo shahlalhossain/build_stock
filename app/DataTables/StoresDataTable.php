@@ -29,6 +29,11 @@ class StoresDataTable extends DataTable
             ->editColumn('Project', function (Store $store) {
                 return $store->isHeadOffice() ? 'Head Office' : ucwords($store->project?->name);
             })
+            ->addColumn('type', function (Store $store) {
+                return $store->isWarehouse()
+                    ? '<span class="badge bg-warning">'.__('Warehouse').'</span>'
+                    : '<span class="badge bg-info">'.__('Store').'</span>';
+            })
             ->addColumn('is_active', function (Store $store) {
                 return $store->is_active ? '<span class="badge bg-success">Yes</span>' : '<span class="badge bg-danger">No</span>';
             })
@@ -42,7 +47,7 @@ class StoresDataTable extends DataTable
 
                 return view('store.actions', ['store' => $store]);
             })
-            ->rawColumns(['is_active']);
+            ->rawColumns(['type', 'is_active']);
     }
 
     /**
@@ -87,6 +92,7 @@ class StoresDataTable extends DataTable
             Column::make('name')->orderable(true)->searchable(true),
             Column::make('code')->orderable(true)->searchable(true),
             Column::make('Project', 'project')->orderable(false)->searchable(false),
+            Column::computed('type')->title('Type')->orderable(false)->searchable(false)->addClass('text-center'),
             Column::computed('is_active')->title('Active')->orderable(false)->searchable(false)->addClass('text-center'),
             Column::make('created_at')->orderable(true)->searchable(true)->addClass('text-center'),
             Column::computed('actions')

@@ -29,6 +29,15 @@
                                         <tr><th class="text-end pe-2">{{ __('Head Office / Project') }}</th><td class="text-start ps-2">{{ $store->isHeadOffice() ? __('Head Office') : $store->project?->name }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Name') }}</th><td class="text-start ps-2">{{ $store->name }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Code') }}</th><td class="text-start ps-2">{{ $store->code }}</td></tr>
+                                        <tr><th class="text-end pe-2">{{ __('Type') }}</th>
+                                            <td class="text-start ps-2">
+                                                @if($store->isWarehouse())
+                                                    <span class="badge bg-warning">{{ __('Warehouse') }}</span>
+                                                @else
+                                                    <span class="badge bg-info">{{ __('Store') }}</span>
+                                                @endif
+                                            </td>
+                                        </tr>
                                         <tr><th class="text-end pe-2">{{ __('Is Active') }}</th>
                                             <td class="text-start ps-2">
                                                 @if($store->is_active == 1)

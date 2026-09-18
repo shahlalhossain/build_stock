@@ -20,6 +20,8 @@ return new class extends Migration
             $table->string('name', 255);
             $table->string('code', 50)->unique();
 
+            $table->enum('type', ['store', 'warehouse'])->default('store');
+
             $table->boolean('is_active')->default(true);
 
             $table->integer('created_by')->nullable();
