@@ -65,11 +65,11 @@
                 <div class="divider"></div>
 
                 <li class="nav-item">
-                    <a class="nav-link menu-link" href="#manageProductSettings" data-bs-toggle="collapse" role="button" aria-expanded="{{ request()->routeIs('category.*', 'sub-category.*', 'product-unit.*', 'brand.*') ? 'true' : 'false' }}" aria-controls="manageProductSettings">
+                    <a class="nav-link menu-link" href="#manageProductSettings" data-bs-toggle="collapse" role="button" aria-expanded="{{ request()->routeIs('category.*', 'sub-category.*', 'product-unit.*', 'brand.*', 'attribute.*') ? 'true' : 'false' }}" aria-controls="manageProductSettings">
                         <i class="ri-apps-2-line"></i><span>{{ __('Product Settings') }}</span>
                     </a>
 
-                    <div class="collapse menu-dropdown {{ request()->routeIs('category.*', 'sub-category.*', 'product-unit.*', 'brand.*') ? 'show' : '' }}" id="manageProductSettings">
+                    <div class="collapse menu-dropdown {{ request()->routeIs('category.*', 'sub-category.*', 'product-unit.*', 'brand.*', 'attribute.*') ? 'show' : '' }}" id="manageProductSettings">
                         <ul class="nav nav-sm flex-column">
                             <div class="divider"></div>
                             <li class="nav-item {{ request()->routeIs('category.*') ? 'active-menu' : '' }}">
@@ -86,6 +86,10 @@
                             <div class="divider"></div>
                             <li class="nav-item {{ request()->routeIs('brand.*') ? 'active-menu' : '' }}">
                                 <a href="{{ route('brand.index') }}" class="nav-link"><i class="ri-apps-2-line"></i> {{ __('Manage Brands') }}</a>
+                            </li>
+                            <div class="divider"></div>
+                            <li class="nav-item {{ request()->routeIs('attribute.*') ? 'active-menu' : '' }}">
+                                <a href="{{ route('attribute.index') }}" class="nav-link"><i class="ri-apps-2-line"></i> {{ __('Product Attributes') }}</a>
                             </li>
                         </ul>
                     </div>

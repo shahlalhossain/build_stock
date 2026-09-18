@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ActivitiesController;
+use App\Http\Controllers\AttributesController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\BrandsController;
 use App\Http\Controllers\CategoriesController;
@@ -93,6 +94,21 @@ Route::middleware('auth:web')->group(function () {
 
             Route::get('/activities', [UsersController::class, 'activities'])->name('activities');
             Route::get('/login-history', [UsersController::class, 'loginHistory'])->name('login-history');
+        });
+    });
+
+    Route::group(['prefix' => 'attribute', 'as' => 'attribute.'], function () {
+        Route::get('/', [AttributesController::class, 'index'])->name('index');
+        Route::get('create', [AttributesController::class, 'create'])->name('create');
+        Route::post('/', [AttributesController::class, 'store'])->name('store');
+        Route::get('/trash', [AttributesController::class, 'trash'])->name('trash');
+        Route::group(['prefix' => '{attribute}'], function () {
+            Route::get('/', [AttributesController::class, 'show'])->name('show')->withTrashed();
+            Route::get('edit', [AttributesController::class, 'edit'])->name('edit');
+            Route::patch('/', [AttributesController::class, 'update'])->name('update');
+            Route::delete('/', [AttributesController::class, 'destroy'])->name('destroy');
+            Route::post('restore', [AttributesController::class, 'restore'])->name('restore');
+            Route::delete('force-delete', [AttributesController::class, 'delete'])->name('delete');
         });
     });
 
