@@ -32,35 +32,18 @@
                                 @endif
                                 <!-- End Page Error Section -->
 
-
                                 <div class="row">
-                                    <div class="col-12 col-md-7">
+                                    <div class="col-12 col-md-5">
                                         <div class="row mb-2">
-                                            <label for="project_id" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Head Office / Project') }}</label>
+                                            <label for="project_id" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Location') }}</label>
                                             <div class="col-12 col-md-8">
                                                 <select id="project_id" name="project_id" class="form-select @error('project_id') is-invalid @enderror">
                                                     <option value="" @selected(old('project_id') === null)>{{ __('Head Office') }}</option>
-                                                    @foreach($projects as $proj)
-                                                        <option value="{{ $proj->id }}" @selected(old('project_id') == $proj->id)>{{ ucwords($proj->name) }}</option>
+                                                    @foreach($projects as $project)
+                                                        <option value="{{ $project->id }}" @selected(old('project_id') == $project->id)>{{ ucwords($project->name) }}</option>
                                                     @endforeach
                                                 </select>
                                                 @error('project_id')<small class="text-danger">{{ $message }}</small>@enderror
-                                            </div>
-                                        </div>
-
-                                        <div class="row mb-2">
-                                            <label for="name" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Store Name') }}</label>
-                                            <div class="col-12 col-md-8">
-                                                <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name') }}" required>
-                                                @error('name')<small class="text-danger">{{ $message }}</small>@enderror
-                                            </div>
-                                        </div>
-
-                                        <div class="row mb-2">
-                                            <label for="code" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Store Code') }}</label>
-                                            <div class="col-12 col-md-8">
-                                                <input type="text" class="form-control @error('code') is-invalid @enderror" id="code" name="code" value="{{ old('code') }}" required>
-                                                @error('code')<small class="text-danger">{{ $message }}</small>@enderror
                                             </div>
                                         </div>
 
@@ -75,6 +58,27 @@
                                                 @error('type')<small class="text-danger">{{ $message }}</small>@enderror
                                             </div>
                                         </div>
+
+                                        <div class="row mb-2">
+                                            <label for="name" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Store Name') }}</label>
+                                            <div class="col-12 col-md-8">
+                                                <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name') }}" required>
+                                                @error('name')<small class="text-danger">{{ $message }}</small>@enderror
+                                            </div>
+                                        </div>
+
+                                        <div class="row mb-2">
+                                            <label for="description" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Store Name') }}</label>
+                                            <div class="col-12 col-md-8">
+                                                <input type="text" class="form-control @error('description') is-invalid @enderror" id="description" name="description" value="{{ old('name') }}">
+                                                @error('description')<small class="text-danger">{{ $message }}</small>@enderror
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+                                    <div class="col-12 col-md-5">
+                                    {{-- TODO: Store/Warehouse Address Inputs will Here --}}
                                     </div>
                                 </div>
                             </div>

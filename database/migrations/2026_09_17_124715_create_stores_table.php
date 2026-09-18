@@ -20,7 +20,19 @@ return new class extends Migration
             $table->string('name', 255);
             $table->string('code', 50)->unique();
 
+            $table->string('description', 255)->nullable();
+
             $table->enum('type', ['store', 'warehouse'])->default('store');
+
+            // Store Contact Mobile
+            $table->string('mobile', 30)->nullable();
+            // Store Contact Email
+            $table->string('email', 150)->nullable();
+
+            // Store Manager
+            $table->unsignedBigInteger('manager_id')->nullable();
+            // Storekeeper
+            $table->unsignedBigInteger('storekeeper_id')->nullable();
 
             $table->boolean('is_active')->default(true);
 

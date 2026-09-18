@@ -26,7 +26,7 @@
                                 <div class="col-12">
                                     <table class="table table-hover table-responsive table-bordered table-sm">
                                         <tbody>
-                                        <tr><th class="text-end pe-2">{{ __('Head Office / Project') }}</th><td class="text-start ps-2">{{ $store->isHeadOffice() ? __('Head Office') : $store->project?->name }}</td></tr>
+                                        <tr><th class="text-end pe-2">{{ __('Location') }}</th><td class="text-start ps-2">{{ $store->isHeadOffice() ? __('Head Office') : $store->project?->name }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Name') }}</th><td class="text-start ps-2">{{ $store->name }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Code') }}</th><td class="text-start ps-2">{{ $store->code }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Type') }}</th>
@@ -49,6 +49,7 @@
                                                 @endif
                                             </td>
                                         </tr>
+                                        <tr><th class="text-end pe-2">{{ __('Description') }}</th><td class="text-start ps-2">{{ $store->description }}</td></tr>
 
                                         <tr><th class="text-end pe-2">{{ __('Created By') }}</th><td class="text-start ps-2">{{ $store->creator?->name ?? '' }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Created At') }}</th><td class="text-start ps-2">{{ $store->created_at->format('Y-m-d H:i:s') }}</td></tr>

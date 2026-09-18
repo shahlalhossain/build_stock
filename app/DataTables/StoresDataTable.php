@@ -26,7 +26,7 @@ class StoresDataTable extends DataTable
             ->editColumn('name', function (Store $store) {
                 return ucwords($store->name);
             })
-            ->editColumn('Project', function (Store $store) {
+            ->editColumn('Location', function (Store $store) {
                 return $store->isHeadOffice() ? 'Head Office' : ucwords($store->project?->name);
             })
             ->addColumn('type', function (Store $store) {
@@ -91,7 +91,7 @@ class StoresDataTable extends DataTable
             Column::computed('DT_RowIndex')->title('SN')->orderable(false)->searchable(false)->addClass('text-center'),
             Column::make('name')->orderable(true)->searchable(true),
             Column::make('code')->orderable(true)->searchable(true),
-            Column::make('Project', 'project')->orderable(false)->searchable(false),
+            Column::make('Location', 'project')->orderable(false)->searchable(false),
             Column::computed('type')->title('Type')->orderable(false)->searchable(false)->addClass('text-center'),
             Column::computed('is_active')->title('Active')->orderable(false)->searchable(false)->addClass('text-center'),
             Column::make('created_at')->orderable(true)->searchable(true)->addClass('text-center'),
