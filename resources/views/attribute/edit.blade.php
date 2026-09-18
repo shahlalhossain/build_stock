@@ -94,7 +94,7 @@
                                             @forelse(old('values', $attribute->values->pluck('value')->all()) as $value)
                                                 <div class="row mb-2 align-items-start repeater-row" data-group="values">
                                                     <div class="col-10">
-                                                        <input type="text" class="form-control" name="values[]" value="{{ $value }}" placeholder="{{ __('Value (e.g. Red, 50kg, Grade A)') }}">
+                                                        <input type="text" class="form-control" name="values[]" value="{{ $value }}" placeholder="{{ __('Value') }}">
                                                     </div>
                                                     <div class="col-2 text-start pt-1">
                                                         <button type="button" class="btn btn-sm btn-outline-danger remove-row"><i class="ri-close-line"></i></button>
@@ -107,7 +107,7 @@
                                         <template id="values-row-template">
                                             <div class="row mb-2 align-items-start repeater-row" data-group="values">
                                                 <div class="col-10">
-                                                    <input type="text" class="form-control" name="values[]" placeholder="{{ __('Value (e.g. Red, 50kg, Grade A)') }}">
+                                                    <input type="text" class="form-control" name="values[]" placeholder="{{ __('Value') }}">
                                                 </div>
                                                 <div class="col-2 text-start pt-1">
                                                     <button type="button" class="btn btn-sm btn-outline-danger remove-row"><i class="ri-close-line"></i></button>
