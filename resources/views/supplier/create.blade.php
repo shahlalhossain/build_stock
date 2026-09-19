@@ -2,6 +2,33 @@
 
 @section('title', __('Supplier'))
 
+@push('styles')
+    <style>
+        .primary-radio {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        /* Repeater rows read as one discrete "entry" on mobile instead of a
+           wall of stacked full-width inputs with no visual grouping. */
+        @media (max-width: 767.98px) {
+            .repeater-row {
+                margin-left: 0;
+                margin-right: 0;
+                padding: 12px 12px 8px;
+                border: 1px solid #dee2e6;
+                border-radius: 6px;
+                background-color: rgba(0, 0, 0, 0.015);
+            }
+
+            .repeater-row .primary-field {
+                padding-top: 0.5rem;
+            }
+        }
+    </style>
+@endpush
+
 @section('content')
     <!-- Start Page Content -->
     <div class="page-content">
@@ -38,19 +65,13 @@
                                         <div class="row mb-2">
                                             <label for="supplier_type_id" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Supplier Type') }}</label>
                                             <div class="col-12 col-md-8">
-                                                {{-- TODO: Replace with a Select sourced from supplier_types once that table/migration is available. --}}
                                                 <select id="supplier_type_id" name="supplier_type_id" class="form-select @error('supplier_type_id') is-invalid @enderror" required>
-                                                    <option value="">{{ __('===== Select Supplier Type =====') }}</option>
+                                                    <option value="">{{ __('== Select Supplier Type ==') }}</option>
+                                                    @foreach($supplierTypes as $key => $supplierType)
+                                                        <option value="{{ $supplierType->id }}">{{ $supplierType->name }}</option>
+                                                    @endforeach
                                                 </select>
                                                 @error('supplier_type_id')<small class="text-danger">{{ $message }}</small>@enderror
-                                            </div>
-                                        </div>
-
-                                        <div class="row mb-2">
-                                            <label for="code" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Supplier Code') }}</label>
-                                            <div class="col-12 col-md-8">
-                                                <input type="text" class="form-control @error('code') is-invalid @enderror" id="code" name="code" value="{{ old('code') }}" required>
-                                                @error('code')<small class="text-danger">{{ $message }}</small>@enderror
                                             </div>
                                         </div>
 
@@ -61,9 +82,7 @@
                                                 @error('name')<small class="text-danger">{{ $message }}</small>@enderror
                                             </div>
                                         </div>
-                                    </div>
 
-                                    <div class="col-12 col-md-6">
                                         <div class="row mb-2">
                                             <label for="tin_number" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('TIN Number') }}</label>
                                             <div class="col-12 col-md-8">
@@ -81,9 +100,65 @@
                                         </div>
 
                                         <div class="row mb-2">
+                                            <label for="credit_limit" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Credit Limit') }}</label>
+                                            <div class="col-12 col-md-8">
+                                                <input type="text" class="form-control @error('credit_limit') is-invalid @enderror" id="credit_limit" name="credit_limit" value="{{ old('credit_limit') }}">
+                                                @error('credit_limit')<small class="text-danger">{{ $message }}</small>@enderror
+                                            </div>
+                                        </div>
+
+                                        <div class="row mb-2">
+                                            <label for="minimum_order_quantity" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Min. Order Count') }}</label>
+                                            <div class="col-12 col-md-8">
+                                                <input type="text" class="form-control @error('minimum_order_quantity') is-invalid @enderror" id="minimum_order_quantity" name="minimum_order_quantity" value="{{ old('minimum_order_quantity') }}">
+                                                @error('minimum_order_quantity')<small class="text-danger">{{ $message }}</small>@enderror
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-md-6">
+                                        <div class="row mb-2">
+                                            <label for="minimum_order_amount" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Min. Order Amount') }}</label>
+                                            <div class="col-12 col-md-8">
+                                                <input type="text" class="form-control @error('minimum_order_amount') is-invalid @enderror" id="minimum_order_amount" name="minimum_order_amount" value="{{ old('minimum_order_amount') }}">
+                                                @error('minimum_order_amount')<small class="text-danger">{{ $message }}</small>@enderror
+                                            </div>
+                                        </div>
+
+                                        <div class="row mb-2">
+                                            <label for="payment_terms_days" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Payment Terms') }}</label>
+                                            <div class="col-12 col-md-8">
+                                                <div class="input-group">
+                                                    <input type="text" class="form-control @error('payment_terms_days') is-invalid @enderror" id="payment_terms_days" name="payment_terms_days" value="{{ old('payment_terms_days') }}">
+                                                    <span class="input-group-text" id="payment_terms_days"> {{ __('Days') }}</span>
+                                                </div>
+                                                @error('payment_terms_days')<small class="text-danger">{{ $message }}</small>@enderror
+                                            </div>
+                                        </div>
+
+                                        <div class="row mb-2">
+                                            <label for="lead_time_days" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Lead Time') }}</label>
+                                            <div class="col-12 col-md-8">
+                                                <div class="input-group">
+                                                    <input type="text" class="form-control @error('lead_time_days') is-invalid @enderror" id="lead_time_days" name="lead_time_days" value="{{ old('lead_time_days') }}">
+                                                    <span class="input-group-text" id="lead_time_days"> {{ __('Days') }}</span>
+                                                </div>
+                                                @error('lead_time_days')<small class="text-danger">{{ $message }}</small>@enderror
+                                            </div>
+                                        </div>
+
+                                        <div class="row mb-2">
+                                            <label for="description" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Description') }}</label>
+                                            <div class="col-12 col-md-8">
+                                                <textarea class="form-control @error('description') is-invalid @enderror" id="description" name="description" rows="2">{{ old('description') }}</textarea>
+                                                @error('description')<small class="text-danger">{{ $message }}</small>@enderror
+                                            </div>
+                                        </div>
+
+                                        <div class="row mb-2">
                                             <label for="remarks" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Remarks') }}</label>
                                             <div class="col-12 col-md-8">
-                                                <textarea class="form-control @error('remarks') is-invalid @enderror" id="remarks" name="remarks" rows="1">{{ old('remarks') }}</textarea>
+                                                <textarea class="form-control @error('remarks') is-invalid @enderror" id="remarks" name="remarks" rows="2">{{ old('remarks') }}</textarea>
                                                 @error('remarks')<small class="text-danger">{{ $message }}</small>@enderror
                                             </div>
                                         </div>
@@ -92,9 +167,9 @@
 
                                 <hr>
 
-                                <!-- ===================== CONTACTS ===================== -->
+                                <!-- ===================== SUPPLIER CONTACTS ===================== -->
                                 <div class="d-flex align-items-center mb-2">
-                                    <h5 class="mb-0 flex-grow-1">{{ __('Contacts') }} <span class="form-mandatory"></span></h5>
+                                    <h5 class="mb-0 flex-grow-1 fst-italic">{{ __('Supplier Contacts') }} <span class="form-mandatory"></span></h5>
                                     <button type="button" class="btn btn-sm btn-success add-row" data-group="contacts"><i class="ri-add-line"></i> {{ __('Add Contact') }}</button>
                                 </div>
                                 @error('contacts')<small class="text-danger d-block mb-2">{{ $message }}</small>@enderror
@@ -102,26 +177,25 @@
 
                                 <template id="contacts-row-template">
                                     <div class="row mb-2 align-items-start repeater-row" data-group="contacts">
-                                        <div class="col-12 col-md-2">
+                                        <div class="col-12 col-sm-6 col-md-2 pt-2">
                                             <input type="text" class="form-control" name="contacts[__INDEX__][name]" placeholder="{{ __('Name') }}" required>
                                         </div>
-                                        <div class="col-12 col-md-2">
+                                        <div class="col-12 col-sm-6 col-md-2 pt-2">
                                             <input type="text" class="form-control" name="contacts[__INDEX__][designation]" placeholder="{{ __('Designation') }}">
                                         </div>
-                                        <div class="col-12 col-md-2">
+                                        <div class="col-12 col-sm-6 col-md-2 pt-2">
                                             <input type="email" class="form-control" name="contacts[__INDEX__][email]" placeholder="{{ __('Email') }}">
                                         </div>
-                                        <div class="col-12 col-md-2">
+                                        <div class="col-12 col-sm-6 col-md-2 pt-2">
                                             <input type="text" class="form-control" name="contacts[__INDEX__][mobile]" placeholder="{{ __('Mobile') }}">
                                         </div>
-                                        <div class="col-12 col-md-2">
-                                            <input type="text" class="form-control" name="contacts[__INDEX__][contact_type]" placeholder="{{ __('Contact Type') }}">
+                                        {{-- TODO: Have work with Custom CSS for pt-md-3 pt-2 --}}
+                                        <div class="col-8 col-sm-6 col-md-2 primary-field pt-md-3 pt-2">
+                                            <input type="radio" class="form-check-input primary-radio" name="contacts[__INDEX__][is_primary]" value="1">
+                                            <label class="form-check-label pt-1 ps-2"> {{ __('Primary') }}</label>
                                         </div>
-                                        <div class="col-6 col-md-1 text-center pt-2">
-                                            <input type="radio" class="form-check-input primary-radio" name="contacts_primary" value="__INDEX__">
-                                            <label class="form-check-label d-block small">{{ __('Primary') }}</label>
-                                        </div>
-                                        <div class="col-6 col-md-1 text-center pt-1">
+                                        {{-- TODO: Have work with Custom CSS for pt-md-2 pt-2 d-flex align-items-center --}}
+                                        <div class="col-4 col-sm-6 col-md-2 text-end text-md-start pt-md-2 pt-2 d-flex align-items-center">
                                             <button type="button" class="btn btn-sm btn-outline-danger remove-row"><i class="ri-close-line"></i></button>
                                         </div>
                                     </div>
@@ -131,7 +205,7 @@
 
                                 <!-- ===================== ADDRESSES ===================== -->
                                 <div class="d-flex align-items-center mb-2">
-                                    <h5 class="mb-0 flex-grow-1">{{ __('Addresses') }} <span class="form-mandatory"></span></h5>
+                                    <h5 class="mb-0 flex-grow-1 fst-italic">{{ __('Supplier Addresses') }} <span class="form-mandatory"></span></h5>
                                     <button type="button" class="btn btn-sm btn-success add-row" data-group="addresses"><i class="ri-add-line"></i> {{ __('Add Address') }}</button>
                                 </div>
                                 @error('addresses')<small class="text-danger d-block mb-2">{{ $message }}</small>@enderror
@@ -139,25 +213,26 @@
 
                                 <template id="addresses-row-template">
                                     <div class="row mb-2 align-items-start repeater-row" data-group="addresses">
-                                        <div class="col-12 col-md-2">
-                                            <input type="text" class="form-control" name="addresses[__INDEX__][address_type]" placeholder="{{ __('Address Type (e.g. Billing, Warehouse)') }}" required>
+                                        <div class="col-12 col-sm-12 col-md-2 pt-2">
+                                            {{-- TODO: This Input will be Dropdown Select-Options. Variable Name: $addressTypes --}}
+                                            <input type="text" class="form-control" name="addresses[__INDEX__][address_type]" placeholder="{{ __('Address Type') }}" required>
                                         </div>
-                                        <div class="col-12 col-md-3">
+                                        <div class="col-12 col-sm-12 col-md-2 pt-2">
                                             <input type="text" class="form-control" name="addresses[__INDEX__][address]" placeholder="{{ __('Address') }}" required>
                                         </div>
-                                        <div class="col-12 col-md-2">
-                                            <input type="text" class="form-control" name="addresses[__INDEX__][address_bn]" placeholder="{{ __('Address (in Bangla)') }}">
+                                        <div class="col-12 col-sm-4 col-md-2 pt-2">
+                                            {{-- TODO: This Input will be Dropdown Select-Options. --}}
+                                            <input type="text" class="form-control" name="addresses[__INDEX__][division_id]" placeholder="{{ __('Division') }}">
                                         </div>
-                                        <div class="col-12 col-md-2">
-                                            <input type="text" class="form-control" name="addresses[__INDEX__][division_name]" placeholder="{{ __('Division') }}">
+                                        <div class="col-12 col-sm-4 col-md-2 pt-2">
+                                            {{-- TODO: This Input will be Dropdown Select-Options. --}}
+                                            <input type="text" class="form-control" name="addresses[__INDEX__][district_id]" placeholder="{{ __('District') }}">
                                         </div>
-                                        <div class="col-6 col-md-1">
-                                            <input type="text" class="form-control" name="addresses[__INDEX__][district_name]" placeholder="{{ __('District') }}">
+                                        <div class="col-12 col-sm-4 col-md-2 pt-2">
+                                            {{-- TODO: This Input will be Dropdown Select-Options. --}}
+                                            <input type="text" class="form-control" name="addresses[__INDEX__][thana_id]" placeholder="{{ __('Thana') }}">
                                         </div>
-                                        <div class="col-6 col-md-1">
-                                            <input type="text" class="form-control" name="addresses[__INDEX__][thana_name]" placeholder="{{ __('Thana') }}">
-                                        </div>
-                                        <div class="col-12 col-md-1 text-center pt-1">
+                                        <div class="col-12 col-sm-12 col-md-2 text-end text-md-start pt-2 pt-md-2">
                                             <button type="button" class="btn btn-sm btn-outline-danger remove-row"><i class="ri-close-line"></i></button>
                                         </div>
                                     </div>
@@ -167,37 +242,33 @@
 
                                 <!-- ===================== PAYMENT ACCOUNTS (Optional) ===================== -->
                                 <div class="d-flex align-items-center mb-2">
-                                    <h5 class="mb-0 flex-grow-1">{{ __('Payment Accounts') }} <small class="text-muted">({{ __('Optional') }})</small></h5>
-                                    <button type="button" class="btn btn-sm btn-success add-row" data-group="payment_accounts"><i class="ri-add-line"></i> {{ __('Add Payment Account') }}</button>
+                                    <h5 class="mb-0 flex-grow-1 fst-italic">{{ __('Payment Accounts') }} <small class="text-muted">({{ __('Optional') }})</small></h5>
+                                    <button type="button" class="btn btn-sm btn-success add-row" data-group="payment_accounts"><i class="ri-add-line"></i> {{ __('Bank A/C') }}</button>
                                 </div>
                                 @error('payment_accounts')<small class="text-danger d-block mb-2">{{ $message }}</small>@enderror
                                 <div id="payment_accounts-rows"></div>
 
                                 <template id="payment_accounts-row-template">
                                     <div class="row mb-2 align-items-start repeater-row" data-group="payment_accounts">
-                                        <div class="col-12 col-md-2">
+                                        <div class="col-12 col-sm-12 col-md-2 pt-2">
+                                            {{-- TODO: This Input will be Dropdown Select-Options. --}}
                                             <input type="text" class="form-control" name="payment_accounts[__INDEX__][payment_method]" placeholder="{{ __('Payment Method') }}">
                                         </div>
-                                        <div class="col-12 col-md-2">
+                                        <div class="col-12 col-sm-12 col-md-2 pt-2">
                                             <input type="text" class="form-control" name="payment_accounts[__INDEX__][account_name]" placeholder="{{ __('Account Name') }}">
                                         </div>
-                                        <div class="col-12 col-md-2">
+                                        <div class="col-12 col-sm-12 col-md-2 pt-2">
                                             <input type="text" class="form-control" name="payment_accounts[__INDEX__][account_number]" placeholder="{{ __('Account Number') }}">
                                         </div>
-                                        <div class="col-12 col-md-2">
+                                        <div class="col-12 col-sm-12 col-md-2 pt-2">
+                                            {{-- TODO: This Input will be Dropdown Select-Options. --}}
                                             <input type="text" class="form-control" name="payment_accounts[__INDEX__][bank_name]" placeholder="{{ __('Bank Name') }}">
                                         </div>
-                                        <div class="col-12 col-md-1">
+                                        <div class="col-12 col-sm-8 col-md-2 pt-2">
+                                            {{-- TODO: This Input will be Dropdown Select-Options. --}}
                                             <input type="text" class="form-control" name="payment_accounts[__INDEX__][branch_name]" placeholder="{{ __('Branch') }}">
                                         </div>
-                                        <div class="col-6 col-md-1">
-                                            <input type="text" class="form-control" name="payment_accounts[__INDEX__][routing_number]" placeholder="{{ __('Routing No.') }}">
-                                        </div>
-                                        <div class="col-6 col-md-1 text-center pt-2">
-                                            <input type="radio" class="form-check-input primary-radio" name="payment_accounts_primary" value="__INDEX__">
-                                            <label class="form-check-label d-block small">{{ __('Primary') }}</label>
-                                        </div>
-                                        <div class="col-12 col-md-1 text-center pt-1">
+                                        <div class="col-12 col-sm-4 col-md-2 text-end text-md-start pt-2 pt-md-3">
                                             <button type="button" class="btn btn-sm btn-outline-danger remove-row"><i class="ri-close-line"></i></button>
                                         </div>
                                     </div>
@@ -207,25 +278,26 @@
 
                                 <!-- ===================== MFS ACCOUNTS (Optional) ===================== -->
                                 <div class="d-flex align-items-center mb-2">
-                                    <h5 class="mb-0 flex-grow-1">{{ __('MFS Accounts') }} <small class="text-muted">({{ __('Optional') }})</small></h5>
-                                    <button type="button" class="btn btn-sm btn-success add-row" data-group="mfs_accounts"><i class="ri-add-line"></i> {{ __('Add MFS Account') }}</button>
+                                    <h5 class="mb-0 flex-grow-1 fst-italic">{{ __('MFS Accounts') }} <small class="text-muted">({{ __('Optional') }})</small></h5>
+                                    <button type="button" class="btn btn-sm btn-success add-row" data-group="mfs_accounts"><i class="ri-add-line"></i> {{ __('MFS Account') }}</button>
                                 </div>
                                 @error('mfs_accounts')<small class="text-danger d-block mb-2">{{ $message }}</small>@enderror
                                 <div id="mfs_accounts-rows"></div>
 
                                 <template id="mfs_accounts-row-template">
                                     <div class="row mb-2 align-items-start repeater-row" data-group="mfs_accounts">
-                                        <div class="col-12 col-md-4">
-                                            <input type="text" class="form-control" name="mfs_accounts[__INDEX__][mfs_operator_name]" placeholder="{{ __('MFS Operator (e.g. bKash, Nagad)') }}">
+                                        <div class="col-12 col-sm-12 col-md-2 pt-2">
+                                            {{-- TODO: This Input will be Dropdown Select-Options. --}}
+                                            <input type="text" class="form-control" name="mfs_accounts[__INDEX__][mfs_operator_name]" placeholder="{{ __('MFS Operator') }}">
                                         </div>
-                                        <div class="col-12 col-md-4">
-                                            <input type="text" class="form-control" name="mfs_accounts[__INDEX__][mfs_account_number]" placeholder="{{ __('Account Number') }}">
+                                        <div class="col-12 col-sm-12 col-md-2 pt-2">
+                                            <input type="text" class="form-control" name="mfs_accounts[__INDEX__][mfs_account_number]" placeholder="{{ __('Mobile Banking Number') }}">
                                         </div>
-                                        <div class="col-6 col-md-2 text-center pt-2">
-                                            <input type="radio" class="form-check-input primary-radio" name="mfs_accounts_primary" value="__INDEX__">
-                                            <label class="form-check-label d-block small">{{ __('Primary') }}</label>
+                                        <div class="col-8 col-sm-8 col-md-2 primary-field pt-md-2 pt-2">
+                                            <input type="radio" class="form-check-input primary-radio" name="mfs_accounts[__INDEX__][is_primary]" value="1">
+                                            <label class="form-check-label pt-1 ps-2"> {{ __('Primary') }}</label>
                                         </div>
-                                        <div class="col-6 col-md-2 text-center pt-1">
+                                        <div class="col-4 col-sm-4 col-md-2 text-end text-md-start pt-md-3 pt-2 d-flex align-items-center justify-content-center">
                                             <button type="button" class="btn btn-sm btn-outline-danger remove-row"><i class="ri-close-line"></i></button>
                                         </div>
                                     </div>

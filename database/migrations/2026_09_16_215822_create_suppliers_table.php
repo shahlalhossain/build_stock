@@ -16,16 +16,26 @@ return new class extends Migration
 
             $table->integer('supplier_type_id');
 
-            $table->string('code', 30)->unique();
+            $table->string('code', 30)->unique(); // System Generated Value
 
             $table->string('name', 255);
+
+            $table->text('description')->nullable();
 
             $table->string('tin_number', 50)->nullable();
             $table->string('bin_number', 50)->nullable();
 
+            $table->decimal('credit_limit', 18, 2)->default(0);
+            $table->decimal('minimum_order_quantity', 18, 3)->default(0);
+            $table->decimal('minimum_order_amount', 18, 2)->default(0);
+            $table->unsignedInteger('payment_terms_days')->default(0);
+            $table->unsignedInteger('lead_time_days')->default(0);
+
             $table->integer('ledger_account_id')->nullable();
 
             $table->boolean('is_active')->default(true);
+
+            $table->enum('status', ['pending', 'approved', 'rejected']) ->default('pending');
 
             $table->text('remarks')->nullable();
 

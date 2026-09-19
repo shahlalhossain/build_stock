@@ -6,7 +6,9 @@ use App\DataTables\SuppliersDataTable;
 use App\Exceptions\GeneralException;
 use App\Http\Requests\Supplier\StoreSupplierRequest;
 use App\Http\Requests\Supplier\UpdateSupplierRequest;
+use App\Models\AddressType;
 use App\Models\Supplier;
+use App\Models\SupplierType;
 use App\Services\SupplierService;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -34,7 +36,10 @@ class SuppliersController extends Controller
 
     public function create()
     {
-        return view('supplier.create');
+        $data['supplierTypes']  = SupplierType::select('id', 'name')->get();
+        $data['addressTypes']   = AddressType::select('id', 'name')->get();
+
+        return view('supplier.create', $data);
     }
 
     public function store(StoreSupplierRequest $supplierRequest)
