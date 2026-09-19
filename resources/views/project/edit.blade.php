@@ -53,29 +53,33 @@
                                         </div>
 
                                         <div class="row mb-2">
-                                            <label for="slug" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Slug') }}</label>
-                                            <div class="col-12 col-md-8">
-                                                <input type="text" class="form-control @error('slug') is-invalid @enderror" id="slug" name="slug" value="{{ old('slug', $project->slug) }}" required>
-                                                @error('slug')<small class="text-danger">{{ $message }}</small>@enderror
-                                            </div>
-                                        </div>
-
-                                        <div class="row mb-2">
-                                            <label for="priority_order" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Priority Order') }}</label>
-                                            <div class="col-12 col-md-8">
-                                                <input type="text" class="form-control @error('priority_order') is-invalid @enderror" id="priority_order" name="priority_order" value="{{ old('priority_order', $project->priority_order) }}">
-                                                @error('priority_order')<small class="text-danger">{{ $message }}</small>@enderror
-                                            </div>
-                                        </div>
-
-                                        <div class="row mb-2">
                                             <label for="description" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Description') }}</label>
                                             <div class="col-12 col-md-8">
-                                                <input type="text" class="form-control @error('description') is-invalid @enderror" id="description" name="description" value="{{ old('description', $project->description) }}">
+                                                <textarea class="form-control @error('description') is-invalid @enderror" id="description" name="description" rows="1">{{ old('description', $project->description) }}</textarea>
                                                 @error('description')<small class="text-danger">{{ $message }}</small>@enderror
                                             </div>
                                         </div>
 
+                                        <div class="row mb-2">
+                                            <label for="project_manager_id" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Project Manager') }}</label>
+                                            <div class="col-12 col-md-8">
+                                                {{-- TODO: Populate from a searchable user select once a dedicated user-picker component exists in this app. --}}
+                                                <input type="number" class="form-control @error('project_manager_id') is-invalid @enderror" id="project_manager_id" name="project_manager_id" value="{{ old('project_manager_id', $project->project_manager_id) }}" placeholder="{{ __('User ID') }}">
+                                                @error('project_manager_id')<small class="text-danger">{{ $message }}</small>@enderror
+                                            </div>
+                                        </div>
+
+                                        <div class="row mb-2">
+                                            <label for="current_state" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Current State') }}</label>
+                                            <div class="col-12 col-md-8">
+                                                <select id="current_state" name="current_state" class="form-select @error('current_state') is-invalid @enderror" required>
+                                                    @foreach(\App\Models\Project::CURRENT_STATES as $state)
+                                                        <option value="{{ $state }}" @selected(old('current_state', $project->current_state) === $state)>{{ ucwords($state) }}</option>
+                                                    @endforeach
+                                                </select>
+                                                @error('current_state')<small class="text-danger">{{ $message }}</small>@enderror
+                                            </div>
+                                        </div>
                                     </div>
                                     <!-- End Left Column -->
 
@@ -104,49 +108,21 @@
                                                 @error('estimated_budget')<small class="text-danger">{{ $message }}</small>@enderror
                                             </div>
                                         </div>
-
-                                        <div class="row mb-2">
-                                            <label for="actual_cost" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Actual Cost') }}</label>
-                                            <div class="col-12 col-md-8">
-                                                <input type="text" class="form-control @error('actual_cost') is-invalid @enderror" id="actual_cost" name="actual_cost" value="{{ old('actual_cost', $project->actual_cost) }}">
-                                                @error('actual_cost')<small class="text-danger">{{ $message }}</small>@enderror
-                                            </div>
-                                        </div>
-
-                                        <div class="row mb-2">
-                                            <label for="current_state" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Current State') }}</label>
-                                            <div class="col-12 col-md-8">
-                                                <select id="current_state" name="current_state" class="form-select @error('current_state') is-invalid @enderror" required>
-                                                    @foreach(\App\Models\Project::CURRENT_STATES as $state)
-                                                        <option value="{{ $state }}" @selected(old('current_state', $project->current_state) === $state)>{{ ucwords($state) }}</option>
-                                                    @endforeach
-                                                </select>
-                                                @error('current_state')<small class="text-danger">{{ $message }}</small>@enderror
-                                            </div>
-                                        </div>
-
-                                        <div class="row mb-2">
-                                            <label for="project_manager_id" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Project Manager') }}</label>
-                                            <div class="col-12 col-md-8">
-                                                {{-- TODO: Populate from a searchable user select once a dedicated user-picker component exists in this app. --}}
-                                                <input type="number" class="form-control @error('project_manager_id') is-invalid @enderror" id="project_manager_id" name="project_manager_id" value="{{ old('project_manager_id', $project->project_manager_id) }}" placeholder="{{ __('User ID') }}">
-                                                @error('project_manager_id')<small class="text-danger">{{ $message }}</small>@enderror
-                                            </div>
-                                        </div>
                                     </div>
                                     <!-- End Right Column -->
                                 </div>
 
                                 <hr>
 
-                                <h5 class="mb-3">{{ __('Site Address') }}</h5>
+                                <h6 class="mb-0 fw-bold fst-italic">{{ __('Site Address') }}</h6>
                                 <div class="row">
                                     <div class="col-12 col-md-6">
+
                                         <div class="row mb-2">
                                             <label for="division_id" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Division') }}</label>
                                             <div class="col-12 col-md-8">
                                                 <select id="division_id" name="division_id" class="form-select @error('division_id') is-invalid @enderror" required>
-                                                    <option value="">{{ __('===== Select Division =====') }}</option>
+                                                    <option value="">{{ __('== Select Division ==') }}</option>
                                                     @foreach($divisions as $division)
                                                         <option value="{{ $division->id }}" @selected(old('division_id', $project->address?->division_id) == $division->id)>{{ $division->name_en }} ({{ $division->name_bn }})</option>
                                                     @endforeach
@@ -159,7 +135,7 @@
                                             <label for="district_id" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('District') }}</label>
                                             <div class="col-12 col-md-8">
                                                 <select id="district_id" name="district_id" class="form-select @error('district_id') is-invalid @enderror" required>
-                                                    <option value="">{{ __('===== Select District =====') }}</option>
+                                                    <option value="">{{ __('== Select District ==') }}</option>
                                                 </select>
                                                 @error('district_id')<small class="text-danger">{{ $message }}</small>@enderror
                                             </div>
@@ -169,7 +145,7 @@
                                             <label for="thana_id" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Thana/Upazila') }}</label>
                                             <div class="col-12 col-md-8">
                                                 <select id="thana_id" name="thana_id" class="form-select @error('thana_id') is-invalid @enderror" required>
-                                                    <option value="">{{ __('===== Select Thana/Upazila =====') }}</option>
+                                                    <option value="">{{ __('== Select Thana/Upazila ==') }}</option>
                                                 </select>
                                                 @error('thana_id')<small class="text-danger">{{ $message }}</small>@enderror
                                             </div>
@@ -178,13 +154,19 @@
                                         <div class="row mb-2">
                                             <label for="address" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Address') }}</label>
                                             <div class="col-12 col-md-8">
-                                                <textarea class="form-control @error('address') is-invalid @enderror" id="address" name="address" rows="2">{{ old('address', $project->address?->address) }}</textarea>
+                                                <textarea class="form-control @error('address') is-invalid @enderror" id="address" name="address" rows="1">{{ old('address', $project->address?->address) }}</textarea>
                                                 @error('address')<small class="text-danger">{{ $message }}</small>@enderror
                                             </div>
                                         </div>
-                                    </div>
 
-                                    <div class="col-12 col-md-6">
+                                        <div class="row mb-2">
+                                            <label for="landmark" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Landmark') }}</label>
+                                            <div class="col-12 col-md-8">
+                                                <input type="text" class="form-control @error('landmark') is-invalid @enderror" id="landmark" name="landmark" value="{{ old('landmark', $project->address?->landmark) }}">
+                                                @error('landmark')<small class="text-danger">{{ $message }}</small>@enderror
+                                            </div>
+                                        </div>
+
                                         <div class="row mb-2">
                                             <label for="latitude" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Latitude') }}</label>
                                             <div class="col-12 col-md-8">
@@ -208,14 +190,10 @@
                                                 @error('map_address')<small class="text-danger">{{ $message }}</small>@enderror
                                             </div>
                                         </div>
+                                    </div>
 
-                                        <div class="row mb-2">
-                                            <label for="landmark" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Landmark') }}</label>
-                                            <div class="col-12 col-md-8">
-                                                <input type="text" class="form-control @error('landmark') is-invalid @enderror" id="landmark" name="landmark" value="{{ old('landmark', $project->address?->landmark) }}">
-                                                @error('landmark')<small class="text-danger">{{ $message }}</small>@enderror
-                                            </div>
-                                        </div>
+                                    <div class="col-12 col-md-6">
+                                    {{-- TODO: OpenStreet Map will be Shown Here --}}
                                     </div>
                                 </div>
                             </div>
