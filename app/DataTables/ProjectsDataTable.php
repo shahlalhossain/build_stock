@@ -26,33 +26,20 @@ class ProjectsDataTable extends DataTable
             ->editColumn('name', function (Project $project) {
                 return ucwords($project->name);
             })
-            ->addColumn('is_active', function (Project $project) {
-                return $project->is_active ? '<span class="badge bg-success">Yes</span>' : '<span class="badge bg-danger">No</span>';
+            ->editColumn('start_date', function (Project $project) {
+                return $project->start_date?->format('d F, Y');
             })
-            ->editColumn('status', function (Project $project) {
-                if ($project->status === 'pending') {
-                    return '<span class="badge bg-warning">'.ucwords($project->status).'</span>';
-                } elseif ($project->status === 'approved') {
-                    return '<span class="badge bg-success">'.ucwords($project->status).'</span>';
-                } elseif ($project->status === 'rejected') {
-                    return '<span class="badge bg-danger">'.ucwords($project->status).'</span>';
-                } else {
-                    return '<span class="badge bg-secondary">'.ucwords('Unknown').'</span>';
-                }
+            ->editColumn('expected_end_date', function (Project $project) {
+                return $project->expected_end_date?->format('d F, Y');
             })
-
-            ->editColumn('Created By', function (Project $project) {
-                return ucwords($project->creator?->name);
+            ->editColumn('estimated_budget', function (Project $project) {
+                return $project->estimated_budget;
             })
-            ->editColumn('Updated By', function (Project $project) {
-                return ucwords($project->updater?->name);
+            ->editColumn('Project Manager', function (Project $project) {
+                return ucwords($project->manager?->name);
             })
-
-            ->editColumn('created_at', function (Project $project) {
-                return $project->created_at->format('Y-m-d H:i');
-            })
-            ->editColumn('updated_at', function (Project $project) {
-                return $project->created_at->format('Y-m-d H:i');
+            ->editColumn('current_state', function (Project $project) {
+                return ucwords($project->current_state);
             })
             ->addColumn('actions', function (Project $project) {
                 if ($this->showTrashed) {
@@ -60,8 +47,7 @@ class ProjectsDataTable extends DataTable
                 }
 
                 return view('project.actions', ['project' => $project]);
-            })
-            ->rawColumns(['status', 'is_active']);
+            });
     }
 
     /**
@@ -70,10 +56,10 @@ class ProjectsDataTable extends DataTable
     public function query(Project $model): QueryBuilder
     {
         if ($this->showTrashed) {
-            return $model->newQuery()->onlyTrashed();   // Show Trashed Records
+            return $model->newQuery()->with('manager')->onlyTrashed();   // Show Trashed Records
         }
 
-        return $model->newQuery()->withoutTrashed();    // Show Active Records
+        return $model->newQuery()->with('manager')->withoutTrashed();    // Show Active Records
     }
 
     /**
@@ -104,12 +90,11 @@ class ProjectsDataTable extends DataTable
         return [
             Column::computed('DT_RowIndex')->title('SN')->orderable(false)->searchable(false)->addClass('text-center'),
             Column::make('name')->orderable(true)->searchable(true),
-            Column::computed('is_active')->title('Active')->orderable(false)->searchable(false)->addClass('text-center'),
-            Column::make('Created By', 'creator')->orderable(false)->searchable(false),
-            Column::make('Updated By', 'updater')->orderable(false)->searchable(false),
-            Column::computed('status')->title('Status')->orderable(false)->searchable(false)->addClass('text-center'),
-            Column::make('created_at')->orderable(true)->searchable(true)->addClass('text-center'),
-            Column::make('updated_at')->orderable(true)->searchable(true)->addClass('text-center'),
+            Column::make('start_date')->orderable(true)->searchable(false)->addClass('text-center'),
+            Column::make('expected_end_date')->orderable(true)->searchable(false)->addClass('text-center'),
+            Column::make('estimated_budget')->orderable(true)->searchable(false)->addClass('text-end'),
+            Column::make('Project Manager', 'manager')->orderable(false)->searchable(false),
+            Column::make('current_state')->title('Current State')->orderable(true)->searchable(false)->addClass('text-center'),
             Column::computed('actions')
                 ->orderable(false)
                 ->searchable(false)
