@@ -96,6 +96,13 @@
                 </li>
                 <div class="divider"></div>
 
+                <li class="nav-item {{ request()->routeIs('product.*') ? 'active-menu' : '' }}">
+                    <a class="nav-link" href="{{ route('product.index') }}">
+                        <i class="ri-shopping-bag-3-line"></i><span>{{ __('Manage Products') }}</span>
+                    </a>
+                </li>
+                <div class="divider"></div>
+
                 <li class="nav-item {{ request()->routeIs('supplier.*') ? 'active-menu' : '' }}">
                     <a class="nav-link" href="{{ route('supplier.index') }}">
                         <i class="ri-apps-2-line"></i><span>{{ __('Manage Suppliers') }}</span>

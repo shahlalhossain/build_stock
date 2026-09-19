@@ -17,24 +17,22 @@ return new class extends Migration
             // Null = Head Office, otherwise the Project (Site) this Store belongs to.
             $table->integer('project_id')->nullable();
 
+            $table->enum('type', ['store', 'warehouse'])->default('store');
+
             $table->string('name', 255);
-            $table->string('code', 50)->unique();
+            $table->string('code', 50)->unique(); // System Generated Value
 
             $table->string('description', 255)->nullable();
 
-            $table->enum('type', ['store', 'warehouse'])->default('store');
+            $table->string('mobile', 30)->nullable(); // Store Contact Mobile
+            $table->string('email', 150)->nullable(); // Store Contact Email
 
-            // Store Contact Mobile
-            $table->string('mobile', 30)->nullable();
-            // Store Contact Email
-            $table->string('email', 150)->nullable();
-
-            // Store Manager
-            $table->unsignedBigInteger('manager_id')->nullable();
-            // Storekeeper
-            $table->unsignedBigInteger('storekeeper_id')->nullable();
+            $table->unsignedBigInteger('manager_id')->nullable();  // Store Manager
+            $table->unsignedBigInteger('storekeeper_id')->nullable(); // Storekeeper
 
             $table->boolean('is_active')->default(true);
+
+            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
 
             $table->integer('created_by')->nullable();
             $table->integer('updated_by')->nullable();

@@ -33,7 +33,7 @@
                                 <!-- End Page Error Section -->
 
                                 <div class="row">
-                                    <div class="col-12 col-md-5">
+                                    <div class="col-12 col-md-6">
                                         <div class="row mb-2">
                                             <label for="project_id" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Location') }}</label>
                                             <div class="col-12 col-md-8">
@@ -51,7 +51,7 @@
                                             <label for="type" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Type') }}</label>
                                             <div class="col-12 col-md-8">
                                                 <select id="type" name="type" class="form-select @error('type') is-invalid @enderror" required>
-                                                    <option value="" disabled @selected(old('type') === null)>{{ __('Select Type') }}</option>
+                                                    <option value="" @selected(old('type') === null)>{{ __('Select Type') }}</option>
                                                     <option value="store" @selected(old('type') === 'store')>{{ __('Store') }}</option>
                                                     <option value="warehouse" @selected(old('type') === 'warehouse')>{{ __('Warehouse') }}</option>
                                                 </select>
@@ -68,7 +68,7 @@
                                         </div>
 
                                         <div class="row mb-2">
-                                            <label for="description" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Store Name') }}</label>
+                                            <label for="description" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Description') }}</label>
                                             <div class="col-12 col-md-8">
                                                 <input type="text" class="form-control @error('description') is-invalid @enderror" id="description" name="description" value="{{ old('name') }}">
                                                 @error('description')<small class="text-danger">{{ $message }}</small>@enderror
@@ -77,7 +77,7 @@
 
                                     </div>
 
-                                    <div class="col-12 col-md-5">
+                                    <div class="col-12 col-md-6">
                                     {{-- TODO: Store/Warehouse Address Inputs will Here --}}
                                     </div>
                                 </div>

@@ -10,6 +10,7 @@ use App\Http\Controllers\DistrictsController;
 use App\Http\Controllers\DivisionsController;
 use App\Http\Controllers\FAQsController;
 use App\Http\Controllers\PermissionController;
+use App\Http\Controllers\ProductsController;
 use App\Http\Controllers\ProductUnitsController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectsController;
@@ -169,6 +170,21 @@ Route::middleware('auth:web')->group(function () {
             Route::delete('/', [ProductUnitsController::class, 'destroy'])->name('destroy');
             Route::post('restore', [ProductUnitsController::class, 'restore'])->name('restore');
             Route::delete('force-delete', [ProductUnitsController::class, 'delete'])->name('delete');
+        });
+    });
+
+    Route::group(['prefix' => 'product', 'as' => 'product.'], function () {
+        Route::get('/', [ProductsController::class, 'index'])->name('index');
+        Route::get('create', [ProductsController::class, 'create'])->name('create');
+        Route::post('/', [ProductsController::class, 'store'])->name('store');
+        Route::get('/trash', [ProductsController::class, 'trash'])->name('trash');
+        Route::group(['prefix' => '{product}'], function () {
+            Route::get('/', [ProductsController::class, 'show'])->name('show')->withTrashed();
+            Route::get('edit', [ProductsController::class, 'edit'])->name('edit');
+            Route::patch('/', [ProductsController::class, 'update'])->name('update');
+            Route::delete('/', [ProductsController::class, 'destroy'])->name('destroy');
+            Route::post('restore', [ProductsController::class, 'restore'])->name('restore');
+            Route::delete('force-delete', [ProductsController::class, 'delete'])->name('delete');
         });
     });
 
