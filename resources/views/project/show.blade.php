@@ -27,13 +27,10 @@
                                     <table class="table table-hover table-responsive table-bordered table-sm">
                                         <tbody>
                                         <tr><th class="text-end pe-2">{{ __('Name') }}</th><td class="text-start ps-2">{{ $project->name }}</td></tr>
-                                        <tr><th class="text-end pe-2">{{ __('Slug') }}</th><td class="text-start ps-2">{{ $project->slug }}</td></tr>
-                                        <tr><th class="text-end pe-2">{{ __('Priority Order') }}</th><td class="text-start ps-2">{{ $project->priority_order }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Description') }}</th><td class="text-start ps-2">{{ ucwords($project->description) }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Start Date') }}</th><td class="text-start ps-2">{{ $project->start_date?->format('Y-m-d') }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Expected End Date') }}</th><td class="text-start ps-2">{{ $project->expected_end_date?->format('Y-m-d') }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Estimated Budget') }}</th><td class="text-start ps-2">{{ $project->estimated_budget }}</td></tr>
-                                        <tr><th class="text-end pe-2">{{ __('Actual Cost') }}</th><td class="text-start ps-2">{{ $project->actual_cost }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Current State') }}</th><td class="text-start ps-2">{{ ucwords($project->current_state) }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Project Manager') }}</th><td class="text-start ps-2">{{ $project->manager?->name ?? '' }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Is Active') }}</th>

@@ -28,14 +28,11 @@ class UpdateProjectRequest extends FormRequest
 
         return [
             'name' => ['required', 'string', 'max:255', Rule::unique('projects', 'name')->ignore($project)],
-            'slug' => ['required', 'string', 'max:255', Rule::unique('projects', 'slug')->ignore($project)],
             'description' => ['nullable', 'string', 'max:255'],
             'start_date' => ['nullable', 'date'],
             'expected_end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
             'estimated_budget' => ['nullable', 'numeric', 'min:0'],
-            'actual_cost' => ['nullable', 'numeric', 'min:0'],
             'project_manager_id' => ['nullable', 'integer', Rule::exists('users', 'id')],
-            'priority_order' => ['nullable', 'integer', 'min:0'],
             'current_state' => ['required', Rule::in(Project::CURRENT_STATES)],
 
             // Site Address (saved into the polymorphic addresses table)
@@ -58,11 +55,6 @@ class UpdateProjectRequest extends FormRequest
             'name.max' => __('Project Name may not exceed 255 Characters'),
             'name.unique' => __('This Project already Exists'),
 
-            'slug.required' => __('Project Slug is Required'),
-            'slug.string' => __('Project Slug must be a Valid String'),
-            'slug.max' => __('Project Slug may not exceed 255 Characters'),
-            'slug.unique' => __('This Project Slug already Exists'),
-
             'description.string' => __('Description must be a Valid String'),
             'description.max' => __('Description may not exceed 255 Characters'),
 
@@ -71,13 +63,7 @@ class UpdateProjectRequest extends FormRequest
             'estimated_budget.numeric' => __('Estimated Budget must be a Valid Number'),
             'estimated_budget.min' => __('Estimated Budget must be 0 or Greater'),
 
-            'actual_cost.numeric' => __('Actual Cost must be a Valid Number'),
-            'actual_cost.min' => __('Actual Cost must be 0 or Greater'),
-
             'project_manager_id.exists' => __('Selected Project Manager does not Exist'),
-
-            'priority_order.numeric' => __('Priority Order must be a Valid Number'),
-            'priority_order.min' => __('Priority Order must be 0 or Greater'),
 
             'current_state.required' => __('Current State is Required'),
             'current_state.in' => __('Selected Current State is Invalid'),

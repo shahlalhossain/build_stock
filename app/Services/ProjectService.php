@@ -44,14 +44,11 @@ class ProjectService extends BaseService
         try {
             $projectData = [
                 'name' => $data['name'] ?? null,
-                'slug' => $data['slug'] ?? null,
                 'description' => $data['description'] ?? null,
                 'start_date' => $data['start_date'] ?? null,
                 'expected_end_date' => $data['expected_end_date'] ?? null,
                 'estimated_budget' => $data['estimated_budget'] ?? null,
-                'actual_cost' => $data['actual_cost'] ?? null,
                 'project_manager_id' => $data['project_manager_id'] ?? null,
-                'priority_order' => $data['priority_order'] ?? null,
                 'current_state' => $data['current_state'] ?? null,
                 'is_active' => true,
                 'created_by' => Auth::id(),
@@ -84,14 +81,11 @@ class ProjectService extends BaseService
         try {
             $project->update([
                 'name' => $data['name'] ?? null,
-                'slug' => $data['slug'] ?? null,
                 'description' => $data['description'] ?? null,
                 'start_date' => $data['start_date'] ?? null,
                 'expected_end_date' => $data['expected_end_date'] ?? null,
                 'estimated_budget' => $data['estimated_budget'] ?? null,
-                'actual_cost' => $data['actual_cost'] ?? null,
                 'project_manager_id' => $data['project_manager_id'] ?? null,
-                'priority_order' => $data['priority_order'] ?? null,
                 'current_state' => $data['current_state'] ?? null,
                 'updated_by' => Auth::id(),
             ]);
@@ -117,9 +111,9 @@ class ProjectService extends BaseService
      */
     protected function saveAddress(Project $project, array $data): void
     {
-        $division   = GeoDivision::find($data['division_id'] ?? null);
-        $district   = GeoDistrict::find($data['district_id'] ?? null);
-        $thana      = GeoThana::find($data['thana_id'] ?? null);
+        $division = GeoDivision::find($data['division_id'] ?? null);
+        $district = GeoDistrict::find($data['district_id'] ?? null);
+        $thana = GeoThana::find($data['thana_id'] ?? null);
 
         $project->address()->updateOrCreate(
             [],

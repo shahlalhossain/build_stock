@@ -47,14 +47,11 @@ class Project extends Model
 
     protected $fillable = [
         'name',
-        'slug',
         'description',
         'start_date',
         'expected_end_date',
         'estimated_budget',
-        'actual_cost',
         'project_manager_id',
-        'priority_order',
         'status',
         'current_state',
         'is_active',
@@ -79,15 +76,13 @@ class Project extends Model
     protected function casts(): array
     {
         return [
-            'created_at'            => 'datetime',
-            'updated_at'            => 'datetime',
-            'start_date'            => 'date',
-            'expected_end_date'     => 'date',
-            'estimated_budget'      => 'decimal:2',
-            'actual_cost'           => 'decimal:2',
-            'project_manager_id'    => 'integer',
-            'priority_order'        => 'integer',
-            'is_active'             => 'boolean',
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
+            'start_date' => 'date',
+            'expected_end_date' => 'date',
+            'estimated_budget' => 'decimal:2',
+            'project_manager_id' => 'integer',
+            'is_active' => 'boolean',
         ];
     }
 
