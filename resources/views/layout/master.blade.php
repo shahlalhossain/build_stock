@@ -52,6 +52,8 @@
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
 
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""> <!-- Leaflet CSS (OpenStreetMap) -->
+
     <link rel="stylesheet" type="text/css" href="{{ asset('assets/libs/sweetalert2/sweetalert2.min.css') }}"> <!-- Sweet Alert CSS -->
 
     <link rel="stylesheet" type="text/css" href="{{ asset('assets/libs/jsvectormap/jsvectormap.min.css') }}"> <!-- Plugin CSS -->
@@ -213,6 +215,9 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <script src="{{ asset('assets/js/pages/select2.init.js') }}"></script>
+
+<!-- Leaflet JS (OpenStreetMap) -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
 {{--<script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC2PMHASZHdwCcWzqoDdtnCDQp0g9N6u9o&callback=console.debug&libraries=maps,marker&v=beta"></script>--}}
 {{--<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC2PMHASZHdwCcWzqoDdtnCDQp0g9N6u9o&callback=initMap" async defer></script>--}}

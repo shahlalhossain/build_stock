@@ -23,7 +23,7 @@
                         <div class="card-body">
 
                             <div class="row">
-                                <div class="col-12 col-md-7 order-1">
+                                <div class="col-12 col-md-6 order-1">
                                     <table class="table table-hover table-responsive table-bordered table-sm">
                                         <tbody>
                                         <tr><th class="text-end pe-2">{{ __('Name') }}</th><td class="text-start ps-2">{{ $project->name }}</td></tr>
@@ -63,12 +63,14 @@
                                                         {{ '--' }}
                                                     @endif
                                                 </div>
+                                                @if(!$project->trashed())
                                                 <div class="text-end">
                                                     <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#statusUpdateModal">
                                                         <i class="ri-fingerprint-line"></i>
                                                         <span class="btn-text d-none d-sm-inline">{{ __('Update Status') }}</span>
                                                     </button>
                                                 </div>
+                                                @endif
                                             </td>
                                         </tr>
 
@@ -83,36 +85,38 @@
                                         @endif
                                         </tbody>
                                     </table>
-
-                                    <div class="text-start mt-2 pb-2">
-                                        @if($project->trashed())
-                                            <button class="btn btn-sm btn-soft-success restore-project" id="restoreProject" data-project-id="{{ $project->id }}"><i class="ri-recycle-line"></i><span class="d-none d-sm-inline"> {{ __('Restore') }}</span></button>
-                                            <button class="btn btn-sm btn-danger delete-project" id="deleteProject" data-project-id="{{ $project->id }}"><i class="ri-close-line"></i><span class="d-none d-sm-inline"> {{ __('Delete') }}</span></button>
-                                        @else
-                                            <a href="{{ route('project.edit', $project->id) }}" class="btn btn-sm btn-info"><i class="ri-edit-line"></i><span class="d-none d-sm-inline"> {{ __('Edit') }}</span></a>
-                                            <button class="btn btn-sm btn-warning destroy-project" id="destroyProject" data-project-id="{{ $project->id }}"><i class="ri-delete-bin-line"></i><span class="d-none d-sm-inline"> {{ __('Destroy') }}</span></button>
-                                        @endif
-                                    </div>
-
-                                    <h5 class="mt-3">{{ __('Site Address') }}</h5>
+                                </div>
+                                <div class="col-12 col-md-6 order-2">
                                     @if($project->address)
-                                        <table class="table table-hover table-responsive table-bordered table-sm">
+                                        <table class="table table-responsive table-bordered table-sm">
                                             <tbody>
-                                            <tr><th class="text-end pe-2">{{ __('Division') }}</th><td class="text-start ps-2">{{ $project->address->division_name }}</td></tr>
-                                            <tr><th class="text-end pe-2">{{ __('District') }}</th><td class="text-start ps-2">{{ $project->address->district_name }}</td></tr>
-                                            <tr><th class="text-end pe-2">{{ __('Thana/Upazila') }}</th><td class="text-start ps-2">{{ $project->address->thana_name }}</td></tr>
-                                            <tr><th class="text-end pe-2">{{ __('Address') }}</th><td class="text-start ps-2">{{ $project->address->address }}</td></tr>
-                                            <tr><th class="text-end pe-2">{{ __('Landmark') }}</th><td class="text-start ps-2">{{ $project->address->landmark }}</td></tr>
-                                            <tr><th class="text-end pe-2">{{ __('Latitude') }}</th><td class="text-start ps-2">{{ $project->address->latitude }}</td></tr>
-                                            <tr><th class="text-end pe-2">{{ __('Longitude') }}</th><td class="text-start ps-2">{{ $project->address->longitude }}</td></tr>
-                                            <tr><th class="text-end pe-2">{{ __('Map Address') }}</th><td class="text-start ps-2">{{ $project->address->map_address }}</td></tr>
+                                            <tr>
+                                                <td class="text-start ps-2">
+                                                    <div class="project-address">
+                                                        <div class="mb-2">
+                                                            <span class="fw-semibold">{{ __('Address') }}:</span>
+                                                            <span>{{ $project->address->address }}</span>
+                                                        </div>
+                                                        <div class="mb-2">
+                                                            <span class="fw-semibold">{{ __('Geo Location') }}:</span>
+                                                            <span>
+                                                                {{ $project->address->thana_name }},
+                                                                {{ $project->address->district_name }},
+                                                                {{ $project->address->division_name }}
+                                                            </span>
+                                                        </div>
+                                                        <div>
+                                                            <span class="fw-semibold">{{ __('Landmark') }}:</span>
+                                                            <span>{{ $project->address->landmark }}</span>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
                                             </tbody>
                                         </table>
                                     @else
                                         <p class="text-muted">{{ __('No Site Address Found') }}</p>
                                     @endif
-                                </div>
-                                <div class="col-12 col-md-5 ps-5 order-2">
                                     @if($project->approvalLogs->isNotEmpty())
                                         @foreach($project->approvalLogs as $log)
                                             <hr style="padding: 0 !important; margin: 0 !important;">
@@ -136,7 +140,18 @@
                                     @else
                                         <p>No Approval History Found</p>
                                     @endif
+                                </div>
+                            </div>
 
+                            <div class="row">
+                                <div class="col-12 text-start mt-2 pb-2">
+                                    @if($project->trashed())
+                                        <button class="btn btn-sm btn-soft-success restore-project" id="restoreProject" data-project-id="{{ $project->id }}"><i class="ri-recycle-line"></i><span class="d-none d-sm-inline"> {{ __('Restore') }}</span></button>
+                                        <button class="btn btn-sm btn-danger delete-project" id="deleteProject" data-project-id="{{ $project->id }}"><i class="ri-close-line"></i><span class="d-none d-sm-inline"> {{ __('Delete') }}</span></button>
+                                    @else
+                                        <a href="{{ route('project.edit', $project->id) }}" class="btn btn-sm btn-info"><i class="ri-edit-line"></i><span class="d-none d-sm-inline"> {{ __('Edit') }}</span></a>
+                                        <button class="btn btn-sm btn-warning destroy-project" id="destroyProject" data-project-id="{{ $project->id }}"><i class="ri-delete-bin-line"></i><span class="d-none d-sm-inline"> {{ __('Destroy') }}</span></button>
+                                    @endif
                                 </div>
                             </div>
 

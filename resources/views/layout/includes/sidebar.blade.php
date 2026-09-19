@@ -119,7 +119,7 @@
                         <ul class="nav nav-sm flex-column">
                             <div class="divider"></div>
                             <li class="nav-item {{ request()->routeIs('project.*') ? 'active-menu' : '' }}">
-                                <a href="{{ route('project.index') }}" class="nav-link"><i class="ri-apps-2-line"></i> {{ __('Manage Projects/Sites') }}</a>
+                                <a href="{{ route('project.index') }}" class="nav-link"><i class="ri-apps-2-line"></i> {{ __('Manage Projects') }}</a>
                             </li>
                             <div class="divider"></div>
                             <li class="nav-item {{ request()->routeIs('store.*') ? 'active-menu' : '' }}">

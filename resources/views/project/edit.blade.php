@@ -193,7 +193,8 @@
                                     </div>
 
                                     <div class="col-12 col-md-6">
-                                    {{-- TODO: OpenStreet Map will be Shown Here --}}
+                                        <div id="project-map" style="height: 350px;"></div>
+                                        <small class="text-muted d-block mt-1">{{ __('Click on the Map or Drag the Marker to Set the Location') }}</small>
                                     </div>
                                 </div>
                             </div>
@@ -232,7 +233,7 @@
             */
             function loadDistricts(divisionId, selectedDistrictId, callback) {
                 const $district = $('#district_id');
-                $district.html('<option value="">{{ __("===== Select District =====") }}</option>');
+                $district.html('<option value="">{{ __("== Select District ==") }}</option>');
 
                 if (!divisionId) {
                     return;
@@ -256,7 +257,7 @@
             */
             function loadThanas(districtId, selectedThanaId) {
                 const $thana = $('#thana_id');
-                $thana.html('<option value="">{{ __("===== Select Thana/Upazila =====") }}</option>');
+                $thana.html('<option value="">{{ __("== Select Thana/Upazila ==") }}</option>');
 
                 if (!districtId) {
                     return;
@@ -287,6 +288,76 @@
                     }
                 });
             }
+
+            /*
+            |--------------------------------------------------------------------------
+            | OPENSTREETMAP (LEAFLET) - PICK LOCATION, FILL LAT/LNG + MAP ADDRESS
+            |--------------------------------------------------------------------------
+            */
+            const savedLatitude = {{ $project->address?->latitude ?? 'null' }};
+            const savedLongitude = {{ $project->address?->longitude ?? 'null' }};
+            const defaultLatLng = (savedLatitude && savedLongitude) ? [savedLatitude, savedLongitude] : [23.7941491, 90.4054018];
+            const map = L.map('project-map').setView(defaultLatLng, (savedLatitude && savedLongitude) ? 15 : 15);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            const marker = L.marker(defaultLatLng, { draggable: true }).addTo(map);
+
+            let reverseGeocodeTimer = null;
+
+            function reverseGeocode(lat, lng) {
+                clearTimeout(reverseGeocodeTimer);
+                reverseGeocodeTimer = setTimeout(function () {
+                    $.get('https://nominatim.openstreetmap.org/reverse', {
+                        format: 'jsonv2',
+                        lat: lat,
+                        lon: lng
+                    }, function (response) {
+                        if (response && response.display_name) {
+                            $('#map_address').val(response.display_name);
+                        }
+                    });
+                }, 600);
+            }
+
+            function setLocation(lat, lng) {
+                lat = parseFloat(lat.toFixed(6));
+                lng = parseFloat(lng.toFixed(6));
+
+                $('#latitude').val(lat);
+                $('#longitude').val(lng);
+
+                marker.setLatLng([lat, lng]);
+                reverseGeocode(lat, lng);
+            }
+
+            map.on('click', function (e) {
+                setLocation(e.latlng.lat, e.latlng.lng);
+            });
+
+            marker.on('dragend', function () {
+                const position = marker.getLatLng();
+                setLocation(position.lat, position.lng);
+            });
+
+            // Keep the map in sync if Latitude/Longitude are edited manually.
+            $('#latitude, #longitude').on('change', function () {
+                const lat = parseFloat($('#latitude').val());
+                const lng = parseFloat($('#longitude').val());
+
+                if (!isNaN(lat) && !isNaN(lng)) {
+                    map.setView([lat, lng], map.getZoom());
+                    marker.setLatLng([lat, lng]);
+                }
+            });
+
+            // Leaflet needs a resize nudge if it's initialized inside a hidden/animated container.
+            setTimeout(function () {
+                map.invalidateSize();
+            }, 200);
         });
     </script>
 @endpush
