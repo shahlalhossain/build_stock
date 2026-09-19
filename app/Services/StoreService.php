@@ -6,8 +6,10 @@ use App\Events\Store\StoreCreated;
 use App\Events\Store\StoreDeleted;
 use App\Events\Store\StoreDestroyed;
 use App\Events\Store\StoreRestored;
+use App\Events\Store\StoreStatusUpdated;
 use App\Events\Store\StoreUpdated;
 use App\Exceptions\GeneralException;
+use App\Models\ApprovalLog;
 use App\Models\Store;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -40,8 +42,13 @@ class StoreService extends BaseService
             $storeData = [
                 'project_id' => $data['project_id'] ?? null,
                 'name' => $data['name'] ?? null,
-                'code' => $data['code'] ?? null,
+                'code' => $this->generateCode($data['type'] ?? Store::TYPE_STORE),
                 'type' => $data['type'] ?? null,
+                'description' => $data['description'] ?? null,
+                'mobile' => $data['mobile'] ?? null,
+                'email' => $data['email'] ?? null,
+                'manager_id' => $data['manager_id'] ?? null,
+                'storekeeper_id' => $data['storekeeper_id'] ?? null,
                 'is_active' => true,
                 'created_by' => Auth::id(),
                 'updated_by' => Auth::id(),
@@ -61,6 +68,22 @@ class StoreService extends BaseService
     }
 
     /**
+     * Generate the next Sequential Code for the given Type (e.g. STR-0001, WH-0001).
+     */
+    protected function generateCode(string $type): string
+    {
+        $prefix = $type === Store::TYPE_WAREHOUSE ? 'WH' : 'STR';
+
+        $lastNumber = Store::withTrashed()
+            ->where('type', $type)
+            ->where('code', 'like', $prefix.'-%')
+            ->selectRaw('MAX(CAST(SUBSTRING(code, '.(strlen($prefix) + 2).') AS UNSIGNED)) as max_number')
+            ->value('max_number');
+
+        return $prefix.'-'.str_pad((int) $lastNumber + 1, 4, '0', STR_PAD_LEFT);
+    }
+
+    /**
      * @throws GeneralException
      * @throws Throwable
      */
@@ -72,8 +95,12 @@ class StoreService extends BaseService
             $store->update([
                 'project_id' => $data['project_id'] ?? null,
                 'name' => $data['name'] ?? null,
-                'code' => $data['code'] ?? null,
                 'type' => $data['type'] ?? null,
+                'description' => $data['description'] ?? null,
+                'mobile' => $data['mobile'] ?? null,
+                'email' => $data['email'] ?? null,
+                'manager_id' => $data['manager_id'] ?? null,
+                'storekeeper_id' => $data['storekeeper_id'] ?? null,
                 'updated_by' => Auth::id(),
             ]);
 
@@ -86,6 +113,62 @@ class StoreService extends BaseService
             Log::alert($exception->getMessage());
             DB::rollBack();
             throw new GeneralException(__('There was a Problem on Updating the Store.'));
+        }
+    }
+
+    /**
+     * @throws GeneralException
+     * @throws Throwable
+     */
+    public function updateStoreStatus(int $id, string $status, ?string $remarks = null): bool
+    {
+        DB::beginTransaction();
+        try {
+            $store = Store::findOrFail($id);
+
+            $oldStatus = $store->status;
+
+            if ($oldStatus === $status) {
+                return true;
+            }
+
+            // Update without Triggering Spatie's "updated" Activity Log
+            $store->status = $status;
+            $result = $store->saveQuietly();
+
+            ApprovalLog::create([
+                'model_type' => Store::class,
+                'model_id' => $store->id,
+                'action_name' => $status,
+                'actioned_by' => Auth::id(),
+                'actioned_at' => now(),
+                'remarks' => $remarks,
+            ]);
+
+            activity()
+                ->performedOn($store)
+                ->causedBy(Auth::user())
+                ->useLog('store')
+                ->event('statusUpdated')
+                ->withProperties([
+                    'old_status' => $oldStatus,
+                    'new_status' => $status,
+                    'remarks' => $remarks,
+                ])
+                ->log('statusUpdated');
+
+            event(new StoreStatusUpdated($store));
+
+            DB::commit();
+
+            return $result;
+        } catch (ModelNotFoundException $exception) {
+            DB::rollBack();
+            throw $exception;
+        } catch (Throwable $exception) {
+            DB::rollBack();
+            Log::error('Store Status Update Failed in Service:'.$exception->getMessage());
+            throw new GeneralException(__('There was an issue on Store Status Update'));
         }
     }
 

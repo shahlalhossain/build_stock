@@ -42,33 +42,18 @@
 
 
                                 <div class="row">
-                                    <div class="col-12 col-md-7">
+                                    <!-- Start Left Column -->
+                                    <div class="col-12 col-md-6">
                                         <div class="row mb-2">
-                                            <label for="project_id" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Head Office / Project') }}</label>
+                                            <label for="project_id" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Location') }}</label>
                                             <div class="col-12 col-md-8">
                                                 <select id="project_id" name="project_id" class="form-select @error('project_id') is-invalid @enderror">
                                                     <option value="" @selected(old('project_id', $store->project_id) === null)>{{ __('Head Office') }}</option>
-                                                    @foreach($projects as $proj)
-                                                        <option value="{{ $proj->id }}" @selected(old('project_id', $store->project_id) == $proj->id)>{{ ucwords($proj->name) }}</option>
+                                                    @foreach($projects as $project)
+                                                        <option value="{{ $project->id }}" @selected(old('project_id', $store->project_id) == $project->id)>{{ ucwords($project->name) }}</option>
                                                     @endforeach
                                                 </select>
                                                 @error('project_id')<small class="text-danger">{{ $message }}</small>@enderror
-                                            </div>
-                                        </div>
-
-                                        <div class="row mb-2">
-                                            <label for="name" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Store Name') }}</label>
-                                            <div class="col-12 col-md-8">
-                                                <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name', $store->name) }}" required>
-                                                @error('name')<small class="text-danger">{{ $message }}</small>@enderror
-                                            </div>
-                                        </div>
-
-                                        <div class="row mb-2">
-                                            <label for="code" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Store Code') }}</label>
-                                            <div class="col-12 col-md-8">
-                                                <input type="text" class="form-control @error('code') is-invalid @enderror" id="code" name="code" value="{{ old('code', $store->code) }}" required>
-                                                @error('code')<small class="text-danger">{{ $message }}</small>@enderror
                                             </div>
                                         </div>
 
@@ -82,7 +67,70 @@
                                                 @error('type')<small class="text-danger">{{ $message }}</small>@enderror
                                             </div>
                                         </div>
+
+                                        <div class="row mb-2">
+                                            <label for="name" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Store Name') }}</label>
+                                            <div class="col-12 col-md-8">
+                                                <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name', $store->name) }}" required>
+                                                @error('name')<small class="text-danger">{{ $message }}</small>@enderror
+                                            </div>
+                                        </div>
+
+                                        <div class="row mb-2">
+                                            <label for="description" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Description') }}</label>
+                                            <div class="col-12 col-md-8">
+                                                <input type="text" class="form-control @error('description') is-invalid @enderror" id="description" name="description" value="{{ old('description', $store->description) }}">
+                                                @error('description')<small class="text-danger">{{ $message }}</small>@enderror
+                                            </div>
+                                        </div>
                                     </div>
+                                    <!-- End Left Column -->
+
+                                    <!-- Start Right Column -->
+                                    <div class="col-12 col-md-6">
+                                        <div class="row mb-2">
+                                            <label for="storekeeper_id" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Storekeeper') }}</label>
+                                            <div class="col-12 col-md-8">
+                                                <select id="storekeeper_id" name="storekeeper_id" class="form-select @error('storekeeper_id') is-invalid @enderror" required>
+                                                    <option value="">{{ __('== Select Storekeeper ==') }}</option>
+                                                    @foreach($users as $user)
+                                                        <option value="{{ $user->id }}" @selected(old('storekeeper_id', $store->storekeeper_id) == $user->id)>{{ ucwords($user->name) }}</option>
+                                                    @endforeach
+                                                </select>
+                                                @error('storekeeper_id')<small class="text-danger">{{ $message }}</small>@enderror
+                                            </div>
+                                        </div>
+
+                                        <div class="row mb-2">
+                                            <label for="mobile" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Mobile') }}</label>
+                                            <div class="col-12 col-md-8">
+                                                <input type="text" class="form-control @error('mobile') is-invalid @enderror" id="mobile" name="mobile" value="{{ old('mobile', $store->mobile) }}">
+                                                @error('mobile')<small class="text-danger">{{ $message }}</small>@enderror
+                                            </div>
+                                        </div>
+
+                                        <div class="row mb-2">
+                                            <label for="email" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Email') }}</label>
+                                            <div class="col-12 col-md-8">
+                                                <input type="email" class="form-control @error('email') is-invalid @enderror" id="email" name="email" value="{{ old('email', $store->email) }}">
+                                                @error('email')<small class="text-danger">{{ $message }}</small>@enderror
+                                            </div>
+                                        </div>
+
+                                        <div class="row mb-2">
+                                            <label for="manager_id" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Store Manager') }}</label>
+                                            <div class="col-12 col-md-8">
+                                                <select id="manager_id" name="manager_id" class="form-select @error('manager_id') is-invalid @enderror">
+                                                    <option value="">{{ __('== Select Manager ==') }}</option>
+                                                    @foreach($users as $user)
+                                                        <option value="{{ $user->id }}" @selected(old('manager_id', $store->manager_id) == $user->id)>{{ ucwords($user->name) }}</option>
+                                                    @endforeach
+                                                </select>
+                                                @error('manager_id')<small class="text-danger">{{ $message }}</small>@enderror
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- End Right Column -->
                                 </div>
                             </div>
 

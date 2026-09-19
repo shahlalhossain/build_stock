@@ -24,7 +24,13 @@ class Store extends Model
         'name',
         'code',
         'type',
+        'description',
+        'mobile',
+        'email',
+        'manager_id',
+        'storekeeper_id',
         'is_active',
+        'status',
         'created_by',
         'updated_by',
     ];
@@ -58,6 +64,8 @@ class Store extends Model
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
             'project_id' => 'integer',
+            'manager_id' => 'integer',
+            'storekeeper_id' => 'integer',
             'is_active' => 'boolean',
         ];
     }
@@ -80,6 +88,21 @@ class Store extends Model
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class, 'project_id');
+    }
+
+    public function manager(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'manager_id');
+    }
+
+    public function storekeeper(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'storekeeper_id');
+    }
+
+    public function approvalLogs()
+    {
+        return $this->morphMany(ApprovalLog::class, 'model');
     }
 
     public function isHeadOffice(): bool

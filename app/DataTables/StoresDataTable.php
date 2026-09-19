@@ -34,11 +34,16 @@ class StoresDataTable extends DataTable
                     ? '<span class="badge bg-warning">'.__('Warehouse').'</span>'
                     : '<span class="badge bg-info">'.__('Store').'</span>';
             })
-            ->addColumn('is_active', function (Store $store) {
-                return $store->is_active ? '<span class="badge bg-success">Yes</span>' : '<span class="badge bg-danger">No</span>';
-            })
-            ->editColumn('created_at', function (Store $store) {
-                return $store->created_at->format('Y-m-d H:i');
+            ->editColumn('status', function (Store $store) {
+                if ($store->status === 'pending') {
+                    return '<span class="badge bg-warning">'.ucwords($store->status).'</span>';
+                } elseif ($store->status === 'approved') {
+                    return '<span class="badge bg-success">'.ucwords($store->status).'</span>';
+                } elseif ($store->status === 'rejected') {
+                    return '<span class="badge bg-danger">'.ucwords($store->status).'</span>';
+                } else {
+                    return '<span class="badge bg-secondary">'.ucwords('Unknown').'</span>';
+                }
             })
             ->addColumn('actions', function (Store $store) {
                 if ($this->showTrashed) {
@@ -47,7 +52,7 @@ class StoresDataTable extends DataTable
 
                 return view('store.actions', ['store' => $store]);
             })
-            ->rawColumns(['type', 'is_active']);
+            ->rawColumns(['type', 'is_active', 'status']);
     }
 
     /**
@@ -93,8 +98,7 @@ class StoresDataTable extends DataTable
             Column::make('code')->orderable(true)->searchable(true),
             Column::make('Location', 'project')->orderable(false)->searchable(false),
             Column::computed('type')->title('Type')->orderable(false)->searchable(false)->addClass('text-center'),
-            Column::computed('is_active')->title('Active')->orderable(false)->searchable(false)->addClass('text-center'),
-            Column::make('created_at')->orderable(true)->searchable(true)->addClass('text-center'),
+            Column::computed('status')->title('Status')->orderable(false)->searchable(false)->addClass('text-center'),
             Column::computed('actions')
                 ->orderable(false)
                 ->searchable(false)

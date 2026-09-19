@@ -23,7 +23,7 @@
                         <div class="card-body">
 
                             <div class="row">
-                                <div class="col-12">
+                                <div class="col-12 col-md-7 order-1">
                                     <table class="table table-hover table-responsive table-bordered table-sm">
                                         <tbody>
                                         <tr><th class="text-end pe-2">{{ __('Location') }}</th><td class="text-start ps-2">{{ $store->isHeadOffice() ? __('Head Office') : $store->project?->name }}</td></tr>
@@ -38,6 +38,11 @@
                                                 @endif
                                             </td>
                                         </tr>
+                                        <tr><th class="text-end pe-2">{{ __('Description') }}</th><td class="text-start ps-2">{{ $store->description }}</td></tr>
+                                        <tr><th class="text-end pe-2">{{ __('Mobile') }}</th><td class="text-start ps-2">{{ $store->mobile }}</td></tr>
+                                        <tr><th class="text-end pe-2">{{ __('Email') }}</th><td class="text-start ps-2">{{ $store->email }}</td></tr>
+                                        <tr><th class="text-end pe-2">{{ __('Store Manager') }}</th><td class="text-start ps-2">{{ $store->manager?->name ?? '' }}</td></tr>
+                                        <tr><th class="text-end pe-2">{{ __('Storekeeper') }}</th><td class="text-start ps-2">{{ $store->storekeeper?->name ?? '' }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Is Active') }}</th>
                                             <td class="text-start ps-2">
                                                 @if($store->is_active == 1)
@@ -49,7 +54,33 @@
                                                 @endif
                                             </td>
                                         </tr>
-                                        <tr><th class="text-end pe-2">{{ __('Description') }}</th><td class="text-start ps-2">{{ $store->description }}</td></tr>
+                                        <tr>
+                                            <th class="text-end pe-2 justify-content-between">{{ __('Status') }}</th>
+                                            <td class="text-start d-flex justify-content-between align-items-center">
+                                                <div class="text-start">
+                                                    @php
+                                                        $status = $store->status;
+                                                        $map = [
+                                                            'pending'  => ['class' => 'text-warning', 'icon' => 'ri-loader-4-line', 'label' => 'Pending'],
+                                                            'approved' => ['class' => 'text-success', 'icon' => 'ri-checkbox-circle-line', 'label' => 'Approved'],
+                                                            'rejected' => ['class' => 'text-danger', 'icon'  => 'ri-close-circle-line', 'label' => 'Rejected'],
+                                                        ];
+                                                    @endphp
+
+                                                    @if($status && isset($map[$status]))
+                                                        <span class="{{ $map[$status]['class'] }}"><i class="{{ $map[$status]['icon'] }}"></i> {{ __($map[$status]['label']) }}</span>
+                                                    @else
+                                                        {{ '--' }}
+                                                    @endif
+                                                </div>
+                                                <div class="text-end">
+                                                    <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#statusUpdateModal">
+                                                        <i class="ri-fingerprint-line"></i>
+                                                        <span class="btn-text d-none d-sm-inline">{{ __('Update Status') }}</span>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
 
                                         <tr><th class="text-end pe-2">{{ __('Created By') }}</th><td class="text-start ps-2">{{ $store->creator?->name ?? '' }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Created At') }}</th><td class="text-start ps-2">{{ $store->created_at->format('Y-m-d H:i:s') }}</td></tr>
@@ -73,9 +104,82 @@
                                         @endif
                                     </div>
                                 </div>
+                                <div class="col-12 col-md-5 ps-5 order-2">
+                                    @if($store->approvalLogs->isNotEmpty())
+                                        @foreach($store->approvalLogs as $log)
+                                            <hr style="padding: 0 !important; margin: 0 !important;">
+                                            <div class="pb-2 pt-2">
+                                                <strong>{{ ucfirst($log->action_name) }}</strong>
+
+                                                @if($log->actionedBy)
+                                                    by <em>{{ $log->actionedBy->name }}</em>
+                                                @endif
+
+                                                @if($log->actioned_at)
+                                                    on {{ $log->actioned_at->format('d F, Y h:i A') }}
+                                                @endif
+                                                <br>
+                                                @if($log->remarks)
+                                                    <strong><em>Remarks: </em></strong> {{ $log->remarks }}
+                                                @endif
+                                            </div>
+                                        @endforeach
+                                        <hr style="padding: 0 !important; margin: 0 !important;">
+                                    @else
+                                        <p>No Approval History Found</p>
+                                    @endif
+                                </div>
                             </div>
 
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="statusUpdateModal" tabindex="-1" aria-labelledby="statusUpdateModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <form id="statusUpdateForm" action="{{ route('store.update-status', $store->id) }}" method="POST">
+                            @csrf
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="statusUpdateModalLabel"> {{ __('Update Store Status') }} </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" ></button>
+                            </div>
+                            <hr>
+                            <div class="modal-body">
+                                <div id="statusUpdateError" class="alert alert-danger d-none"></div>
+                                <div class="row mb-2">
+                                    <label class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory"> {{ __('Select Status') }} </label>
+                                    <div class="col-12 col-md-8">
+                                        <div class="form-check form-check-inline pt-2 mb-2">
+                                            <input class="form-check-input" type="radio" name="status" id="statusPending" value="pending" >
+                                            <label class="form-check-label" for="statusPending"> {{ __('Pending') }} </label>
+                                        </div>
+                                        <div class="form-check form-check-inline pt-2 mb-2">
+                                            <input class="form-check-input" type="radio" name="status" id="statusApproved" value="approved" >
+                                            <label class="form-check-label" for="statusApproved"> {{ __('Approve') }} </label>
+                                        </div>
+                                        <div class="form-check form-check-inline pt-2 mb-2">
+                                            <input class="form-check-input" type="radio" name="status" id="statusRejected" value="rejected" >
+                                            <label class="form-check-label" for="statusRejected"> {{ __('Reject') }} </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <label for="remarks" class="col-12 col-md-4 col-form-label text-md-end text-start" > {{ __('Add Remarks') }} </label>
+                                    <div class="col-12 col-md-8 pt-2">
+                                        <textarea id="remarks" name="remarks" class="form-control" rows="2" ></textarea>
+                                    </div>
+                                </div>
+                                <input type="hidden" name="store_id" value="{{ $store->id }}">
+                            </div>
+                            <hr>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-sm btn-danger" data-bs-dismiss="modal" > {{ __('Cancel') }} </button>
+                                <button type="reset" class="btn btn-sm btn-warning" > {{ __('Reset') }} </button>
+                                <button type="submit" class="btn btn-sm btn-info" id="updateStatusBtn" > {{ __('Update Status') }} </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -225,6 +329,75 @@
 
                     } else {
                         Swal.fire('Cancelled', 'Your Record is in Trash Box.', 'info');
+                    }
+                });
+            });
+
+            /*
+            |--------------------------------------------------------------------------
+            | UPDATE STORE STATUS
+            |--------------------------------------------------------------------------
+            */
+            $('#statusUpdateForm').on('submit', function (e) {
+                e.preventDefault();
+                const form = $(this);
+                const button = $('#updateStatusBtn');
+                const errorBox = $('#statusUpdateError');
+                // Clear Previous Errors
+                errorBox.addClass('d-none').html('');
+
+                // Disable Button
+                button.prop('disabled', true);
+
+                button.html('<i class="ri-loader-4-line ri-spin"></i> {{ __("Updating...") }}');
+
+                $.ajax({
+                    url: form.attr('action'),
+                    type: 'POST',
+                    data: form.serialize(),
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | STATUS UPDATE SUCCESS
+                    |--------------------------------------------------------------------------
+                    */
+                    success: function (response) {
+                        if (response.success) {
+                            sessionStorage.setItem('storeToastMessage', response.message || 'Store Status Updated Successfully.');
+                            sessionStorage.setItem('storeToastType', 'success');
+                            $('#statusUpdateModal').modal('hide');
+                            window.location.reload();
+                        }
+                    },
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | STATUS UPDATE ERROR
+                    |--------------------------------------------------------------------------
+                    */
+                    error: function (xhr) {
+                        if (xhr.status === 422) {
+                            const errors = xhr.responseJSON?.errors || {};
+                            const messages = [];
+                            $.each(errors, function (field, errorMessages) {
+                                if (errorMessages.length > 0) {
+                                    messages.push(errorMessages[0]);
+                                }
+                            });
+                            errorBox.html(messages.join('<br>')).removeClass('d-none');
+                            return;
+                        }
+
+                        const message = xhr.responseJSON?.message || 'Something went wrong. Please try again.';
+
+                        sessionStorage.setItem('storeToastMessage', message);
+                        sessionStorage.setItem('storeToastType', 'failed');
+                        window.location.reload();
+                    },
+
+                    complete: function () {
+                        button.prop('disabled', false);
+                        button.html('{{ __("Update Status") }}');
                     }
                 });
             });

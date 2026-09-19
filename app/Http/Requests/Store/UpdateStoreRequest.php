@@ -24,14 +24,16 @@ class UpdateStoreRequest extends FormRequest
      */
     public function rules(): array
     {
-        $store = $this->route('store');
-
         return [
             // project_id absent/empty means Head Office; a real id means that Project (Site).
             'project_id' => ['nullable', 'integer', Rule::exists('projects', 'id')],
             'name' => ['required', 'string', 'max:255'],
-            'code' => ['required', 'string', 'max:50', Rule::unique('stores', 'code')->ignore($store)],
             'type' => ['required', 'string', Rule::in(Store::TYPES)],
+            'description' => ['nullable', 'string', 'max:255'],
+            'mobile' => ['nullable', 'string', 'max:30'],
+            'email' => ['nullable', 'email', 'max:150'],
+            'manager_id' => ['nullable', 'integer', Rule::exists('users', 'id')],
+            'storekeeper_id' => ['nullable', 'integer', Rule::exists('users', 'id')],
         ];
     }
 
@@ -45,13 +47,20 @@ class UpdateStoreRequest extends FormRequest
             'name.string' => __('Store Name must be a Valid String'),
             'name.max' => __('Store Name may not exceed 255 Characters'),
 
-            'code.required' => __('Store Code is Required'),
-            'code.string' => __('Store Code must be a Valid String'),
-            'code.max' => __('Store Code may not exceed 50 Characters'),
-            'code.unique' => __('This Store Code already Exists'),
-
             'type.required' => __('Type is Required'),
             'type.in' => __('Selected Type is Invalid'),
+
+            'description.string' => __('Description must be a Valid String'),
+            'description.max' => __('Description may not exceed 255 Characters'),
+
+            'mobile.string' => __('Mobile must be a Valid String'),
+            'mobile.max' => __('Mobile may not exceed 30 Characters'),
+
+            'email.email' => __('Email must be a Valid Email Address'),
+            'email.max' => __('Email may not exceed 150 Characters'),
+
+            'manager_id.exists' => __('Selected Store Manager does not Exist'),
+            'storekeeper_id.exists' => __('Selected Storekeeper does not Exist'),
         ];
     }
 }

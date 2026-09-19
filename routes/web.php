@@ -229,6 +229,7 @@ Route::middleware('auth:web')->group(function () {
             Route::get('/', [StoresController::class, 'show'])->name('show')->withTrashed();
             Route::get('edit', [StoresController::class, 'edit'])->name('edit');
             Route::patch('/', [StoresController::class, 'update'])->name('update');
+            Route::post('update-status', [StoresController::class, 'updateStatus'])->name('update-status');
             Route::delete('/', [StoresController::class, 'destroy'])->name('destroy');
             Route::post('restore', [StoresController::class, 'restore'])->name('restore');
             Route::delete('force-delete', [StoresController::class, 'delete'])->name('delete');

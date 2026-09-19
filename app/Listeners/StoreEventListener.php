@@ -6,6 +6,7 @@ use App\Events\Store\StoreCreated;
 use App\Events\Store\StoreDeleted;
 use App\Events\Store\StoreDestroyed;
 use App\Events\Store\StoreRestored;
+use App\Events\Store\StoreStatusUpdated;
 use App\Events\Store\StoreUpdated;
 
 class StoreEventListener
@@ -22,6 +23,14 @@ class StoreEventListener
      * Handle Store Updated event.
      */
     public function onUpdated(StoreUpdated $event): void
+    {
+        //
+    }
+
+    /**
+     * Handle Store Status Updated event.
+     */
+    public function onStatusUpdated(StoreStatusUpdated $event): void
     {
         //
     }
@@ -57,6 +66,7 @@ class StoreEventListener
     {
         $events->listen(StoreCreated::class, [self::class, 'onCreated']);
         $events->listen(StoreUpdated::class, [self::class, 'onUpdated']);
+        $events->listen(StoreStatusUpdated::class, [self::class, 'onStatusUpdated']);
         $events->listen(StoreDestroyed::class, [self::class, 'onDestroyed']);
         $events->listen(StoreRestored::class, [self::class, 'onRestored']);
         $events->listen(StoreDeleted::class, [self::class, 'onDeleted']);

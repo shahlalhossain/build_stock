@@ -8,11 +8,13 @@ use App\Http\Requests\Store\StoreStoreRequest;
 use App\Http\Requests\Store\UpdateStoreRequest;
 use App\Models\Project;
 use App\Models\Store;
+use App\Models\User;
 use App\Services\StoreService;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 use Throwable;
@@ -36,6 +38,7 @@ class StoresController extends Controller
     public function create()
     {
         $data['projects'] = Project::query()->where('is_active', true)->orderBy('name')->get();
+        $data['users'] = User::query()->orderBy('name')->get();
 
         return view('store.create', $data);
     }
@@ -59,7 +62,7 @@ class StoresController extends Controller
 
     public function show(Store $store)
     {
-        $data['store'] = $store->load(['project', 'creator', 'updater', 'deleter']);
+        $data['store'] = $store->load(['project', 'manager', 'storekeeper', 'creator', 'updater', 'deleter', 'approvalLogs.actionedBy']);
 
         return view('store.show', $data);
     }
@@ -68,6 +71,7 @@ class StoresController extends Controller
     {
         $data['store'] = $store;
         $data['projects'] = Project::query()->where('is_active', true)->orderBy('name')->get();
+        $data['users'] = User::query()->orderBy('name')->get();
 
         return view('store.edit', $data);
     }
@@ -86,6 +90,32 @@ class StoresController extends Controller
             Log::error('Unexpected Error on Updating Store: '.$exception->getMessage());
 
             return back()->withInput()->with('error', 'Unexpected Error Occurred. Try Again.');
+        }
+    }
+
+    public function updateStatus(Request $request, $id): JsonResponse
+    {
+        $validated = $request->validate([
+            'status' => ['required', 'in:pending,approved,rejected'],
+            'remarks' => ['nullable', 'string'],
+        ]);
+
+        try {
+            $this->storeService->updateStoreStatus((int) $id, $validated['status'], $validated['remarks'] ?? null);
+
+            return response()->json(['success' => true, 'message' => 'Store Status Updated Successfully.']);
+        } catch (ModelNotFoundException $exception) {
+            Log::warning('Store Not Found: '.$exception->getMessage());
+
+            return response()->json(['success' => false, 'message' => 'Store Not Found.'], 404);
+        } catch (GeneralException $exception) {
+            Log::error('Store Status Update Failed: '.$exception->getMessage());
+
+            return response()->json(['success' => false, 'message' => $exception->getMessage()], 422);
+        } catch (Throwable $exception) {
+            Log::error('Unexpected Error on Updating Store Status: '.$exception->getMessage());
+
+            return response()->json(['success' => false, 'message' => 'Unexpected Error Occurred on Updating the Store Status.'], 500);
         }
     }
 
