@@ -194,8 +194,7 @@
                                             <input type="radio" class="form-check-input primary-radio" name="contacts[__INDEX__][is_primary]" value="1">
                                             <label class="form-check-label pt-1 ps-2"> {{ __('Primary') }}</label>
                                         </div>
-                                        {{-- TODO: Have work with Custom CSS for pt-md-2 pt-2 d-flex align-items-center --}}
-                                        <div class="col-4 col-sm-6 col-md-2 text-end text-md-start pt-md-2 pt-2 d-flex align-items-center">
+                                        <div class="col-4 col-sm-6 col-md-2 text-end text-md-start pt-md-3 pt-2">
                                             <button type="button" class="btn btn-sm btn-outline-danger remove-row"><i class="ri-close-line"></i></button>
                                         </div>
                                     </div>
@@ -268,7 +267,7 @@
                                             {{-- TODO: This Input will be Dropdown Select-Options. --}}
                                             <input type="text" class="form-control" name="payment_accounts[__INDEX__][branch_name]" placeholder="{{ __('Branch') }}">
                                         </div>
-                                        <div class="col-12 col-sm-4 col-md-2 text-end text-md-start pt-2 pt-md-3">
+                                        <div class="col-12 col-sm-12 col-md-2 text-end text-md-start pt-2 pt-md-2">
                                             <button type="button" class="btn btn-sm btn-outline-danger remove-row"><i class="ri-close-line"></i></button>
                                         </div>
                                     </div>
@@ -293,11 +292,11 @@
                                         <div class="col-12 col-sm-12 col-md-2 pt-2">
                                             <input type="text" class="form-control" name="mfs_accounts[__INDEX__][mfs_account_number]" placeholder="{{ __('Mobile Banking Number') }}">
                                         </div>
-                                        <div class="col-8 col-sm-8 col-md-2 primary-field pt-md-2 pt-2">
+                                        <div class="col-8 col-sm-6 col-md-2 primary-field pt-md-3 pt-2">
                                             <input type="radio" class="form-check-input primary-radio" name="mfs_accounts[__INDEX__][is_primary]" value="1">
                                             <label class="form-check-label pt-1 ps-2"> {{ __('Primary') }}</label>
                                         </div>
-                                        <div class="col-4 col-sm-4 col-md-2 text-end text-md-start pt-md-3 pt-2 d-flex align-items-center justify-content-center">
+                                        <div class="col-4 col-sm-6 col-md-2 text-end text-md-start pt-md-3 pt-2">
                                             <button type="button" class="btn btn-sm btn-outline-danger remove-row"><i class="ri-close-line"></i></button>
                                         </div>
                                     </div>
