@@ -184,16 +184,16 @@
                                             <input type="text" class="form-control" name="contacts[__INDEX__][designation]" placeholder="{{ __('Designation') }}">
                                         </div>
                                         <div class="col-12 col-sm-6 col-md-2 pt-2">
-                                            <input type="email" class="form-control" name="contacts[__INDEX__][email]" placeholder="{{ __('Email') }}">
-                                        </div>
-                                        <div class="col-12 col-sm-6 col-md-2 pt-2">
                                             <input type="text" class="form-control" name="contacts[__INDEX__][mobile]" placeholder="{{ __('Mobile') }}">
+                                        </div>
+                                        <div class="col-12 col-sm-6 col-md-3 pt-2">
+                                            <input type="email" class="form-control" name="contacts[__INDEX__][email]" placeholder="{{ __('Email') }}">
                                         </div>
                                         <div class="col-8 col-sm-6 col-md-1 primary-field" style="padding-top: 13px;">
                                             <input type="radio" class="form-check-input primary-radio" name="contacts[__INDEX__][is_primary]" value="1">
                                             <label class="form-check-label pt-1 ps-2"> {{ __('Primary') }}</label>
                                         </div>
-                                        <div class="col-4 col-sm-6 col-md-2 text-end text-md-start" style="padding-top: 13px;">
+                                        <div class="col-4 col-sm-6 col-md-1 text-end text-md-start" style="padding-top: 13px;">
                                             <button type="button" class="btn btn-sm btn-outline-danger remove-row"><i class="ri-close-line"></i></button>
                                         </div>
                                     </div>
@@ -211,15 +211,7 @@
 
                                 <template id="addresses-row-template">
                                     <div class="row mb-2 align-items-start repeater-row" data-group="addresses">
-                                        <div class="col-12 col-sm-12 col-md-2 pt-2">
-                                            <select class="form-select" name="addresses[__INDEX__][address_type]" required>
-                                                <option value="">{{ __('== Addr. Type ==') }}</option>
-                                                @foreach($addressTypes as $addressType)
-                                                    <option value="{{ $addressType->id }}">{{ $addressType->name }}</option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-                                        <div class="col-12 col-sm-12 col-md-2 pt-2">
+                                        <div class="col-12 col-sm-12 col-md-3 pt-2">
                                             <input type="text" class="form-control" name="addresses[__INDEX__][address]" placeholder="{{ __('Address') }}" required>
                                         </div>
                                         <div class="col-12 col-sm-4 col-md-2 pt-2">
@@ -240,7 +232,15 @@
                                                 <option value="">{{ __('== Thana ==') }}</option>
                                             </select>
                                         </div>
-                                        <div class="col-12 col-sm-12 col-md-2 text-end text-md-start" style="padding-top: 13px;">
+                                        <div class="col-12 col-sm-12 col-md-2 pt-2">
+                                            <select class="form-select" name="addresses[__INDEX__][address_type]" required>
+                                                <option value="">{{ __('== Addr. Type ==') }}</option>
+                                                @foreach($addressTypes as $addressType)
+                                                    <option value="{{ $addressType->id }}">{{ $addressType->name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div class="col-12 col-sm-12 col-md-1 text-end text-md-start" style="padding-top: 13px;">
                                             <button type="button" class="btn btn-sm btn-outline-danger remove-row"><i class="ri-close-line"></i></button>
                                         </div>
                                     </div>
@@ -258,11 +258,7 @@
 
                                 <template id="payment_accounts-row-template">
                                     <div class="row mb-2 align-items-start repeater-row" data-group="payment_accounts">
-                                        <div class="col-12 col-sm-12 col-md-2 pt-2">
-                                            {{-- TODO: This Input will be Dropdown Select-Options. --}}
-                                            <input type="text" class="form-control" name="payment_accounts[__INDEX__][payment_method]" placeholder="{{ __('Payment Method') }}">
-                                        </div>
-                                        <div class="col-12 col-sm-12 col-md-2 pt-2">
+                                        <div class="col-12 col-sm-12 col-md-3 pt-2">
                                             <input type="text" class="form-control" name="payment_accounts[__INDEX__][account_name]" placeholder="{{ __('Account Name') }}">
                                         </div>
                                         <div class="col-12 col-sm-12 col-md-2 pt-2">
@@ -281,7 +277,10 @@
                                                 <option value="">{{ __('== Branch ==') }}</option>
                                             </select>
                                         </div>
-                                        <div class="col-12 col-sm-12 col-md-2 text-end text-md-start" style="padding-top: 13px;">
+                                        <div class="col-12 col-sm-12 col-md-2 pt-2">
+                                            <input type="text" class="form-control" name="branch_routing_number" disabled placeholder="{{ __('Routing Number') }}">
+                                        </div>
+                                        <div class="col-12 col-sm-12 col-md-1 text-end text-md-start" style="padding-top: 13px;">
                                             <button type="button" class="btn btn-sm btn-outline-danger remove-row"><i class="ri-close-line"></i></button>
                                         </div>
                                     </div>
