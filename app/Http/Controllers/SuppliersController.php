@@ -7,6 +7,8 @@ use App\Exceptions\GeneralException;
 use App\Http\Requests\Supplier\StoreSupplierRequest;
 use App\Http\Requests\Supplier\UpdateSupplierRequest;
 use App\Models\AddressType;
+use App\Models\GeoDivision;
+use App\Models\MFSCompany;
 use App\Models\Supplier;
 use App\Models\SupplierType;
 use App\Services\SupplierService;
@@ -36,8 +38,10 @@ class SuppliersController extends Controller
 
     public function create()
     {
-        $data['supplierTypes']  = SupplierType::select('id', 'name')->get();
-        $data['addressTypes']   = AddressType::select('id', 'name')->get();
+        $data['supplierTypes'] = SupplierType::select('id', 'name')->get();
+        $data['addressTypes'] = AddressType::where('is_active', true)->select('id', 'name')->get();
+        $data['divisions'] = GeoDivision::orderBy('name_en')->get(['id', 'name_en', 'name_bn']);
+        $data['mfsCompanies'] = MFSCompany::where('status', 'Active')->select('id', 'service_name')->get();
 
         return view('supplier.create', $data);
     }

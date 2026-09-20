@@ -212,23 +212,33 @@
                                 <template id="addresses-row-template">
                                     <div class="row mb-2 align-items-start repeater-row" data-group="addresses">
                                         <div class="col-12 col-sm-12 col-md-2 pt-2">
-                                            {{-- TODO: This Input will be Dropdown Select-Options. Variable Name: $addressTypes --}}
-                                            <input type="text" class="form-control" name="addresses[__INDEX__][address_type]" placeholder="{{ __('Addr. Type') }}" required>
+                                            <select class="form-select" name="addresses[__INDEX__][address_type]" required>
+                                                <option value="">{{ __('== Addr. Type ==') }}</option>
+                                                @foreach($addressTypes as $addressType)
+                                                    <option value="{{ $addressType->id }}">{{ $addressType->name }}</option>
+                                                @endforeach
+                                            </select>
                                         </div>
                                         <div class="col-12 col-sm-12 col-md-2 pt-2">
                                             <input type="text" class="form-control" name="addresses[__INDEX__][address]" placeholder="{{ __('Address') }}" required>
                                         </div>
                                         <div class="col-12 col-sm-4 col-md-2 pt-2">
-                                            {{-- TODO: This Input will be Dropdown Select-Options. --}}
-                                            <input type="text" class="form-control" name="addresses[__INDEX__][division_id]" placeholder="{{ __('Division') }}">
+                                            <select class="form-select address-division" name="addresses[__INDEX__][division_id]">
+                                                <option value="">{{ __('== Division ==') }}</option>
+                                                @foreach($divisions as $division)
+                                                    <option value="{{ $division->id }}">{{ $division->name_en }} ({{ $division->name_bn }})</option>
+                                                @endforeach
+                                            </select>
                                         </div>
                                         <div class="col-12 col-sm-4 col-md-2 pt-2">
-                                            {{-- TODO: This Input will be Dropdown Select-Options. --}}
-                                            <input type="text" class="form-control" name="addresses[__INDEX__][district_id]" placeholder="{{ __('District') }}">
+                                            <select class="form-select address-district" name="addresses[__INDEX__][district_id]">
+                                                <option value="">{{ __('== District ==') }}</option>
+                                            </select>
                                         </div>
                                         <div class="col-12 col-sm-4 col-md-2 pt-2">
-                                            {{-- TODO: This Input will be Dropdown Select-Options. --}}
-                                            <input type="text" class="form-control" name="addresses[__INDEX__][thana_id]" placeholder="{{ __('Thana') }}">
+                                            <select class="form-select address-thana" name="addresses[__INDEX__][thana_id]">
+                                                <option value="">{{ __('== Thana ==') }}</option>
+                                            </select>
                                         </div>
                                         <div class="col-12 col-sm-12 col-md-2 text-end text-md-start" style="padding-top: 13px;">
                                             <button type="button" class="btn btn-sm btn-outline-danger remove-row"><i class="ri-close-line"></i></button>
@@ -285,8 +295,12 @@
                                 <template id="mfs_accounts-row-template">
                                     <div class="row mb-2 align-items-start repeater-row" data-group="mfs_accounts">
                                         <div class="col-12 col-sm-12 col-md-2 pt-2">
-                                            {{-- TODO: This Input will be Dropdown Select-Options. --}}
-                                            <input type="text" class="form-control" name="mfs_accounts[__INDEX__][mfs_operator_name]" placeholder="{{ __('MFS Operator') }}">
+                                            <select class="form-select" name="mfs_accounts[__INDEX__][mfs_operator_name]">
+                                                <option value="">{{ __('== MFS Operator ==') }}</option>
+                                                @foreach($mfsCompanies as $mfsCompany)
+                                                    <option value="{{ $mfsCompany->service_name }}">{{ $mfsCompany->service_name }}</option>
+                                                @endforeach
+                                            </select>
                                         </div>
                                         <div class="col-12 col-sm-12 col-md-2 pt-2">
                                             <input type="text" class="form-control" name="mfs_accounts[__INDEX__][mfs_account_number]" placeholder="{{ __('Mobile Banking Number') }}">
@@ -355,6 +369,68 @@
 
             $(document).on('click', '.remove-row', function () {
                 $(this).closest('.repeater-row').remove();
+            });
+
+            /*
+            |--------------------------------------------------------------------------
+            | PRIMARY RADIO: ONE CHECKED PER GROUP
+            |--------------------------------------------------------------------------
+            | Each row's Primary radio has an array-indexed name (e.g.
+            | contacts[0][is_primary]) so it submits correctly, which means it
+            | can't rely on native radio grouping (that requires an identical
+            | name). Instead, checking one Primary radio in a group manually
+            | unchecks every other Primary radio within that same group.
+            */
+            $(document).on('change', '.primary-radio', function () {
+                const group = $(this).closest('.repeater-row').data('group');
+
+                $('#' + group + '-rows .primary-radio').not(this).prop('checked', false);
+            });
+
+            /*
+            |--------------------------------------------------------------------------
+            | ADDRESS ROW: DIVISION -> DISTRICT -> THANA CASCADE
+            |--------------------------------------------------------------------------
+            | Each Address row has its own Division/District/Thana selects
+            | (repeater rows aren't unique ids), so the cascade is scoped to
+            | the row the change happened in via .closest('.repeater-row').
+            */
+            $(document).on('change', '.address-division', function () {
+                const row = $(this).closest('.repeater-row');
+                const divisionId = $(this).val();
+                const $district = row.find('.address-district');
+                const $thana = row.find('.address-thana');
+
+                $district.html('<option value="">{{ __("== District ==") }}</option>');
+                $thana.html('<option value="">{{ __("== Thana ==") }}</option>');
+
+                if (!divisionId) {
+                    return;
+                }
+
+                $.get('{{ route('getDistrictsByDivision') }}', { division_id: divisionId }, function (districts) {
+                    districts.forEach(function (district) {
+                        $district.append('<option value="' + district.id + '">' + district.name_en + ' (' + district.name_bn + ')</option>');
+                    });
+                });
+            });
+
+            $(document).on('change', '.address-district', function () {
+                const row = $(this).closest('.repeater-row');
+                const districtId = $(this).val();
+                const $thana = row.find('.address-thana');
+
+                $thana.html('<option value="">{{ __("== Thana ==") }}</option>');
+
+                if (!districtId) {
+                    return;
+                }
+
+                $.get('{{ route('getThanasByDistrict') }}', { district_id: districtId }, function (thanas) {
+                    thanas.forEach(function (thana) {
+                        $thana.append('<option value="' + thana.id + '">' + thana.name_en + ' (' + thana.name_bn + ')</option>');
+                    });
+                });
             });
 
             // Seed each group with one starter row.

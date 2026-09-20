@@ -6,5 +6,5 @@ use Illuminate\Database\Eloquent\Model;
 
 class MFSCompany extends Model
 {
-    //
+    protected $table = 'mfs_companies';
 }
