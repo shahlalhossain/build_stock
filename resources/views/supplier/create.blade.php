@@ -278,7 +278,7 @@
                                             </select>
                                         </div>
                                         <div class="col-12 col-sm-12 col-md-2 pt-2">
-                                            <input type="text" class="form-control" name="branch_routing_number" disabled placeholder="{{ __('Routing Number') }}">
+                                            <input type="text" class="form-control branch-routing-number" name="branch_routing_number" disabled placeholder="{{ __('Routing Number') }}">
                                         </div>
                                         <div class="col-12 col-sm-12 col-md-1 text-end text-md-start" style="padding-top: 13px;">
                                             <button type="button" class="btn btn-sm btn-outline-danger remove-row"><i class="ri-close-line"></i></button>
@@ -450,8 +450,10 @@
                 const row = $(this).closest('.repeater-row');
                 const bankId = $(this).find(':selected').data('bank-id');
                 const $branch = row.find('.payment-branch');
+                const $routing = row.find('.branch-routing-number');
 
                 $branch.html('<option value="">{{ __("== Branch ==") }}</option>');
+                $routing.val('');
 
                 if (!bankId) {
                     return;
@@ -459,9 +461,21 @@
 
                 $.get('{{ route('getBranchesByBank') }}', { bank_id: bankId }, function (branches) {
                     branches.forEach(function (branch) {
-                        $branch.append('<option value="' + branch.branch_name + '">' + branch.branch_name + '</option>');
+                        $branch.append('<option value="' + branch.branch_name + '" data-routing-no="' + (branch.routing_no ?? '') + '">' + branch.branch_name + '</option>');
                     });
                 });
+            });
+
+            /*
+            |--------------------------------------------------------------------------
+            | PAYMENT ACCOUNT ROW: DISPLAY THE SELECTED BRANCH'S ROUTING NUMBER
+            |--------------------------------------------------------------------------
+            */
+            $(document).on('change', '.payment-branch', function () {
+                const row = $(this).closest('.repeater-row');
+                const routingNo = $(this).find(':selected').data('routing-no');
+
+                row.find('.branch-routing-number').val(routingNo || '');
             });
 
             // Seed each group with one starter row.

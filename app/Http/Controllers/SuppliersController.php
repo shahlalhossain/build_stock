@@ -55,7 +55,7 @@ class SuppliersController extends Controller
         $branches = BankBranch::where('bank_id', $request->bank_id)
             ->where('is_active', true)
             ->orderBy('branch_name')
-            ->get(['id', 'branch_name']);
+            ->get(['id', 'branch_name', 'routing_no']);
 
         return response()->json($branches);
     }
