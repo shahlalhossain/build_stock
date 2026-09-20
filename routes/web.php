@@ -325,4 +325,5 @@ Route::middleware('auth:web')->group(function () {
     Route::get('/audit-log/{type?}', [AuditLogController::class, 'auditLogs'])->name('audit-log')->where('type', 'all|created|updated|deleted');
     Route::delete('/audit-log/{id}/delete', [AuditLogController::class, 'deleteAuditLog'])->name('delete-audit-log');
 
+
 });
