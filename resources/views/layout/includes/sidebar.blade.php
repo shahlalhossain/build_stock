@@ -4,15 +4,15 @@
     <div class="navbar-brand-box">
         <!-- Start Dark Logo -->
         <a href="{{ route('dashboard') }}" class="logo logo-dark">
-{{--            <span class="logo-sm"><img src="{{ asset('assets/images/logo/bs_sm_light.png') }}" alt="" height="35"></span>--}}
-{{--            <span class="logo-lg"><img src="{{ asset('assets/images/logo/build_stock_light.png') }}" alt="" height="35"></span>--}}
+            <span class="logo-sm"><img src="{{ asset('assets/images/logo/bs_sm_light.png') }}" alt="" height="35"></span>
+            <span class="logo-lg"><img src="{{ asset('assets/images/logo/build_stock_light.png') }}" alt="" height="35"></span>
         </a>
         <!-- End Dark Logo -->
 
         <!-- Start Light Logo -->
         <a href="{{ route('dashboard') }}" class="logo logo-light">
-{{--            <span class="logo-sm"><img src="{{ asset('assets/images/logo/bs_sm_dark.png') }}" alt="" height="35"></span>--}}
-{{--            <span class="logo-lg"><img src="{{ asset('assets/images/logo/build_stock_dark.png') }}" alt="" height="35"></span>--}}
+            <span class="logo-sm"><img src="{{ asset('assets/images/logo/bs_sm_dark.png') }}" alt="" height="35"></span>
+            <span class="logo-lg"><img src="{{ asset('assets/images/logo/build_stock_dark.png') }}" alt="" height="35"></span>
         </a>
         <!-- End Light Logo -->
 
