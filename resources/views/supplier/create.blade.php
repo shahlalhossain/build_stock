@@ -177,7 +177,7 @@
 
                                 <template id="contacts-row-template">
                                     <div class="row mb-2 align-items-start repeater-row" data-group="contacts">
-                                        <div class="col-12 col-sm-6 col-md-2 pt-2">
+                                        <div class="col-12 col-sm-6 col-md-3 pt-2">
                                             <input type="text" class="form-control" name="contacts[__INDEX__][name]" placeholder="{{ __('Name') }}" required>
                                         </div>
                                         <div class="col-12 col-sm-6 col-md-2 pt-2">
@@ -189,12 +189,11 @@
                                         <div class="col-12 col-sm-6 col-md-2 pt-2">
                                             <input type="text" class="form-control" name="contacts[__INDEX__][mobile]" placeholder="{{ __('Mobile') }}">
                                         </div>
-                                        {{-- TODO: Have work with Custom CSS for pt-md-3 pt-2 --}}
-                                        <div class="col-8 col-sm-6 col-md-2 primary-field pt-md-3 pt-2">
+                                        <div class="col-8 col-sm-6 col-md-1 primary-field" style="padding-top: 13px;">
                                             <input type="radio" class="form-check-input primary-radio" name="contacts[__INDEX__][is_primary]" value="1">
                                             <label class="form-check-label pt-1 ps-2"> {{ __('Primary') }}</label>
                                         </div>
-                                        <div class="col-4 col-sm-6 col-md-2 text-end text-md-start pt-md-3 pt-2">
+                                        <div class="col-4 col-sm-6 col-md-2 text-end text-md-start" style="padding-top: 13px;">
                                             <button type="button" class="btn btn-sm btn-outline-danger remove-row"><i class="ri-close-line"></i></button>
                                         </div>
                                     </div>
@@ -214,7 +213,7 @@
                                     <div class="row mb-2 align-items-start repeater-row" data-group="addresses">
                                         <div class="col-12 col-sm-12 col-md-2 pt-2">
                                             {{-- TODO: This Input will be Dropdown Select-Options. Variable Name: $addressTypes --}}
-                                            <input type="text" class="form-control" name="addresses[__INDEX__][address_type]" placeholder="{{ __('Address Type') }}" required>
+                                            <input type="text" class="form-control" name="addresses[__INDEX__][address_type]" placeholder="{{ __('Addr. Type') }}" required>
                                         </div>
                                         <div class="col-12 col-sm-12 col-md-2 pt-2">
                                             <input type="text" class="form-control" name="addresses[__INDEX__][address]" placeholder="{{ __('Address') }}" required>
@@ -231,7 +230,7 @@
                                             {{-- TODO: This Input will be Dropdown Select-Options. --}}
                                             <input type="text" class="form-control" name="addresses[__INDEX__][thana_id]" placeholder="{{ __('Thana') }}">
                                         </div>
-                                        <div class="col-12 col-sm-12 col-md-2 text-end text-md-start pt-2 pt-md-2">
+                                        <div class="col-12 col-sm-12 col-md-2 text-end text-md-start" style="padding-top: 13px;">
                                             <button type="button" class="btn btn-sm btn-outline-danger remove-row"><i class="ri-close-line"></i></button>
                                         </div>
                                     </div>
@@ -267,7 +266,7 @@
                                             {{-- TODO: This Input will be Dropdown Select-Options. --}}
                                             <input type="text" class="form-control" name="payment_accounts[__INDEX__][branch_name]" placeholder="{{ __('Branch') }}">
                                         </div>
-                                        <div class="col-12 col-sm-12 col-md-2 text-end text-md-start pt-2 pt-md-2">
+                                        <div class="col-12 col-sm-12 col-md-2 text-end text-md-start" style="padding-top: 13px;">
                                             <button type="button" class="btn btn-sm btn-outline-danger remove-row"><i class="ri-close-line"></i></button>
                                         </div>
                                     </div>
@@ -292,11 +291,11 @@
                                         <div class="col-12 col-sm-12 col-md-2 pt-2">
                                             <input type="text" class="form-control" name="mfs_accounts[__INDEX__][mfs_account_number]" placeholder="{{ __('Mobile Banking Number') }}">
                                         </div>
-                                        <div class="col-8 col-sm-6 col-md-2 primary-field pt-md-3 pt-2">
+                                        <div class="col-8 col-sm-6 col-md-1 primary-field" style="padding-top: 13px;">
                                             <input type="radio" class="form-check-input primary-radio" name="mfs_accounts[__INDEX__][is_primary]" value="1">
                                             <label class="form-check-label pt-1 ps-2"> {{ __('Primary') }}</label>
                                         </div>
-                                        <div class="col-4 col-sm-6 col-md-2 text-end text-md-start pt-md-3 pt-2">
+                                        <div class="col-4 col-sm-6 col-md-2 text-end text-md-start" style="padding-top: 13px;">
                                             <button type="button" class="btn btn-sm btn-outline-danger remove-row"><i class="ri-close-line"></i></button>
                                         </div>
                                     </div>
