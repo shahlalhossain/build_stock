@@ -203,6 +203,7 @@ Route::middleware('auth:web')->group(function () {
             Route::delete('force-delete', [SuppliersController::class, 'delete'])->name('delete');
         });
     });
+    Route::get('/get-branches-by-bank', [SuppliersController::class, 'getBranchesByBank'])->name('getBranchesByBank');
 
     Route::group(['prefix' => 'project', 'as' => 'project.'], function () {
         Route::get('/', [ProjectsController::class, 'index'])->name('index');

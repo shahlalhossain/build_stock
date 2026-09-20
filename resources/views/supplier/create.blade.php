@@ -269,12 +269,17 @@
                                             <input type="text" class="form-control" name="payment_accounts[__INDEX__][account_number]" placeholder="{{ __('Account Number') }}">
                                         </div>
                                         <div class="col-12 col-sm-12 col-md-2 pt-2">
-                                            {{-- TODO: This Input will be Dropdown Select-Options. --}}
-                                            <input type="text" class="form-control" name="payment_accounts[__INDEX__][bank_name]" placeholder="{{ __('Bank Name') }}">
+                                            <select class="form-select payment-bank" name="payment_accounts[__INDEX__][bank_name]">
+                                                <option value="" data-bank-id="">{{ __('== Bank Name ==') }}</option>
+                                                @foreach($banks as $bank)
+                                                    <option value="{{ $bank->bank_name }}" data-bank-id="{{ $bank->id }}">{{ $bank->bank_name }}</option>
+                                                @endforeach
+                                            </select>
                                         </div>
                                         <div class="col-12 col-sm-8 col-md-2 pt-2">
-                                            {{-- TODO: This Input will be Dropdown Select-Options. --}}
-                                            <input type="text" class="form-control" name="payment_accounts[__INDEX__][branch_name]" placeholder="{{ __('Branch') }}">
+                                            <select class="form-select payment-branch" name="payment_accounts[__INDEX__][branch_name]">
+                                                <option value="">{{ __('== Branch ==') }}</option>
+                                            </select>
                                         </div>
                                         <div class="col-12 col-sm-12 col-md-2 text-end text-md-start" style="padding-top: 13px;">
                                             <button type="button" class="btn btn-sm btn-outline-danger remove-row"><i class="ri-close-line"></i></button>
@@ -429,6 +434,33 @@
                 $.get('{{ route('getThanasByDistrict') }}', { district_id: districtId }, function (thanas) {
                     thanas.forEach(function (thana) {
                         $thana.append('<option value="' + thana.id + '">' + thana.name_en + ' (' + thana.name_bn + ')</option>');
+                    });
+                });
+            });
+
+            /*
+            |--------------------------------------------------------------------------
+            | PAYMENT ACCOUNT ROW: BANK -> BRANCH CASCADE
+            |--------------------------------------------------------------------------
+            | bank_name/branch_name are stored as plain strings (not foreign
+            | keys), so each <option value="..."> is the Bank/Branch NAME for
+            | submission, while data-bank-id carries the numeric id needed to
+            | fetch that bank's branches.
+            */
+            $(document).on('change', '.payment-bank', function () {
+                const row = $(this).closest('.repeater-row');
+                const bankId = $(this).find(':selected').data('bank-id');
+                const $branch = row.find('.payment-branch');
+
+                $branch.html('<option value="">{{ __("== Branch ==") }}</option>');
+
+                if (!bankId) {
+                    return;
+                }
+
+                $.get('{{ route('getBranchesByBank') }}', { bank_id: bankId }, function (branches) {
+                    branches.forEach(function (branch) {
+                        $branch.append('<option value="' + branch.branch_name + '">' + branch.branch_name + '</option>');
                     });
                 });
             });

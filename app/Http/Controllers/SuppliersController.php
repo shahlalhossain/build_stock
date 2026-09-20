@@ -7,6 +7,8 @@ use App\Exceptions\GeneralException;
 use App\Http\Requests\Supplier\StoreSupplierRequest;
 use App\Http\Requests\Supplier\UpdateSupplierRequest;
 use App\Models\AddressType;
+use App\Models\Bank;
+use App\Models\BankBranch;
 use App\Models\GeoDivision;
 use App\Models\MFSCompany;
 use App\Models\Supplier;
@@ -16,6 +18,7 @@ use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 use Throwable;
@@ -42,8 +45,19 @@ class SuppliersController extends Controller
         $data['addressTypes'] = AddressType::where('is_active', true)->select('id', 'name')->get();
         $data['divisions'] = GeoDivision::orderBy('name_en')->get(['id', 'name_en', 'name_bn']);
         $data['mfsCompanies'] = MFSCompany::where('status', 'Active')->select('id', 'service_name')->get();
+        $data['banks'] = Bank::where('is_active', true)->orderBy('bank_name')->get(['id', 'bank_name']);
 
         return view('supplier.create', $data);
+    }
+
+    public function getBranchesByBank(Request $request): JsonResponse
+    {
+        $branches = BankBranch::where('bank_id', $request->bank_id)
+            ->where('is_active', true)
+            ->orderBy('branch_name')
+            ->get(['id', 'branch_name']);
+
+        return response()->json($branches);
     }
 
     public function store(StoreSupplierRequest $supplierRequest)
