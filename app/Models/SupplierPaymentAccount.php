@@ -19,7 +19,6 @@ class SupplierPaymentAccount extends Model
      */
     protected $fillable = [
         'supplier_id',
-        'payment_method',
         'account_name',
         'account_number',
         'bank_name',

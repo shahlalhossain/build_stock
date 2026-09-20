@@ -19,17 +19,35 @@ use Throwable;
 /**
  * Class SupplierService.
  *
- * Contacts/Addresses/Payment Accounts/MFS Accounts are always replaced wholesale
- * on store/update (delete existing, insert submitted rows) rather than diffed by id.
+ * Contacts/Addresses/Payment Accounts/MFS Accounts are each owned by their
+ * own dedicated service (delete-all-and-recreate on every store/update)
+ * rather than being synced inline here.
  */
 class SupplierService extends BaseService
 {
+    protected SupplierContactService $supplierContactService;
+
+    protected SupplierAddressService $supplierAddressService;
+
+    protected SupplierPaymentAccountService $supplierPaymentAccountService;
+
+    protected SupplierMfsAccountService $supplierMfsAccountService;
+
     /**
      * SupplierService Constructor.
      */
-    public function __construct(Supplier $supplier)
-    {
+    public function __construct(
+        Supplier $supplier,
+        SupplierContactService $supplierContactService,
+        SupplierAddressService $supplierAddressService,
+        SupplierPaymentAccountService $supplierPaymentAccountService,
+        SupplierMfsAccountService $supplierMfsAccountService
+    ) {
         $this->model = $supplier;
+        $this->supplierContactService = $supplierContactService;
+        $this->supplierAddressService = $supplierAddressService;
+        $this->supplierPaymentAccountService = $supplierPaymentAccountService;
+        $this->supplierMfsAccountService = $supplierMfsAccountService;
     }
 
     /**
@@ -42,10 +60,15 @@ class SupplierService extends BaseService
         try {
             $supplierData = [
                 'supplier_type_id' => $data['supplier_type_id'] ?? null,
-                'code' => $data['code'] ?? null,
+                'code' => $this->generateCode(),
                 'name' => $data['name'] ?? null,
                 'tin_number' => $data['tin_number'] ?? null,
                 'bin_number' => $data['bin_number'] ?? null,
+                'payment_terms_days' => $data['payment_terms_days'] ?? null,
+                'credit_limit' => $data['credit_limit'] ?? null,
+                'minimum_order_quantity' => $data['minimum_order_quantity'] ?? null,
+                'minimum_order_amount' => $data['minimum_order_amount'] ?? null,
+                'lead_time_days' => $data['lead_time_days'] ?? null,
                 'remarks' => $data['remarks'] ?? null,
                 'is_active' => true,
                 'created_by' => Auth::id(),
@@ -53,10 +76,10 @@ class SupplierService extends BaseService
             ];
             $supplier = $this->model::create($supplierData);
 
-            $this->syncContacts($supplier, $data['contacts'] ?? []);
-            $this->syncAddresses($supplier, $data['addresses'] ?? []);
-            $this->syncPaymentAccounts($supplier, $data['payment_accounts'] ?? []);
-            $this->syncMfsAccounts($supplier, $data['mfs_accounts'] ?? []);
+            $this->supplierContactService->syncContacts($supplier, $data['contacts'] ?? []);
+            $this->supplierAddressService->syncAddresses($supplier, $data['addresses'] ?? []);
+            $this->supplierPaymentAccountService->syncPaymentAccounts($supplier, $data['payment_accounts'] ?? []);
+            $this->supplierMfsAccountService->syncMfsAccounts($supplier, $data['mfs_accounts'] ?? []);
 
             event(new SupplierCreated($supplier));
 
@@ -81,18 +104,22 @@ class SupplierService extends BaseService
         try {
             $supplier->update([
                 'supplier_type_id' => $data['supplier_type_id'] ?? null,
-                'code' => $data['code'] ?? null,
                 'name' => $data['name'] ?? null,
                 'tin_number' => $data['tin_number'] ?? null,
                 'bin_number' => $data['bin_number'] ?? null,
+                'payment_terms_days' => $data['payment_terms_days'] ?? null,
+                'credit_limit' => $data['credit_limit'] ?? null,
+                'minimum_order_quantity' => $data['minimum_order_quantity'] ?? null,
+                'minimum_order_amount' => $data['minimum_order_amount'] ?? null,
+                'lead_time_days' => $data['lead_time_days'] ?? null,
                 'remarks' => $data['remarks'] ?? null,
                 'updated_by' => Auth::id(),
             ]);
 
-            $this->syncContacts($supplier, $data['contacts'] ?? []);
-            $this->syncAddresses($supplier, $data['addresses'] ?? []);
-            $this->syncPaymentAccounts($supplier, $data['payment_accounts'] ?? []);
-            $this->syncMfsAccounts($supplier, $data['mfs_accounts'] ?? []);
+            $this->supplierContactService->syncContacts($supplier, $data['contacts'] ?? []);
+            $this->supplierAddressService->syncAddresses($supplier, $data['addresses'] ?? []);
+            $this->supplierPaymentAccountService->syncPaymentAccounts($supplier, $data['payment_accounts'] ?? []);
+            $this->supplierMfsAccountService->syncMfsAccounts($supplier, $data['mfs_accounts'] ?? []);
 
             event(new SupplierUpdated($supplier));
 
@@ -107,99 +134,16 @@ class SupplierService extends BaseService
     }
 
     /**
-     * Replace the supplier's contacts with the submitted rows.
+     * Generate the next Sequential Supplier Code (e.g. SUP-0001).
      */
-    protected function syncContacts(Supplier $supplier, array $rows): void
+    protected function generateCode(): string
     {
-        $supplier->contacts()->delete();
+        $lastNumber = Supplier::withTrashed()
+            ->where('code', 'like', 'SUP-%')
+            ->selectRaw('MAX(CAST(SUBSTRING(code, 5) AS UNSIGNED)) as max_number')
+            ->value('max_number');
 
-        foreach ($rows as $row) {
-            $supplier->contacts()->create([
-                'name' => $row['name'] ?? null,
-                'designation' => $row['designation'] ?? null,
-                'email' => $row['email'] ?? null,
-                'mobile' => $row['mobile'] ?? null,
-                'contact_type' => $row['contact_type'] ?? null,
-                'remarks' => $row['remarks'] ?? null,
-                'is_primary' => filter_var($row['is_primary'] ?? false, FILTER_VALIDATE_BOOLEAN),
-                'is_active' => true,
-                'created_by' => Auth::id(),
-                'updated_by' => Auth::id(),
-            ]);
-        }
-    }
-
-    /**
-     * Replace the supplier's addresses with the submitted rows.
-     */
-    protected function syncAddresses(Supplier $supplier, array $rows): void
-    {
-        // addresses has no soft-delete columns (unlike contacts/payment/mfs accounts),
-        // so this delete() is a hard delete, not the app's usual soft-delete.
-        $supplier->addresses()->delete();
-
-        foreach ($rows as $row) {
-            $supplier->addresses()->create([
-                'address_type' => $row['address_type'] ?? null,
-                'address' => $row['address'] ?? null,
-                'address_bn' => $row['address_bn'] ?? null,
-                'division_name' => $row['division_name'] ?? null,
-                'district_name' => $row['district_name'] ?? null,
-                'thana_name' => $row['thana_name'] ?? null,
-            ]);
-        }
-    }
-
-    /**
-     * Replace the supplier's payment accounts with the submitted rows.
-     */
-    protected function syncPaymentAccounts(Supplier $supplier, array $rows): void
-    {
-        $supplier->paymentAccounts()->delete();
-
-        foreach ($rows as $row) {
-            if (blank($row['account_number'] ?? null)) {
-                continue;
-            }
-
-            $supplier->paymentAccounts()->create([
-                'payment_method' => $row['payment_method'] ?? null,
-                'account_name' => $row['account_name'] ?? null,
-                'account_number' => $row['account_number'] ?? null,
-                'bank_name' => $row['bank_name'] ?? null,
-                'branch_name' => $row['branch_name'] ?? null,
-                'routing_number' => $row['routing_number'] ?? null,
-                'remarks' => $row['remarks'] ?? null,
-                'is_primary' => filter_var($row['is_primary'] ?? false, FILTER_VALIDATE_BOOLEAN),
-                'is_active' => true,
-                'created_by' => Auth::id(),
-                'updated_by' => Auth::id(),
-            ]);
-        }
-    }
-
-    /**
-     * Replace the supplier's MFS accounts with the submitted rows.
-     */
-    protected function syncMfsAccounts(Supplier $supplier, array $rows): void
-    {
-        $supplier->mfsAccounts()->delete();
-
-        foreach ($rows as $row) {
-            if (blank($row['mfs_account_number'] ?? null)) {
-                continue;
-            }
-
-            $supplier->mfsAccounts()->create([
-                'mfs_operator_name' => $row['mfs_operator_name'] ?? null,
-                'mfs_account_number' => $row['mfs_account_number'] ?? null,
-                'remarks' => $row['remarks'] ?? null,
-                'is_primary' => filter_var($row['is_primary'] ?? false, FILTER_VALIDATE_BOOLEAN),
-                'is_active' => true,
-                'created_by' => Auth::id(),
-                'updated_by' => Auth::id(),
-            ]);
-        }
+        return 'SUP-'.str_pad((int) $lastNumber + 1, 4, '0', STR_PAD_LEFT);
     }
 
     /**

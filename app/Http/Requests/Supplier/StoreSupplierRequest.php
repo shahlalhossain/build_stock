@@ -28,10 +28,14 @@ class StoreSupplierRequest extends FormRequest
             // TODO: validate against supplier_types once that migration/table is provided.
             'supplier_type_id' => ['required', 'integer'],
 
-            'code' => ['required', 'string', 'max:30', Rule::unique('suppliers')],
             'name' => ['required', 'string', 'max:255'],
             'tin_number' => ['nullable', 'string', 'max:50'],
             'bin_number' => ['nullable', 'string', 'max:50'],
+            'payment_terms_days' => ['nullable', 'integer', 'min:0'],
+            'credit_limit' => ['nullable', 'numeric', 'min:0'],
+            'minimum_order_quantity' => ['nullable', 'integer', 'min:0'],
+            'minimum_order_amount' => ['nullable', 'numeric', 'min:0'],
+            'lead_time_days' => ['nullable', 'integer', 'min:0'],
             'remarks' => ['nullable', 'string'],
 
             'contacts' => ['required', 'array', 'min:1'],
@@ -44,20 +48,18 @@ class StoreSupplierRequest extends FormRequest
             'contacts.*.is_primary' => ['nullable', 'boolean'],
 
             'addresses' => ['required', 'array', 'min:1'],
-            'addresses.*.address_type' => ['required', 'string', 'max:255'],
+            'addresses.*.address_type' => ['required', 'integer', Rule::exists('address_types', 'id')],
             'addresses.*.address' => ['required', 'string', 'max:255'],
-            'addresses.*.address_bn' => ['nullable', 'string', 'max:255'],
-            'addresses.*.division_name' => ['nullable', 'string', 'max:255'],
-            'addresses.*.district_name' => ['nullable', 'string', 'max:255'],
-            'addresses.*.thana_name' => ['nullable', 'string', 'max:255'],
+            'addresses.*.division_id' => ['nullable', 'integer', Rule::exists('location_divisions', 'id')],
+            'addresses.*.district_id' => ['nullable', 'integer', Rule::exists('location_districts', 'id')],
+            'addresses.*.thana_id' => ['nullable', 'integer', Rule::exists('location_upazilas', 'id')],
 
             'payment_accounts' => ['nullable', 'array'],
-            'payment_accounts.*.payment_method' => ['required_with:payment_accounts.*.account_number', 'nullable', 'string', 'max:50'],
+            'payment_accounts.*.payment_method' => ['nullable', 'string', 'max:50'],
             'payment_accounts.*.account_name' => ['required_with:payment_accounts.*.account_number', 'nullable', 'string', 'max:150'],
             'payment_accounts.*.account_number' => ['nullable', 'string', 'max:100'],
             'payment_accounts.*.bank_name' => ['required_with:payment_accounts.*.account_number', 'nullable', 'string', 'max:150'],
             'payment_accounts.*.branch_name' => ['required_with:payment_accounts.*.account_number', 'nullable', 'string', 'max:150'],
-            'payment_accounts.*.routing_number' => ['nullable', 'string', 'max:50'],
             'payment_accounts.*.remarks' => ['nullable', 'string'],
             'payment_accounts.*.is_primary' => ['nullable', 'boolean'],
 
@@ -74,11 +76,14 @@ class StoreSupplierRequest extends FormRequest
         return [
             'supplier_type_id.required' => __('Supplier Type is Required'),
 
-            'code.required' => __('Supplier Code is Required'),
-            'code.unique' => __('This Supplier Code already Exists'),
-
             'name.required' => __('Supplier Name is Required'),
             'name.max' => __('Supplier Name may not exceed 255 Characters'),
+
+            'payment_terms_days.integer' => __('Payment Terms must be a Valid Number'),
+            'credit_limit.numeric' => __('Credit Limit must be a Valid Number'),
+            'minimum_order_quantity.integer' => __('Min. Order Count must be a Valid Number'),
+            'minimum_order_amount.numeric' => __('Min. Order Amount must be a Valid Number'),
+            'lead_time_days.integer' => __('Lead Time must be a Valid Number'),
 
             'contacts.required' => __('At least one Contact is Required'),
             'contacts.min' => __('At least one Contact is Required'),
@@ -88,9 +93,12 @@ class StoreSupplierRequest extends FormRequest
             'addresses.required' => __('At least one Address is Required'),
             'addresses.min' => __('At least one Address is Required'),
             'addresses.*.address_type.required' => __('Address Type is Required'),
+            'addresses.*.address_type.exists' => __('Selected Address Type does not Exist'),
             'addresses.*.address.required' => __('Address is Required'),
+            'addresses.*.division_id.exists' => __('Selected Division does not Exist'),
+            'addresses.*.district_id.exists' => __('Selected District does not Exist'),
+            'addresses.*.thana_id.exists' => __('Selected Thana/Upazila does not Exist'),
 
-            'payment_accounts.*.payment_method.required_with' => __('Payment Method is Required when an Account Number is given'),
             'payment_accounts.*.account_name.required_with' => __('Account Name is Required when an Account Number is given'),
             'payment_accounts.*.bank_name.required_with' => __('Bank Name is Required when an Account Number is given'),
             'payment_accounts.*.branch_name.required_with' => __('Branch Name is Required when an Account Number is given'),

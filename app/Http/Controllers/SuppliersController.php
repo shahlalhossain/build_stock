@@ -87,6 +87,11 @@ class SuppliersController extends Controller
     public function edit(Supplier $supplier): View
     {
         $data['supplier'] = $supplier->load(['contacts', 'addresses', 'paymentAccounts', 'mfsAccounts']);
+        $data['supplierTypes'] = SupplierType::select('id', 'name')->get();
+        $data['addressTypes'] = AddressType::where('is_active', true)->select('id', 'name')->get();
+        $data['divisions'] = GeoDivision::orderBy('name_en')->get(['id', 'name_en', 'name_bn']);
+        $data['mfsCompanies'] = MFSCompany::where('status', 'Active')->select('id', 'service_name')->get();
+        $data['banks'] = Bank::where('is_active', true)->orderBy('bank_name')->get(['id', 'bank_name']);
 
         return view('supplier.edit', $data);
     }
