@@ -139,112 +139,118 @@
 
                             <hr>
 
-                            <h6 class="fw-bold fst-italic">{{ __('Contacts') }}</h6>
-                            <div class="table-responsive mb-3">
-                                <table class="table table-sm table-bordered">
-                                    <thead>
-                                    <tr>
-                                        <th>{{ __('Name') }}</th>
-                                        <th>{{ __('Designation') }}</th>
-                                        <th>{{ __('Type') }}</th>
-                                        <th>{{ __('Mobile') }}</th>
-                                        <th>{{ __('Primary') }}</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    @forelse($supplier->contacts as $contact)
-                                        <tr>
-                                            <td>{{ $contact->name }}</td>
-                                            <td>{{ $contact->designation }}</td>
-                                            <td>{{ $contact->contact_type }}</td>
-                                            <td>{{ $contact->mobile }}</td>
-                                            <td>{{ $contact->is_primary ? __('Yes') : __('No') }}</td>
-                                        </tr>
-                                    @empty
-                                        <tr><td colspan="6" class="text-center">{{ __('No Contacts Found') }}</td></tr>
-                                    @endforelse
-                                    </tbody>
-                                </table>
+                            <div class="row">
+                                <div class="col-12 col-md-6">
+                                    <h6 class="fw-bold fst-italic">{{ __('Contacts') }}</h6>
+                                    <div class="table-responsive mb-3">
+                                        <table class="table table-sm table-bordered">
+                                            <thead>
+                                            <tr>
+                                                <th>{{ __('Name') }}</th>
+                                                <th>{{ __('Designation') }}</th>
+                                                <th>{{ __('Mobile') }}</th>
+                                                <th>{{ __('Primary') }}</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            @forelse($supplier->contacts as $contact)
+                                                <tr>
+                                                    <td>{{ $contact->name }}</td>
+                                                    <td>{{ $contact->designation }}</td>
+                                                    <td>{{ $contact->mobile }}</td>
+                                                    <td>{{ $contact->is_primary ? __('Yes') : __('No') }}</td>
+                                                </tr>
+                                            @empty
+                                                <tr><td colspan="6" class="text-center">{{ __('No Contacts Found') }}</td></tr>
+                                            @endforelse
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <h6 class="fw-bold fst-italic">{{ __('Addresses') }}</h6>
+                                    <div class="table-responsive mb-3">
+                                        <table class="table table-sm table-bordered">
+                                            <thead>
+                                            <tr>
+                                                <th>{{ __('Type') }}</th>
+                                                <th>{{ __('Address') }}</th>
+                                                <th>{{ __('Division') }}</th>
+                                                <th>{{ __('District') }}</th>
+                                                <th>{{ __('Thana') }}</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            @forelse($supplier->addresses as $address)
+                                                <tr>
+                                                    <td>{{ $address->addressType?->name }}</td>
+                                                    <td>{{ $address->address }}</td>
+                                                    <td>{{ $address->division_name }}</td>
+                                                    <td>{{ $address->district_name }}</td>
+                                                    <td>{{ $address->thana_name }}</td>
+                                                </tr>
+                                            @empty
+                                                <tr><td colspan="5" class="text-center">{{ __('No Addresses Found') }}</td></tr>
+                                            @endforelse
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
                             </div>
-
-                            <h6 class="fw-bold fst-italic">{{ __('Addresses') }}</h6>
-                            <div class="table-responsive mb-3">
-                                <table class="table table-sm table-bordered">
-                                    <thead>
-                                    <tr>
-                                        <th>{{ __('Type') }}</th>
-                                        <th>{{ __('Address') }}</th>
-                                        <th>{{ __('Division') }}</th>
-                                        <th>{{ __('District') }}</th>
-                                        <th>{{ __('Thana') }}</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    @forelse($supplier->addresses as $address)
-                                        <tr>
-                                            <td>{{ $address->addressType?->name }}</td>
-                                            <td>{{ $address->address }}</td>
-                                            <td>{{ $address->division_name }}</td>
-                                            <td>{{ $address->district_name }}</td>
-                                            <td>{{ $address->thana_name }}</td>
-                                        </tr>
-                                    @empty
-                                        <tr><td colspan="5" class="text-center">{{ __('No Addresses Found') }}</td></tr>
-                                    @endforelse
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <h6 class="fw-bold fst-italic">{{ __('Payment Accounts') }}</h6>
-                            <div class="table-responsive mb-3">
-                                <table class="table table-sm table-bordered">
-                                    <thead>
-                                    <tr>
-                                        <th>{{ __('Account Name') }}</th>
-                                        <th>{{ __('Account Number') }}</th>
-                                        <th>{{ __('Bank') }}</th>
-                                        <th>{{ __('Branch') }}</th>
-                                        <th>{{ __('Primary') }}</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    @forelse($supplier->paymentAccounts as $paymentAccount)
-                                        <tr>
-                                            <td>{{ $paymentAccount->account_name }}</td>
-                                            <td>{{ $paymentAccount->account_number }}</td>
-                                            <td>{{ $paymentAccount->bank_name }}</td>
-                                            <td>{{ $paymentAccount->branch_name }}</td>
-                                            <td>{{ $paymentAccount->is_primary ? __('Yes') : __('No') }}</td>
-                                        </tr>
-                                    @empty
-                                        <tr><td colspan="6" class="text-center">{{ __('No Payment Accounts Found') }}</td></tr>
-                                    @endforelse
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <h6 class="fw-bold fst-italic">{{ __('MFS Accounts') }}</h6>
-                            <div class="table-responsive">
-                                <table class="table table-sm table-bordered">
-                                    <thead>
-                                    <tr>
-                                        <th>{{ __('Operator') }}</th>
-                                        <th>{{ __('Account Number') }}</th>
-                                        <th>{{ __('Primary') }}</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    @forelse($supplier->mfsAccounts as $mfsAccount)
-                                        <tr>
-                                            <td>{{ $mfsAccount->mfs_operator_name }}</td>
-                                            <td>{{ $mfsAccount->mfs_account_number }}</td>
-                                            <td>{{ $mfsAccount->is_primary ? __('Yes') : __('No') }}</td>
-                                        </tr>
-                                    @empty
-                                        <tr><td colspan="3" class="text-center">{{ __('No MFS Accounts Found') }}</td></tr>
-                                    @endforelse
-                                    </tbody>
-                                </table>
+                            <hr>
+                            <div class="row">
+                                <div class="col-12 col-md-6">
+                                    <h6 class="fw-bold fst-italic">{{ __('Payment Accounts') }}</h6>
+                                    <div class="table-responsive mb-3">
+                                        <table class="table table-sm table-bordered">
+                                            <thead>
+                                            <tr>
+                                                <th>{{ __('Account Name') }}</th>
+                                                <th>{{ __('Account Number') }}</th>
+                                                <th>{{ __('Bank') }}</th>
+                                                <th>{{ __('Branch') }}</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            @forelse($supplier->paymentAccounts as $paymentAccount)
+                                                <tr>
+                                                    <td>{{ $paymentAccount->account_name }}</td>
+                                                    <td>{{ $paymentAccount->account_number }}</td>
+                                                    <td>{{ $paymentAccount->bank_name }}</td>
+                                                    <td>{{ $paymentAccount->branch_name }}</td>
+                                                </tr>
+                                            @empty
+                                                <tr><td colspan="6" class="text-center">{{ __('No Payment Accounts Found') }}</td></tr>
+                                            @endforelse
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <h6 class="fw-bold fst-italic">{{ __('MFS Accounts') }}</h6>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-bordered">
+                                            <thead>
+                                            <tr>
+                                                <th>{{ __('Operator') }}</th>
+                                                <th>{{ __('Account Number') }}</th>
+                                                <th>{{ __('Primary') }}</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            @forelse($supplier->mfsAccounts as $mfsAccount)
+                                                <tr>
+                                                    <td>{{ $mfsAccount->mfs_operator_name }}</td>
+                                                    <td>{{ $mfsAccount->mfs_account_number }}</td>
+                                                    <td>{{ $mfsAccount->is_primary ? __('Yes') : __('No') }}</td>
+                                                </tr>
+                                            @empty
+                                                <tr><td colspan="3" class="text-center">{{ __('No MFS Accounts Found') }}</td></tr>
+                                            @endforelse
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
                             </div>
 
                         </div>
