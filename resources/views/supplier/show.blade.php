@@ -26,11 +26,21 @@
                                 <div class="col-12 col-md-7 order-1">
                                     <table class="table table-hover table-responsive table-bordered table-sm">
                                         <tbody>
-                                        <tr><th class="text-end pe-2">{{ __('Supplier Type') }}</th><td class="text-start ps-2">{{ $supplier->supplier_type_id }}</td></tr>
+                                        <tr>
+                                            <th class="text-end pe-2">{{ __('Name') }}</th>
+                                            <td class="text-start ps-2">{{ $supplier->name }} <span class="badge rounded-pill border border-secondary text-secondary">{{ $supplier->supplierType?->name }}</span></td>
+                                        </tr>
                                         <tr><th class="text-end pe-2">{{ __('Code') }}</th><td class="text-start ps-2">{{ $supplier->code }}</td></tr>
-                                        <tr><th class="text-end pe-2">{{ __('Name') }}</th><td class="text-start ps-2">{{ $supplier->name }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('TIN Number') }}</th><td class="text-start ps-2">{{ $supplier->tin_number }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('BIN Number') }}</th><td class="text-start ps-2">{{ $supplier->bin_number }}</td></tr>
+
+                                        <tr><th class="text-end pe-2">{{ __('Payment Terms') }}</th><td class="text-start ps-2">{{ $supplier->payment_terms_days . " Days" }}</td></tr>
+                                        <tr><th class="text-end pe-2">{{ __('Lead Delivery Time') }}</th><td class="text-start ps-2">{{ $supplier->lead_time_days . " Days" }}</td></tr>
+                                        <tr><th class="text-end pe-2">{{ __('Credit Limit') }}</th><td class="text-start ps-2">{{ $supplier->credit_limit . " BDT" }}</td></tr>
+                                        <tr><th class="text-end pe-2">{{ __('Minimum Order Quantity') }}</th><td class="text-start ps-2">{{ $supplier->minimum_order_quantity }}</td></tr>
+                                        <tr><th class="text-end pe-2">{{ __('Minimum Order Amount') }}</th><td class="text-start ps-2">{{ $supplier->minimum_order_amount . " BDT" }}</td></tr>
+
+
                                         <tr><th class="text-end pe-2">{{ __('Is Active') }}</th>
                                             <td class="text-start ps-2">
                                                 @if($supplier->is_active == 1)
@@ -38,7 +48,7 @@
                                                 @elseif($supplier->is_active == 0)
                                                     <span class="badge bg-warning">{{ __('No') }}</span>
                                                 @else
-                                                    <span class="badge bg-secondary">{{ __('Unknown') }}</span>
+                                                    <span class="badge  bg-secondary">{{ __('Unknown') }}</span>
                                                 @endif
                                             </td>
                                         </tr>
@@ -62,24 +72,17 @@
                                                         {{ '--' }}
                                                     @endif
                                                 </div>
-                                                <div class="text-end">
-                                                    <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#statusUpdateModal">
-                                                        <i class="ri-fingerprint-line"></i>
-                                                        <span class="btn-text d-none d-sm-inline">{{ __('Update Status') }}</span>
-                                                    </button>
-                                                </div>
+
+                                                @if(!$supplier->trashed())
+                                                    <div class="text-end">
+                                                        <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#statusUpdateModal">
+                                                            <i class="ri-fingerprint-line"></i>
+                                                            <span class="btn-text d-none d-sm-inline">{{ __('Update Status') }}</span>
+                                                        </button>
+                                                    </div>
+                                                @endif
                                             </td>
                                         </tr>
-
-                                        <tr><th class="text-end pe-2">{{ __('Created By') }}</th><td class="text-start ps-2">{{ $supplier->creator?->name ?? '' }}</td></tr>
-                                        <tr><th class="text-end pe-2">{{ __('Created At') }}</th><td class="text-start ps-2">{{ $supplier->created_at->format('Y-m-d H:i:s') }}</td></tr>
-                                        <tr><th class="text-end pe-2">{{ __('Updated By') }}</th><td class="text-start ps-2">{{ $supplier->updater?->name ?? '' }}</td></tr>
-                                        <tr><th class="text-end pe-2">{{ __('Updated At') }}</th><td class="text-start ps-2">{{ $supplier->updated_at->format('Y-m-d H:i:s') }}</td></tr>
-
-                                        @if($supplier->trashed())
-                                            <tr><th class="text-end pe-2">{{ __('Deleted By') }}</th><td class="text-start ps-2">{{ $supplier->deleter?->name ?? '' }}</td></tr>
-                                            <tr><th class="text-end pe-2">{{ __('Deleted At') }}</th><td class="text-start ps-2">{{ $supplier->deleted_at->format('Y-m-d H:i:s') }}</td></tr>
-                                        @endif
                                         </tbody>
                                     </table>
 
@@ -94,6 +97,20 @@
                                     </div>
                                 </div>
                                 <div class="col-12 col-md-5 ps-5 order-2">
+                                    <table class="table table-hover table-responsive table-bordered table-sm">
+                                        <tbody>
+                                        <tr><th class="text-end pe-2">{{ __('Created By') }}</th><td class="text-start ps-2">{{ $supplier->creator?->name ?? '' }}</td></tr>
+                                        <tr><th class="text-end pe-2">{{ __('Created At') }}</th><td class="text-start ps-2">{{ $supplier->created_at->format('Y-m-d H:i:s') }}</td></tr>
+                                        <tr><th class="text-end pe-2">{{ __('Updated By') }}</th><td class="text-start ps-2">{{ $supplier->updater?->name ?? '' }}</td></tr>
+                                        <tr><th class="text-end pe-2">{{ __('Updated At') }}</th><td class="text-start ps-2">{{ $supplier->updated_at->format('Y-m-d H:i:s') }}</td></tr>
+
+                                        @if($supplier->trashed())
+                                            <tr><th class="text-end pe-2">{{ __('Deleted By') }}</th><td class="text-start ps-2">{{ $supplier->deleter?->name ?? '' }}</td></tr>
+                                            <tr><th class="text-end pe-2">{{ __('Deleted At') }}</th><td class="text-start ps-2">{{ $supplier->deleted_at->format('Y-m-d H:i:s') }}</td></tr>
+                                        @endif
+                                        </tbody>
+                                    </table>
+
                                     @if($supplier->approvalLogs->isNotEmpty())
                                         @foreach($supplier->approvalLogs as $log)
                                             <hr style="padding: 0 !important; margin: 0 !important;">

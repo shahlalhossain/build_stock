@@ -85,6 +85,11 @@ class Supplier extends Model
             ->logOnlyDirty();
     }
 
+    public function supplierType() : BelongsTo
+    {
+        return $this->belongsTo(SupplierType::class, 'supplier_type_id');
+    }
+
     public function contacts(): HasMany
     {
         return $this->hasMany(SupplierContact::class, 'supplier_id');
