@@ -77,9 +77,8 @@
                                     <tr>
                                         <th>{{ __('Name') }}</th>
                                         <th>{{ __('Designation') }}</th>
-                                        <th>{{ __('Email') }}</th>
-                                        <th>{{ __('Mobile') }}</th>
                                         <th>{{ __('Type') }}</th>
+                                        <th>{{ __('Mobile') }}</th>
                                         <th>{{ __('Primary') }}</th>
                                     </tr>
                                     </thead>
@@ -88,9 +87,8 @@
                                         <tr>
                                             <td>{{ $contact->name }}</td>
                                             <td>{{ $contact->designation }}</td>
-                                            <td>{{ $contact->email }}</td>
-                                            <td>{{ $contact->mobile }}</td>
                                             <td>{{ $contact->contact_type }}</td>
+                                            <td>{{ $contact->mobile }}</td>
                                             <td>{{ $contact->is_primary ? __('Yes') : __('No') }}</td>
                                         </tr>
                                     @empty
@@ -115,7 +113,7 @@
                                     <tbody>
                                     @forelse($supplier->addresses as $address)
                                         <tr>
-                                            <td>{{ $address->address_type }}</td>
+                                            <td>{{ $address->addressType?->name }}</td>
                                             <td>{{ $address->address }}</td>
                                             <td>{{ $address->division_name }}</td>
                                             <td>{{ $address->district_name }}</td>
@@ -133,7 +131,6 @@
                                 <table class="table table-sm table-bordered">
                                     <thead>
                                     <tr>
-                                        <th>{{ __('Method') }}</th>
                                         <th>{{ __('Account Name') }}</th>
                                         <th>{{ __('Account Number') }}</th>
                                         <th>{{ __('Bank') }}</th>
@@ -144,7 +141,6 @@
                                     <tbody>
                                     @forelse($supplier->paymentAccounts as $paymentAccount)
                                         <tr>
-                                            <td>{{ $paymentAccount->payment_method }}</td>
                                             <td>{{ $paymentAccount->account_name }}</td>
                                             <td>{{ $paymentAccount->account_number }}</td>
                                             <td>{{ $paymentAccount->bank_name }}</td>

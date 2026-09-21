@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class Address extends Model
@@ -28,8 +29,13 @@ class Address extends Model
 
     protected $guarded = [];
 
-    public function model(): MorphTo
+    public function model() : MorphTo
     {
         return $this->morphTo(__FUNCTION__, 'model_name', 'model_id');
+    }
+
+    public function addressType() : BelongsTo
+    {
+        return $this->belongsTo(AddressType::class, 'address_type_id');
     }
 }
