@@ -36,6 +36,7 @@ class UpdateSupplierRequest extends FormRequest
             'minimum_order_quantity' => ['nullable', 'integer', 'min:0'],
             'minimum_order_amount' => ['nullable', 'numeric', 'min:0'],
             'lead_time_days' => ['nullable', 'integer', 'min:0'],
+            'description' => ['nullable', 'string'],
             'remarks' => ['nullable', 'string'],
 
             'contacts' => ['required', 'array', 'min:1'],

@@ -71,6 +71,7 @@ class SupplierService extends BaseService
                 'minimum_order_quantity' => $data['minimum_order_quantity'] ?? null,
                 'minimum_order_amount' => $data['minimum_order_amount'] ?? null,
                 'lead_time_days' => $data['lead_time_days'] ?? null,
+                'description' => $data['description'] ?? null,
                 'remarks' => $data['remarks'] ?? null,
                 'is_active' => true,
                 'created_by' => Auth::id(),
@@ -114,6 +115,7 @@ class SupplierService extends BaseService
                 'minimum_order_quantity' => $data['minimum_order_quantity'] ?? null,
                 'minimum_order_amount' => $data['minimum_order_amount'] ?? null,
                 'lead_time_days' => $data['lead_time_days'] ?? null,
+                'description' => $data['description'] ?? null,
                 'remarks' => $data['remarks'] ?? null,
                 'updated_by' => Auth::id(),
             ]);

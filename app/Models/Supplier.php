@@ -35,6 +35,7 @@ class Supplier extends Model
         'ledger_account_id',
         'is_active',
         'status',
+        'description',
         'remarks',
         'created_by',
         'updated_by',
@@ -85,7 +86,7 @@ class Supplier extends Model
             ->logOnlyDirty();
     }
 
-    public function supplierType() : BelongsTo
+    public function supplierType(): BelongsTo
     {
         return $this->belongsTo(SupplierType::class, 'supplier_type_id');
     }
