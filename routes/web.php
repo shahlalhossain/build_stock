@@ -198,6 +198,7 @@ Route::middleware('auth:web')->group(function () {
             Route::get('/', [SuppliersController::class, 'show'])->name('show')->withTrashed();
             Route::get('edit', [SuppliersController::class, 'edit'])->name('edit');
             Route::patch('/', [SuppliersController::class, 'update'])->name('update');
+            Route::post('update-status', [SuppliersController::class, 'updateStatus'])->name('update-status');
             Route::delete('/', [SuppliersController::class, 'destroy'])->name('destroy');
             Route::post('restore', [SuppliersController::class, 'restore'])->name('restore');
             Route::delete('force-delete', [SuppliersController::class, 'delete'])->name('delete');

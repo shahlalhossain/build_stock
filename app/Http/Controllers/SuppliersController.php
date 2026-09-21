@@ -50,16 +50,6 @@ class SuppliersController extends Controller
         return view('supplier.create', $data);
     }
 
-    public function getBranchesByBank(Request $request): JsonResponse
-    {
-        $branches = BankBranch::where('bank_id', $request->bank_id)
-            ->where('is_active', true)
-            ->orderBy('branch_name')
-            ->get(['id', 'branch_name', 'routing_no']);
-
-        return response()->json($branches);
-    }
-
     public function store(StoreSupplierRequest $supplierRequest)
     {
         try {
@@ -79,19 +69,19 @@ class SuppliersController extends Controller
 
     public function show(Supplier $supplier)
     {
-        $data['supplier'] = $supplier->load(['contacts', 'addresses', 'paymentAccounts', 'mfsAccounts', 'creator', 'updater', 'deleter']);
+        $data['supplier'] = $supplier->load(['contacts', 'addresses', 'paymentAccounts', 'mfsAccounts', 'creator', 'updater', 'deleter', 'approvalLogs.actionedBy']);
 
         return view('supplier.show', $data);
     }
 
     public function edit(Supplier $supplier): View
     {
-        $data['supplier'] = $supplier->load(['contacts', 'addresses', 'paymentAccounts', 'mfsAccounts']);
-        $data['supplierTypes'] = SupplierType::select('id', 'name')->get();
-        $data['addressTypes'] = AddressType::where('is_active', true)->select('id', 'name')->get();
-        $data['divisions'] = GeoDivision::orderBy('name_en')->get(['id', 'name_en', 'name_bn']);
-        $data['mfsCompanies'] = MFSCompany::where('status', 'Active')->select('id', 'service_name')->get();
-        $data['banks'] = Bank::where('is_active', true)->orderBy('bank_name')->get(['id', 'bank_name']);
+        $data['supplier']       = $supplier->load(['contacts', 'addresses', 'paymentAccounts', 'mfsAccounts']);
+        $data['supplierTypes']  = SupplierType::select('id', 'name')->get();
+        $data['addressTypes']   = AddressType::where('is_active', true)->select('id', 'name')->get();
+        $data['divisions']      = GeoDivision::orderBy('name_en')->get(['id', 'name_en', 'name_bn']);
+        $data['mfsCompanies']   = MFSCompany::where('status', 'Active')->select('id', 'service_name')->get();
+        $data['banks']          = Bank::where('is_active', true)->orderBy('bank_name')->get(['id', 'bank_name']);
 
         return view('supplier.edit', $data);
     }
@@ -110,6 +100,29 @@ class SuppliersController extends Controller
             Log::error('Unexpected Error on Updating Supplier: '.$exception->getMessage());
 
             return back()->withInput()->with('error', 'Unexpected Error Occurred. Try Again.');
+        }
+    }
+
+    public function updateStatus(Request $request, $id): JsonResponse
+    {
+        $validated = $request->validate(['status' => ['required', 'in:pending,approved,rejected'], 'remarks' => ['nullable', 'string']]);
+
+        try {
+            $this->supplierService->updateSupplierStatus((int) $id, $validated['status'], $validated['remarks'] ?? null);
+
+            return response()->json(['success' => true, 'message' => 'Supplier Status Updated Successfully.']);
+        } catch (ModelNotFoundException $exception) {
+            Log::warning('Supplier Not Found: '.$exception->getMessage());
+
+            return response()->json(['success' => false, 'message' => 'Supplier Not Found.'], 404);
+        } catch (GeneralException $exception) {
+            Log::error('Supplier Status Update Failed: '.$exception->getMessage());
+
+            return response()->json(['success' => false, 'message' => $exception->getMessage()], 422);
+        } catch (Throwable $exception) {
+            Log::error('Unexpected Error on Updating Supplier Status: '.$exception->getMessage());
+
+            return response()->json(['success' => false, 'message' => 'Unexpected Error Occurred on Updating the Supplier Status.'], 500);
         }
     }
 
@@ -173,5 +186,15 @@ class SuppliersController extends Controller
 
             return response()->json(['success' => false, 'message' => 'Failed to Delete Supplier.', 'error' => $exception->getMessage()], 500);
         }
+    }
+
+    public function getBranchesByBank(Request $request): JsonResponse
+    {
+        $branches = BankBranch::where('bank_id', $request->bank_id)
+            ->where('is_active', true)
+            ->orderBy('branch_name')
+            ->get(['id', 'branch_name', 'routing_no']);
+
+        return response()->json($branches);
     }
 }

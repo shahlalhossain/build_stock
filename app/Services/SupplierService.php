@@ -6,8 +6,10 @@ use App\Events\Supplier\SupplierCreated;
 use App\Events\Supplier\SupplierDeleted;
 use App\Events\Supplier\SupplierDestroyed;
 use App\Events\Supplier\SupplierRestored;
+use App\Events\Supplier\SupplierStatusUpdated;
 use App\Events\Supplier\SupplierUpdated;
 use App\Exceptions\GeneralException;
+use App\Models\ApprovalLog;
 use App\Models\Supplier;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -130,6 +132,62 @@ class SupplierService extends BaseService
             Log::alert($exception->getMessage());
             DB::rollBack();
             throw new GeneralException(__('There was a Problem on Updating the Supplier.'));
+        }
+    }
+
+    /**
+     * @throws GeneralException
+     * @throws Throwable
+     */
+    public function updateSupplierStatus(int $id, string $status, ?string $remarks = null): bool
+    {
+        DB::beginTransaction();
+        try {
+            $supplier = Supplier::findOrFail($id);
+
+            $oldStatus = $supplier->status;
+
+            if ($oldStatus === $status) {
+                return true;
+            }
+
+            // Update without Triggering Spatie's "updated" Activity Log
+            $supplier->status = $status;
+            $result = $supplier->saveQuietly();
+
+            ApprovalLog::create([
+                'model_type' => Supplier::class,
+                'model_id' => $supplier->id,
+                'action_name' => $status,
+                'actioned_by' => Auth::id(),
+                'actioned_at' => now(),
+                'remarks' => $remarks,
+            ]);
+
+            activity()
+                ->performedOn($supplier)
+                ->causedBy(Auth::user())
+                ->useLog('supplier')
+                ->event('statusUpdated')
+                ->withProperties([
+                    'old_status' => $oldStatus,
+                    'new_status' => $status,
+                    'remarks' => $remarks,
+                ])
+                ->log('statusUpdated');
+
+            event(new SupplierStatusUpdated($supplier));
+
+            DB::commit();
+
+            return $result;
+        } catch (ModelNotFoundException $exception) {
+            DB::rollBack();
+            throw $exception;
+        } catch (Throwable $exception) {
+            DB::rollBack();
+            Log::error('Supplier Status Update Failed in Service:'.$exception->getMessage());
+            throw new GeneralException(__('There was an issue on Supplier Status Update'));
         }
     }
 

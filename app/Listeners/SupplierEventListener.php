@@ -6,6 +6,7 @@ use App\Events\Supplier\SupplierCreated;
 use App\Events\Supplier\SupplierDeleted;
 use App\Events\Supplier\SupplierDestroyed;
 use App\Events\Supplier\SupplierRestored;
+use App\Events\Supplier\SupplierStatusUpdated;
 use App\Events\Supplier\SupplierUpdated;
 
 class SupplierEventListener
@@ -22,6 +23,14 @@ class SupplierEventListener
      * Handle Supplier Updated event.
      */
     public function onUpdated(SupplierUpdated $event): void
+    {
+        //
+    }
+
+    /**
+     * Handle Supplier Status Updated event.
+     */
+    public function onStatusUpdated(SupplierStatusUpdated $event): void
     {
         //
     }
@@ -57,6 +66,7 @@ class SupplierEventListener
     {
         $events->listen(SupplierCreated::class, [self::class, 'onCreated']);
         $events->listen(SupplierUpdated::class, [self::class, 'onUpdated']);
+        $events->listen(SupplierStatusUpdated::class, [self::class, 'onStatusUpdated']);
         $events->listen(SupplierDestroyed::class, [self::class, 'onDestroyed']);
         $events->listen(SupplierRestored::class, [self::class, 'onRestored']);
         $events->listen(SupplierDeleted::class, [self::class, 'onDeleted']);
