@@ -5,12 +5,12 @@
 @push('styles')
     <style>
         .spec-value-check .form-check-input {
-            width: 1.5em;
-            height: 1.5em;
+            width: 1.3em;
+            height: 1.3em;
         }
 
         .spec-value-check .form-check-label {
-            font-size: 1rem;
+            padding-top: 2px;
             padding-left: 0.25em;
         }
     </style>

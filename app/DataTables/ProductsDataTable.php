@@ -92,7 +92,7 @@ class ProductsDataTable extends DataTable
             Column::computed('DT_RowIndex')->title('SN')->orderable(false)->searchable(false)->addClass('text-center'),
             Column::make('name')->orderable(true)->searchable(true),
             Column::make('code')->orderable(true)->searchable(true),
-            Column::make('sku')->orderable(true)->searchable(true),
+            Column::make('sku')->title('SKU')->orderable(true)->searchable(true),
             Column::make('Category', 'category')->orderable(false)->searchable(false),
             Column::make('Brand', 'brand')->orderable(false)->searchable(false),
             Column::make('Unit', 'unit')->orderable(false)->searchable(false)->addClass('text-center'),
