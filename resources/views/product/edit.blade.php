@@ -145,7 +145,7 @@
 
                                 <template id="specs-row-template">
                                     <div class="row mb-2 align-items-start repeater-row" data-group="specs">
-                                        <div class="col-12 col-sm-6 col-md-4 pt-2">
+                                        <div class="col-12 col-sm-4 col-md-3 pt-2">
                                             <select class="form-select spec-attribute">
                                                 <option value="">{{ __('== Select Attribute ==') }}</option>
                                                 @foreach($attributes as $attribute)
@@ -153,12 +153,10 @@
                                                 @endforeach
                                             </select>
                                         </div>
-                                        <div class="col-12 col-sm-6 col-md-4 pt-2">
-                                            <select class="form-select spec-value" name="attribute_value_ids[]">
-                                                <option value="">{{ __('== Select Attribute First ==') }}</option>
-                                            </select>
+                                        <div class="col-12 col-sm-7 col-md-8 pt-2">
+                                            <div class="spec-values d-flex flex-wrap gap-3 pt-2 text-muted">{{ __('Select an Attribute First') }}</div>
                                         </div>
-                                        <div class="col-12 col-sm-12 col-md-1 text-end text-md-start" style="padding-top: 13px;">
+                                        <div class="col-12 col-sm-1 col-md-1 text-end text-md-start" style="padding-top: 13px;">
                                             <button type="button" class="btn btn-sm btn-outline-danger remove-row"><i class="ri-close-line"></i></button>
                                         </div>
                                     </div>
@@ -225,15 +223,49 @@
                 return [$attribute->id => $attribute->values->map(fn ($value) => ['id' => $value->id, 'value' => $value->value])];
             }));
 
-            const existingSpecs = @json($product->attributeValues->map(fn ($value) => ['attribute_id' => $value->attribute_id, 'attribute_value_id' => $value->id]));
+            const existingAttributeValueIds = @json($product->attributeValues->pluck('id'));
 
-            function addRow(group, data) {
+            const existingAttributeIds = @json($product->attributeValues->pluck('attribute_id')->unique()->values());
+
+            function renderValues(row, attributeId, checkedIds) {
+                const $values = row.find('.spec-values');
+
+                $values.empty();
+
+                const values = attributeValues[attributeId] || [];
+
+                if (!values.length) {
+                    $values.text('{{ __("No Values Available for This Attribute") }}');
+
+                    return;
+                }
+
+                values.forEach(function (value) {
+                    const checkboxId = 'spec-value-' + attributeId + '-' + value.id;
+                    const isChecked = checkedIds.includes(value.id);
+
+                    $values.append(
+                        $('<div class="form-check">').append(
+                            $('<input type="checkbox" name="attribute_value_ids[]">')
+                                .addClass('form-check-input')
+                                .attr('id', checkboxId)
+                                .prop('checked', isChecked)
+                                .val(value.id),
+                            $('<label class="form-check-label">')
+                                .attr('for', checkboxId)
+                                .text(value.value)
+                        )
+                    );
+                });
+            }
+
+            function addRow(group, attributeId) {
                 const template = document.getElementById(group + '-row-template').innerHTML;
                 const $row = $(template);
 
-                if (data) {
-                    $row.find('.spec-attribute').val(data.attribute_id).trigger('change');
-                    $row.find('.spec-value').val(data.attribute_value_id);
+                if (attributeId) {
+                    $row.find('.spec-attribute').val(attributeId);
+                    renderValues($row, attributeId, existingAttributeValueIds);
                 }
 
                 $('#' + group + '-rows').append($row);
@@ -249,19 +281,11 @@
 
             $(document).on('change', '.spec-attribute', function () {
                 const row = $(this).closest('.repeater-row');
-                const attributeId = $(this).val();
-                const $value = row.find('.spec-value');
-
-                $value.html('<option value="">{{ __("== Select Value ==") }}</option>');
-
-                const values = attributeValues[attributeId] || [];
-                values.forEach(function (value) {
-                    $value.append('<option value="' + value.id + '">' + value.value + '</option>');
-                });
+                renderValues(row, $(this).val(), []);
             });
 
-            if (existingSpecs.length) {
-                existingSpecs.forEach(spec => addRow('specs', spec));
+            if (existingAttributeIds.length) {
+                existingAttributeIds.forEach(attributeId => addRow('specs', attributeId));
             } else {
                 addRow('specs');
             }
