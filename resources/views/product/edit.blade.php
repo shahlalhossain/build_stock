@@ -40,9 +40,72 @@
                                 @endif
                                 <!-- End Page Error Section -->
 
-
                                 <div class="row">
-                                    <div class="col-12 col-md-7">
+                                    <!-- Start Left Column -->
+                                    <div class="col-12 col-md-6">
+                                        <div class="row mb-2">
+                                            <label for="code" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Product Code') }}</label>
+                                            <div class="col-12 col-md-8">
+                                                <input type="text" class="form-control" id="code" value="{{ $product->code }}" readonly disabled>
+                                            </div>
+                                        </div>
+
+                                        <div class="row mb-2">
+                                            <label for="category_id" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Category') }}</label>
+                                            <div class="col-12 col-md-8">
+                                                <select id="category_id" name="category_id" class="form-select @error('category_id') is-invalid @enderror" required>
+                                                    <option value="">{{ __('== Select Category ==') }}</option>
+                                                    @foreach($categories as $category)
+                                                        <option value="{{ $category->id }}" @selected(old('category_id', $product->category_id) == $category->id)>{{ $category->name }}</option>
+                                                    @endforeach
+                                                </select>
+                                                @error('category_id')<small class="text-danger">{{ $message }}</small>@enderror
+                                            </div>
+                                        </div>
+
+                                        <div class="row mb-2">
+                                            <label for="sub_category_id" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Sub-Category') }}</label>
+                                            <div class="col-12 col-md-8">
+                                                <select id="sub_category_id" name="sub_category_id" class="form-select @error('sub_category_id') is-invalid @enderror">
+                                                    <option value="">{{ __('== Select Sub-Category ==') }}</option>
+                                                    @foreach($subCategories as $subCategory)
+                                                        <option value="{{ $subCategory->id }}" data-category-id="{{ $subCategory->category_id }}" @selected(old('sub_category_id', $product->sub_category_id) == $subCategory->id)>{{ $subCategory->name }}</option>
+                                                    @endforeach
+                                                </select>
+                                                @error('sub_category_id')<small class="text-danger">{{ $message }}</small>@enderror
+                                            </div>
+                                        </div>
+
+                                        <div class="row mb-2">
+                                            <label for="brand_id" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Brand') }}</label>
+                                            <div class="col-12 col-md-8">
+                                                <select id="brand_id" name="brand_id" class="form-select @error('brand_id') is-invalid @enderror">
+                                                    <option value="">{{ __('== Select Brand ==') }}</option>
+                                                    @foreach($brands as $brand)
+                                                        <option value="{{ $brand->id }}" @selected(old('brand_id', $product->brand_id) == $brand->id)>{{ $brand->name }}</option>
+                                                    @endforeach
+                                                </select>
+                                                @error('brand_id')<small class="text-danger">{{ $message }}</small>@enderror
+                                            </div>
+                                        </div>
+
+                                        <div class="row mb-2">
+                                            <label for="unit_id" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Unit') }}</label>
+                                            <div class="col-12 col-md-8">
+                                                <select id="unit_id" name="unit_id" class="form-select @error('unit_id') is-invalid @enderror">
+                                                    <option value="">{{ __('== Select Unit ==') }}</option>
+                                                    @foreach($units as $unit)
+                                                        <option value="{{ $unit->id }}" @selected(old('unit_id', $product->unit_id) == $unit->id)>{{ $unit->name }} ({{ $unit->symbol }}) - {{ $unit->group }}</option>
+                                                    @endforeach
+                                                </select>
+                                                @error('unit_id')<small class="text-danger">{{ $message }}</small>@enderror
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- End Left Column -->
+
+                                    <!-- Start Right Column -->
+                                    <div class="col-12 col-md-6">
                                         <div class="row mb-2">
                                             <label for="name" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Product Name') }}</label>
                                             <div class="col-12 col-md-8">
@@ -52,33 +115,55 @@
                                         </div>
 
                                         <div class="row mb-2">
-                                            <label for="code" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Product Code') }}</label>
+                                            <label for="sku" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('SKU') }}</label>
                                             <div class="col-12 col-md-8">
-                                                <input type="text" class="form-control @error('code') is-invalid @enderror" id="code" name="code" value="{{ old('code', $product->code) }}" required>
-                                                @error('code')<small class="text-danger">{{ $message }}</small>@enderror
+                                                <input type="text" class="form-control @error('sku') is-invalid @enderror" id="sku" name="sku" value="{{ old('sku', $product->sku) }}">
+                                                @error('sku')<small class="text-danger">{{ $message }}</small>@enderror
                                             </div>
                                         </div>
 
                                         <div class="row mb-2">
                                             <label for="description" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Description') }}</label>
                                             <div class="col-12 col-md-8">
-                                                <input type="text" class="form-control @error('description') is-invalid @enderror" id="description" name="description" value="{{ old('description', $product->description) }}">
+                                                <textarea class="form-control @error('description') is-invalid @enderror" id="description" name="description" rows="2">{{ old('description', $product->description) }}</textarea>
                                                 @error('description')<small class="text-danger">{{ $message }}</small>@enderror
                                             </div>
                                         </div>
+                                    </div>
+                                    <!-- End Right Column -->
+                                </div>
 
-                                        <div class="row mb-2">
-                                            <label for="has_variants" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Has Variants') }}</label>
-                                            <div class="col-12 col-md-8 pt-2">
-                                                <div class="form-check form-switch">
-                                                    <input type="hidden" name="has_variants" value="0">
-                                                    <input type="checkbox" class="form-check-input" id="has_variants" name="has_variants" value="1" @checked(old('has_variants', $product->has_variants))>
-                                                </div>
-                                                @error('has_variants')<small class="text-danger">{{ $message }}</small>@enderror
-                                            </div>
+                                <hr>
+
+                                <!-- ===================== SPECIFICATIONS (ATTRIBUTES) ===================== -->
+                                <div class="d-flex align-items-center mb-2">
+                                    <h5 class="mb-0 flex-grow-1 fst-italic">{{ __('Specifications') }} <small class="text-muted">({{ __('Optional') }})</small></h5>
+                                    <button type="button" class="btn btn-sm btn-success add-row" data-group="specs"><i class="ri-add-line"></i> {{ __('Add Specification') }}</button>
+                                </div>
+                                @error('attribute_value_ids')<small class="text-danger d-block mb-2">{{ $message }}</small>@enderror
+                                <div id="specs-rows"></div>
+
+                                <template id="specs-row-template">
+                                    <div class="row mb-2 align-items-start repeater-row" data-group="specs">
+                                        <div class="col-12 col-sm-6 col-md-4 pt-2">
+                                            <select class="form-select spec-attribute">
+                                                <option value="">{{ __('== Select Attribute ==') }}</option>
+                                                @foreach($attributes as $attribute)
+                                                    <option value="{{ $attribute->id }}">{{ $attribute->name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div class="col-12 col-sm-6 col-md-4 pt-2">
+                                            <select class="form-select spec-value" name="attribute_value_ids[]">
+                                                <option value="">{{ __('== Select Attribute First ==') }}</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-12 col-sm-12 col-md-1 text-end text-md-start" style="padding-top: 13px;">
+                                            <button type="button" class="btn btn-sm btn-outline-danger remove-row"><i class="ri-close-line"></i></button>
                                         </div>
                                     </div>
-                                </div>
+                                </template>
+
                             </div>
 
                             <div class="card-footer">
@@ -103,5 +188,83 @@
 @endsection
 
 @push('scripts')
+    <script>
+        $(document).ready(function () {
+            /*
+            |--------------------------------------------------------------------------
+            | CATEGORY -> SUB-CATEGORY: CLIENT-SIDE FILTER
+            |--------------------------------------------------------------------------
+            */
+            const $subCategory = $('#sub_category_id');
+            const $subCategoryOptions = $subCategory.find('option[data-category-id]');
 
+            function filterSubCategories() {
+                const categoryId = $('#category_id').val();
+
+                $subCategoryOptions.each(function () {
+                    const matches = !categoryId || String($(this).data('category-id')) === String(categoryId);
+                    $(this).toggle(matches);
+                });
+
+                const $selected = $subCategory.find('option:selected');
+                if ($selected.length && $selected.is(':hidden')) {
+                    $subCategory.val('');
+                }
+            }
+
+            $('#category_id').on('change', filterSubCategories);
+            filterSubCategories();
+
+            /*
+            |--------------------------------------------------------------------------
+            | SPECIFICATIONS REPEATER: ATTRIBUTE -> ATTRIBUTE VALUE
+            |--------------------------------------------------------------------------
+            | Seeded from the Product's existing attribute-value assignments.
+            */
+            const attributeValues = @json($attributes->mapWithKeys(function ($attribute) {
+                return [$attribute->id => $attribute->values->map(fn ($value) => ['id' => $value->id, 'value' => $value->value])];
+            }));
+
+            const existingSpecs = @json($product->attributeValues->map(fn ($value) => ['attribute_id' => $value->attribute_id, 'attribute_value_id' => $value->id]));
+
+            function addRow(group, data) {
+                const template = document.getElementById(group + '-row-template').innerHTML;
+                const $row = $(template);
+
+                if (data) {
+                    $row.find('.spec-attribute').val(data.attribute_id).trigger('change');
+                    $row.find('.spec-value').val(data.attribute_value_id);
+                }
+
+                $('#' + group + '-rows').append($row);
+            }
+
+            $(document).on('click', '.add-row', function () {
+                addRow($(this).data('group'));
+            });
+
+            $(document).on('click', '.remove-row', function () {
+                $(this).closest('.repeater-row').remove();
+            });
+
+            $(document).on('change', '.spec-attribute', function () {
+                const row = $(this).closest('.repeater-row');
+                const attributeId = $(this).val();
+                const $value = row.find('.spec-value');
+
+                $value.html('<option value="">{{ __("== Select Value ==") }}</option>');
+
+                const values = attributeValues[attributeId] || [];
+                values.forEach(function (value) {
+                    $value.append('<option value="' + value.id + '">' + value.value + '</option>');
+                });
+            });
+
+            if (existingSpecs.length) {
+                existingSpecs.forEach(spec => addRow('specs', spec));
+            } else {
+                addRow('specs');
+            }
+        });
+    </script>
 @endpush

@@ -6,7 +6,12 @@ use App\DataTables\ProductsDataTable;
 use App\Exceptions\GeneralException;
 use App\Http\Requests\Product\StoreProductRequest;
 use App\Http\Requests\Product\UpdateProductRequest;
+use App\Models\Attribute;
+use App\Models\Brand;
+use App\Models\Category;
 use App\Models\Product;
+use App\Models\ProductUnit;
+use App\Models\SubCategory;
 use App\Services\ProductService;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -34,7 +39,9 @@ class ProductsController extends Controller
 
     public function create()
     {
-        return view('product.create');
+        $data = $this->formLookups();
+
+        return view('product.create', $data);
     }
 
     public function store(StoreProductRequest $productRequest)
@@ -56,14 +63,15 @@ class ProductsController extends Controller
 
     public function show(Product $product)
     {
-        $data['product'] = $product->load(['creator', 'updater', 'deleter']);
+        $data['product'] = $product->load(['category', 'subCategory', 'brand', 'unit', 'attributeValues.attribute', 'creator', 'updater', 'deleter']);
 
         return view('product.show', $data);
     }
 
     public function edit(Product $product): View
     {
-        $data['product'] = $product;
+        $data = $this->formLookups();
+        $data['product'] = $product->load(['attributeValues']);
 
         return view('product.edit', $data);
     }
@@ -145,5 +153,21 @@ class ProductsController extends Controller
 
             return response()->json(['success' => false, 'message' => 'Failed to Delete Product.', 'error' => $exception->getMessage()], 500);
         }
+    }
+
+    /**
+     * Shared lookup data for the Create/Edit forms.
+     */
+    protected function formLookups(): array
+    {
+        return [
+            'categories' => Category::where('is_active', true)->orderBy('name')->get(['id', 'name']),
+            'subCategories' => SubCategory::where('is_active', true)->orderBy('name')->get(['id', 'category_id', 'name']),
+            'brands' => Brand::where('is_active', true)->orderBy('name')->get(['id', 'name']),
+            'units' => ProductUnit::where('is_active', true)->orderBy('group')->orderBy('name')->get(['id', 'group', 'name', 'symbol']),
+            'attributes' => Attribute::where('is_active', true)->with(['values' => function ($query) {
+                $query->orderBy('value');
+            }])->orderBy('name')->get(),
+        ];
     }
 }

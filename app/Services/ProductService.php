@@ -38,15 +38,21 @@ class ProductService extends BaseService
         DB::beginTransaction();
         try {
             $productData = [
+                'category_id' => $data['category_id'] ?? null,
+                'sub_category_id' => $data['sub_category_id'] ?? null,
+                'brand_id' => $data['brand_id'] ?? null,
+                'unit_id' => $data['unit_id'] ?? null,
                 'name' => $data['name'] ?? null,
-                'code' => $data['code'] ?? null,
+                'code' => $this->generateCode(),
+                'sku' => $data['sku'] ?? null,
                 'description' => $data['description'] ?? null,
-                'has_variants' => $data['has_variants'] ?? false,
                 'is_active' => true,
                 'created_by' => Auth::id(),
                 'updated_by' => Auth::id(),
             ];
             $product = $this->model::create($productData);
+
+            $this->attachAttributeValues($product, $data['attribute_value_ids'] ?? []);
 
             event(new ProductCreated($product));
 
@@ -70,12 +76,17 @@ class ProductService extends BaseService
 
         try {
             $product->update([
+                'category_id' => $data['category_id'] ?? null,
+                'sub_category_id' => $data['sub_category_id'] ?? null,
+                'brand_id' => $data['brand_id'] ?? null,
+                'unit_id' => $data['unit_id'] ?? null,
                 'name' => $data['name'] ?? null,
-                'code' => $data['code'] ?? null,
+                'sku' => $data['sku'] ?? null,
                 'description' => $data['description'] ?? null,
-                'has_variants' => $data['has_variants'] ?? false,
                 'updated_by' => Auth::id(),
             ]);
+
+            $this->attachAttributeValues($product, $data['attribute_value_ids'] ?? []);
 
             event(new ProductUpdated($product));
 
@@ -87,6 +98,36 @@ class ProductService extends BaseService
             DB::rollBack();
             throw new GeneralException(__('There was a Problem on Updating the Product.'));
         }
+    }
+
+    /**
+     * Add the submitted attribute-value ids to the product's existing
+     * assignments (merge/add-only) rather than replacing them, so
+     * updating a Product never silently drops previously-saved
+     * specifications that the current form submission didn't resend.
+     */
+    protected function attachAttributeValues(Product $product, array $attributeValueIds): void
+    {
+        $ids = array_filter($attributeValueIds);
+
+        if (empty($ids)) {
+            return;
+        }
+
+        $product->attributeValues()->syncWithoutDetaching($ids);
+    }
+
+    /**
+     * Generate the next Sequential Product Code (e.g. PRD-0001).
+     */
+    protected function generateCode(): string
+    {
+        $lastNumber = Product::withTrashed()
+            ->where('code', 'like', 'PRD-%')
+            ->selectRaw('MAX(CAST(SUBSTRING(code, 5) AS UNSIGNED)) as max_number')
+            ->value('max_number');
+
+        return 'PRD-'.str_pad((int) $lastNumber + 1, 4, '0', STR_PAD_LEFT);
     }
 
     /**
@@ -172,6 +213,7 @@ class ProductService extends BaseService
 
             // Permanently Delete without Automatic Activity Logging.
             activity()->withoutLogs(function () use ($product) {
+                $product->attributeValues()->detach();
                 $product->forceDelete();
             });
 

@@ -10,6 +10,11 @@ class AttributeValue extends Model
     protected $table = 'attribute_values';
 
     /**
+     * The table has no created_at/updated_at columns.
+     */
+    public $timestamps = false;
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
@@ -19,7 +24,7 @@ class AttributeValue extends Model
         'value',
     ];
 
-    protected $guarded = ['id', 'created_at', 'updated_at'];
+    protected $guarded = ['id'];
 
     /**
      * Get the attributes that should be cast.
@@ -29,8 +34,6 @@ class AttributeValue extends Model
     protected function casts(): array
     {
         return [
-            'created_at' => 'datetime',
-            'updated_at' => 'datetime',
             'attribute_id' => 'integer',
         ];
     }

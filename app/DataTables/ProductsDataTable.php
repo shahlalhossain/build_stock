@@ -26,22 +26,19 @@ class ProductsDataTable extends DataTable
             ->editColumn('name', function (Product $product) {
                 return ucwords($product->name);
             })
-            ->addColumn('has_variants', function (Product $product) {
-                return $product->has_variants ? '<span class="badge bg-info">Yes</span>' : '<span class="badge bg-secondary">No</span>';
+            ->editColumn('Category', function (Product $product) {
+                return $product->category?->name;
+            })
+            ->editColumn('Brand', function (Product $product) {
+                return $product->brand?->name ?? '--';
+            })
+            ->editColumn('Unit', function (Product $product) {
+                return $product->unit?->symbol ?? '--';
             })
             ->addColumn('is_active', function (Product $product) {
                 return $product->is_active ? '<span class="badge bg-success">Yes</span>' : '<span class="badge bg-danger">No</span>';
             })
-            ->editColumn('Created By', function (Product $product) {
-                return ucwords($product->creator?->name);
-            })
-            ->editColumn('Updated By', function (Product $product) {
-                return ucwords($product->updater?->name);
-            })
             ->editColumn('created_at', function (Product $product) {
-                return $product->created_at->format('Y-m-d H:i');
-            })
-            ->editColumn('updated_at', function (Product $product) {
                 return $product->created_at->format('Y-m-d H:i');
             })
             ->addColumn('actions', function (Product $product) {
@@ -51,7 +48,7 @@ class ProductsDataTable extends DataTable
 
                 return view('product.actions', ['product' => $product]);
             })
-            ->rawColumns(['has_variants', 'is_active']);
+            ->rawColumns(['is_active']);
     }
 
     /**
@@ -60,10 +57,10 @@ class ProductsDataTable extends DataTable
     public function query(Product $model): QueryBuilder
     {
         if ($this->showTrashed) {
-            return $model->newQuery()->onlyTrashed();   // Show Trashed Records
+            return $model->newQuery()->with(['category', 'brand', 'unit'])->onlyTrashed();   // Show Trashed Records
         }
 
-        return $model->newQuery()->withoutTrashed();    // Show Active Records
+        return $model->newQuery()->with(['category', 'brand', 'unit'])->withoutTrashed();    // Show Active Records
     }
 
     /**
@@ -95,12 +92,12 @@ class ProductsDataTable extends DataTable
             Column::computed('DT_RowIndex')->title('SN')->orderable(false)->searchable(false)->addClass('text-center'),
             Column::make('name')->orderable(true)->searchable(true),
             Column::make('code')->orderable(true)->searchable(true),
-            Column::computed('has_variants')->title('Has Variants')->orderable(false)->searchable(false)->addClass('text-center'),
+            Column::make('sku')->orderable(true)->searchable(true),
+            Column::make('Category', 'category')->orderable(false)->searchable(false),
+            Column::make('Brand', 'brand')->orderable(false)->searchable(false),
+            Column::make('Unit', 'unit')->orderable(false)->searchable(false)->addClass('text-center'),
             Column::computed('is_active')->title('Active')->orderable(false)->searchable(false)->addClass('text-center'),
-            Column::make('Created By', 'creator')->orderable(false)->searchable(false),
-            Column::make('Updated By', 'updater')->orderable(false)->searchable(false),
             Column::make('created_at')->orderable(true)->searchable(true)->addClass('text-center'),
-            Column::make('updated_at')->orderable(true)->searchable(true)->addClass('text-center'),
             Column::computed('actions')
                 ->orderable(false)
                 ->searchable(false)
