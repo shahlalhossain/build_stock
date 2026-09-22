@@ -123,14 +123,17 @@
                                 <!-- ===================== SPECIFICATIONS (ATTRIBUTES) ===================== -->
                                 <div class="d-flex align-items-center mb-2">
                                     <h5 class="mb-0 flex-grow-1 fst-italic">{{ __('Specifications') }} <small class="text-muted">({{ __('Optional') }})</small></h5>
-                                    <button type="button" class="btn btn-sm btn-success add-row" data-group="specs"><i class="ri-add-line"></i> {{ __('Add Specification') }}</button>
+                                    <button type="button" class="btn btn-sm btn-success add-row" data-group="specs"><i class="ri-add-line"></i> {{ __('Add Spec.') }}</button>
                                 </div>
                                 @error('attribute_value_ids')<small class="text-danger d-block mb-2">{{ $message }}</small>@enderror
                                 <div id="specs-rows"></div>
 
                                 <template id="specs-row-template">
                                     <div class="row mb-2 align-items-start repeater-row" data-group="specs">
-                                        <div class="col-12 col-sm-4 col-md-3 pt-2">
+                                        <div class="col-12 col-sm-1 col-md-1 text-end text-md-start" style="padding-top: 13px;">
+                                            <button type="button" class="btn btn-sm btn-outline-danger remove-row"><i class="ri-close-line"></i></button>
+                                        </div>
+                                        <div class="col-12 col-sm-4 col-md-2 pt-2">
                                             <select class="form-select spec-attribute">
                                                 <option value="">{{ __('== Select Attribute ==') }}</option>
                                                 @foreach($attributes as $attribute)
@@ -140,9 +143,6 @@
                                         </div>
                                         <div class="col-12 col-sm-7 col-md-8 pt-2">
                                             <div class="spec-values d-flex flex-wrap gap-3 pt-2 text-muted">{{ __('Select an Attribute First') }}</div>
-                                        </div>
-                                        <div class="col-12 col-sm-1 col-md-1 text-end text-md-start" style="padding-top: 13px;">
-                                            <button type="button" class="btn btn-sm btn-outline-danger remove-row"><i class="ri-close-line"></i></button>
                                         </div>
                                     </div>
                                 </template>
@@ -216,6 +216,7 @@
             function addRow(group) {
                 const template = document.getElementById(group + '-row-template').innerHTML;
                 $('#' + group + '-rows').append(template);
+                refreshAttributeOptions();
             }
 
             $(document).on('click', '.add-row', function () {
@@ -224,6 +225,7 @@
 
             $(document).on('click', '.remove-row', function () {
                 $(this).closest('.repeater-row').remove();
+                refreshAttributeOptions();
             });
 
             $(document).on('change', '.spec-attribute', function () {
@@ -237,26 +239,52 @@
 
                 if (!values.length) {
                     $values.text('{{ __("No Values Available for This Attribute") }}');
+                } else {
+                    values.forEach(function (value) {
+                        const checkboxId = 'spec-value-' + attributeId + '-' + value.id;
 
-                    return;
+                        $values.append(
+                            $('<div class="form-check">').append(
+                                $('<input type="checkbox" name="attribute_value_ids[]">')
+                                    .addClass('form-check-input')
+                                    .attr('id', checkboxId)
+                                    .val(value.id),
+                                $('<label class="form-check-label">')
+                                    .attr('for', checkboxId)
+                                    .text(value.value)
+                            )
+                        );
+                    });
                 }
 
-                values.forEach(function (value) {
-                    const checkboxId = 'spec-value-' + attributeId + '-' + value.id;
-
-                    $values.append(
-                        $('<div class="form-check">').append(
-                            $('<input type="checkbox" name="attribute_value_ids[]">')
-                                .addClass('form-check-input')
-                                .attr('id', checkboxId)
-                                .val(value.id),
-                            $('<label class="form-check-label">')
-                                .attr('for', checkboxId)
-                                .text(value.value)
-                        )
-                    );
-                });
+                refreshAttributeOptions();
             });
+
+            /*
+            |--------------------------------------------------------------------------
+            | PREVENT DUPLICATE ATTRIBUTE SELECTION ACROSS ROWS
+            |--------------------------------------------------------------------------
+            | Once an Attribute is picked in one row, it's disabled in every other
+            | row's Attribute <select> so the same Attribute can't be added twice.
+            */
+            function refreshAttributeOptions() {
+                const selectedIds = $('.spec-attribute').map(function () {
+                    return $(this).val();
+                }).get().filter(Boolean);
+
+                $('.spec-attribute').each(function () {
+                    const currentValue = $(this).val();
+
+                    $(this).find('option').each(function () {
+                        if (!$(this).val()) {
+                            return;
+                        }
+
+                        const isSelectedElsewhere = selectedIds.includes($(this).val()) && $(this).val() !== currentValue;
+                        $(this).prop('disabled', isSelectedElsewhere);
+                    });
+                });
+            }
 
             // Seed with one starter row.
             addRow('specs');

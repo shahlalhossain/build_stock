@@ -269,6 +269,7 @@
                 }
 
                 $('#' + group + '-rows').append($row);
+                refreshAttributeOptions();
             }
 
             $(document).on('click', '.add-row', function () {
@@ -277,12 +278,40 @@
 
             $(document).on('click', '.remove-row', function () {
                 $(this).closest('.repeater-row').remove();
+                refreshAttributeOptions();
             });
 
             $(document).on('change', '.spec-attribute', function () {
                 const row = $(this).closest('.repeater-row');
                 renderValues(row, $(this).val(), []);
+                refreshAttributeOptions();
             });
+
+            /*
+            |--------------------------------------------------------------------------
+            | PREVENT DUPLICATE ATTRIBUTE SELECTION ACROSS ROWS
+            |--------------------------------------------------------------------------
+            | Once an Attribute is picked in one row, it's disabled in every other
+            | row's Attribute <select> so the same Attribute can't be added twice.
+            */
+            function refreshAttributeOptions() {
+                const selectedIds = $('.spec-attribute').map(function () {
+                    return $(this).val();
+                }).get().filter(Boolean);
+
+                $('.spec-attribute').each(function () {
+                    const currentValue = $(this).val();
+
+                    $(this).find('option').each(function () {
+                        if (!$(this).val()) {
+                            return;
+                        }
+
+                        const isSelectedElsewhere = selectedIds.includes($(this).val()) && $(this).val() !== currentValue;
+                        $(this).prop('disabled', isSelectedElsewhere);
+                    });
+                });
+            }
 
             if (existingAttributeIds.length) {
                 existingAttributeIds.forEach(attributeId => addRow('specs', attributeId));
