@@ -210,14 +210,18 @@
 
             function filterSubCategories() {
                 const categoryId = $('#category_id').val();
+                let selectedStillMatches = true;
 
                 $subCategoryOptions.each(function () {
                     const matches = !categoryId || String($(this).data('category-id')) === String(categoryId);
                     $(this).toggle(matches);
+
+                    if ($(this).prop('selected') && !matches) {
+                        selectedStillMatches = false;
+                    }
                 });
 
-                const $selected = $subCategory.find('option:selected');
-                if ($selected.length && $selected.is(':hidden')) {
+                if (!selectedStillMatches) {
                     $subCategory.val('');
                 }
             }
