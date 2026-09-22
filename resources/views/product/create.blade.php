@@ -2,6 +2,20 @@
 
 @section('title', __('Product'))
 
+@push('styles')
+    <style>
+        .spec-value-check .form-check-input {
+            width: 1.3em;
+            height: 1.3em;
+        }
+
+        .spec-value-check .form-check-label {
+            padding-top: 2px;
+            padding-left: 0.25em;
+        }
+    </style>
+@endpush
+
 @section('content')
     <!-- Start Page Content -->
     <div class="page-content">
@@ -130,10 +144,8 @@
 
                                 <template id="specs-row-template">
                                     <div class="row mb-2 align-items-start repeater-row" data-group="specs">
-                                        <div class="col-12 col-sm-1 col-md-1 text-end text-md-start" style="padding-top: 13px;">
-                                            <button type="button" class="btn btn-sm btn-outline-danger remove-row"><i class="ri-close-line"></i></button>
-                                        </div>
-                                        <div class="col-12 col-sm-4 col-md-2 pt-2">
+                                        <div class="col-12 col-sm-4 col-md-2 pt-2 d-flex align-items-center gap-2">
+                                            <button type="button" class="btn btn-sm btn-outline-danger remove-row flex-shrink-0"><i class="ri-close-line"></i></button>
                                             <select class="form-select spec-attribute">
                                                 <option value="">{{ __('== Select Attribute ==') }}</option>
                                                 @foreach($attributes as $attribute)
@@ -244,14 +256,9 @@
                         const checkboxId = 'spec-value-' + attributeId + '-' + value.id;
 
                         $values.append(
-                            $('<div class="form-check">').append(
-                                $('<input type="checkbox" name="attribute_value_ids[]">')
-                                    .addClass('form-check-input')
-                                    .attr('id', checkboxId)
-                                    .val(value.id),
-                                $('<label class="form-check-label">')
-                                    .attr('for', checkboxId)
-                                    .text(value.value)
+                            $('<div class="form-check form-check-success spec-value-check">').append(
+                                $('<input type="checkbox" name="attribute_value_ids[]">').addClass('form-check-input').attr('id', checkboxId).val(value.id),
+                                $('<label class="form-check-label">').attr('for', checkboxId).text(value.value)
                             )
                         );
                     });

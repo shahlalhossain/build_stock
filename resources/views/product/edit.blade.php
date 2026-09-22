@@ -2,6 +2,20 @@
 
 @section('title', __('Product'))
 
+@push('styles')
+    <style>
+        .spec-value-check .form-check-input {
+            width: 1.5em;
+            height: 1.5em;
+        }
+
+        .spec-value-check .form-check-label {
+            font-size: 1rem;
+            padding-left: 0.25em;
+        }
+    </style>
+@endpush
+
 @section('content')
     <!-- Start Page Content -->
     <div class="page-content">
@@ -145,7 +159,8 @@
 
                                 <template id="specs-row-template">
                                     <div class="row mb-2 align-items-start repeater-row" data-group="specs">
-                                        <div class="col-12 col-sm-4 col-md-3 pt-2">
+                                        <div class="col-12 col-sm-4 col-md-2 pt-2 d-flex align-items-center gap-2">
+                                            <button type="button" class="btn btn-sm btn-outline-danger remove-row flex-shrink-0"><i class="ri-close-line"></i></button>
                                             <select class="form-select spec-attribute">
                                                 <option value="">{{ __('== Select Attribute ==') }}</option>
                                                 @foreach($attributes as $attribute)
@@ -155,9 +170,6 @@
                                         </div>
                                         <div class="col-12 col-sm-7 col-md-8 pt-2">
                                             <div class="spec-values d-flex flex-wrap gap-3 pt-2 text-muted">{{ __('Select an Attribute First') }}</div>
-                                        </div>
-                                        <div class="col-12 col-sm-1 col-md-1 text-end text-md-start" style="padding-top: 13px;">
-                                            <button type="button" class="btn btn-sm btn-outline-danger remove-row"><i class="ri-close-line"></i></button>
                                         </div>
                                     </div>
                                 </template>
@@ -245,7 +257,7 @@
                     const isChecked = checkedIds.includes(value.id);
 
                     $values.append(
-                        $('<div class="form-check">').append(
+                        $('<div class="form-check form-check-success spec-value-check">').append(
                             $('<input type="checkbox" name="attribute_value_ids[]">')
                                 .addClass('form-check-input')
                                 .attr('id', checkboxId)
