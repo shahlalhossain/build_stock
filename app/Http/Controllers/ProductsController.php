@@ -17,6 +17,7 @@ use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 use Throwable;
@@ -63,7 +64,7 @@ class ProductsController extends Controller
 
     public function show(Product $product)
     {
-        $data['product'] = $product->load(['category', 'subCategory', 'brand', 'unit', 'attributeValues.attribute', 'creator', 'updater', 'deleter']);
+        $data['product'] = $product->load(['category', 'subCategory', 'brand', 'unit', 'attributeValues.attribute', 'creator', 'updater', 'deleter', 'approvalLogs.actionedBy']);
 
         return view('product.show', $data);
     }
@@ -90,6 +91,32 @@ class ProductsController extends Controller
             Log::error('Unexpected Error on Updating Product: '.$exception->getMessage());
 
             return back()->withInput()->with('error', 'Unexpected Error Occurred. Try Again.');
+        }
+    }
+
+    public function updateStatus(Request $request, $id): JsonResponse
+    {
+        $validated = $request->validate([
+            'status' => ['required', 'in:pending,approved,rejected'],
+            'remarks' => ['nullable', 'string'],
+        ]);
+
+        try {
+            $this->productService->updateProductStatus((int) $id, $validated['status'], $validated['remarks'] ?? null);
+
+            return response()->json(['success' => true, 'message' => 'Product Status Updated Successfully.']);
+        } catch (ModelNotFoundException $exception) {
+            Log::warning('Product Not Found: '.$exception->getMessage());
+
+            return response()->json(['success' => false, 'message' => 'Product Not Found.'], 404);
+        } catch (GeneralException $exception) {
+            Log::error('Product Status Update Failed: '.$exception->getMessage());
+
+            return response()->json(['success' => false, 'message' => $exception->getMessage()], 422);
+        } catch (Throwable $exception) {
+            Log::error('Unexpected Error on Updating Product Status: '.$exception->getMessage());
+
+            return response()->json(['success' => false, 'message' => 'Unexpected Error Occurred on Updating the Product Status.'], 500);
         }
     }
 

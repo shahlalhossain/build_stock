@@ -6,6 +6,7 @@ use App\Events\Product\ProductCreated;
 use App\Events\Product\ProductDeleted;
 use App\Events\Product\ProductDestroyed;
 use App\Events\Product\ProductRestored;
+use App\Events\Product\ProductStatusUpdated;
 use App\Events\Product\ProductUpdated;
 
 class ProductEventListener
@@ -22,6 +23,14 @@ class ProductEventListener
      * Handle Product Updated event.
      */
     public function onUpdated(ProductUpdated $event): void
+    {
+        //
+    }
+
+    /**
+     * Handle Product Status Updated event.
+     */
+    public function onStatusUpdated(ProductStatusUpdated $event): void
     {
         //
     }
@@ -57,6 +66,7 @@ class ProductEventListener
     {
         $events->listen(ProductCreated::class, [self::class, 'onCreated']);
         $events->listen(ProductUpdated::class, [self::class, 'onUpdated']);
+        $events->listen(ProductStatusUpdated::class, [self::class, 'onStatusUpdated']);
         $events->listen(ProductDestroyed::class, [self::class, 'onDestroyed']);
         $events->listen(ProductRestored::class, [self::class, 'onRestored']);
         $events->listen(ProductDeleted::class, [self::class, 'onDeleted']);

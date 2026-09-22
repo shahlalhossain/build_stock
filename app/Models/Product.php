@@ -30,6 +30,7 @@ class Product extends Model
         'sku',
         'description',
         'is_active',
+        'status',
         'created_by',
         'updated_by',
     ];
@@ -119,5 +120,10 @@ class Product extends Model
     public function deleter(): BelongsTo
     {
         return $this->belongsTo(User::class, 'deleted_by');
+    }
+
+    public function approvalLogs()
+    {
+        return $this->morphMany(ApprovalLog::class, 'model');
     }
 }

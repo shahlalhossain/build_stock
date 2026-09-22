@@ -47,6 +47,35 @@
                                                     @endif
                                                 </td>
                                             </tr>
+                                            <tr>
+                                                <th class="text-end pe-2 justify-content-between">{{ __('Status') }}</th>
+                                                <td class="text-start d-flex justify-content-between align-items-center">
+                                                    <div class="text-start">
+                                                        @php
+                                                            $status = $product->status;
+                                                            $map = [
+                                                                'pending'  => ['class' => 'text-warning', 'icon' => 'ri-loader-4-line', 'label' => 'Pending'],
+                                                                'approved' => ['class' => 'text-success', 'icon' => 'ri-checkbox-circle-line', 'label' => 'Approved'],
+                                                                'rejected' => ['class' => 'text-danger', 'icon'  => 'ri-close-circle-line', 'label' => 'Rejected'],
+                                                            ];
+                                                        @endphp
+
+                                                        @if($status && isset($map[$status]))
+                                                            <span class="{{ $map[$status]['class'] }}"><i class="{{ $map[$status]['icon'] }}"></i> {{ __($map[$status]['label']) }}</span>
+                                                        @else
+                                                            {{ '--' }}
+                                                        @endif
+                                                    </div>
+                                                    @unless($product->trashed())
+                                                        <div class="text-end">
+                                                            <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#statusUpdateModal">
+                                                                <i class="ri-fingerprint-line"></i>
+                                                                <span class="btn-text d-none d-sm-inline">{{ __('Update Status') }}</span>
+                                                            </button>
+                                                        </div>
+                                                    @endunless
+                                                </td>
+                                            </tr>
                                             </tbody>
                                         </table>
 
@@ -75,29 +104,29 @@
                                             </tbody>
                                         </table>
 
-{{--                                        @if($product->approvalLogs->isNotEmpty())--}}
-{{--                                            @foreach($product->approvalLogs as $log)--}}
-{{--                                                <hr style="padding: 0 !important; margin: 0 !important;">--}}
-{{--                                                <div class="pb-2 pt-2">--}}
-{{--                                                    <strong>{{ ucfirst($log->action_name) }}</strong>--}}
+                                        @if($product->approvalLogs->isNotEmpty())
+                                            @foreach($product->approvalLogs as $log)
+                                                <hr style="padding: 0 !important; margin: 0 !important;">
+                                                <div class="pb-2 pt-2">
+                                                    <strong>{{ ucfirst($log->action_name) }}</strong>
 
-{{--                                                    @if($log->actionedBy)--}}
-{{--                                                        by <em>{{ $log->actionedBy->name }}</em>--}}
-{{--                                                    @endif--}}
+                                                    @if($log->actionedBy)
+                                                        by <em>{{ $log->actionedBy->name }}</em>
+                                                    @endif
 
-{{--                                                    @if($log->actioned_at)--}}
-{{--                                                        on {{ $log->actioned_at->format('d F, Y h:i A') }}--}}
-{{--                                                    @endif--}}
-{{--                                                    <br>--}}
-{{--                                                    @if($log->remarks)--}}
-{{--                                                        <strong><em>Remarks: </em></strong> {{ $log->remarks }}--}}
-{{--                                                    @endif--}}
-{{--                                                </div>--}}
-{{--                                            @endforeach--}}
-{{--                                            <hr style="padding: 0 !important; margin: 0 !important;">--}}
-{{--                                        @else--}}
-{{--                                            <p>No Approval History Found</p>--}}
-{{--                                        @endif--}}
+                                                    @if($log->actioned_at)
+                                                        on {{ $log->actioned_at->format('d F, Y h:i A') }}
+                                                    @endif
+                                                    <br>
+                                                    @if($log->remarks)
+                                                        <strong><em>Remarks: </em></strong> {{ $log->remarks }}
+                                                    @endif
+                                                </div>
+                                            @endforeach
+                                            <hr style="padding: 0 !important; margin: 0 !important;">
+                                        @else
+                                            <p>No Approval History Found</p>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
@@ -127,6 +156,54 @@
                             </div>
 
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="statusUpdateModal" tabindex="-1" aria-labelledby="statusUpdateModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <form id="statusUpdateForm" action="{{ route('product.update-status', $product->id) }}" method="POST">
+                            @csrf
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="statusUpdateModalLabel"> {{ __('Update Product Status') }} </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" ></button>
+                            </div>
+                            <hr>
+                            <div class="modal-body">
+                                <div id="statusUpdateError" class="alert alert-danger d-none"></div>
+                                <div class="row mb-2">
+                                    <label class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory"> {{ __('Select Status') }} </label>
+                                    <div class="col-12 col-md-8">
+                                        <div class="form-check form-check-inline pt-2 mb-2">
+                                            <input class="form-check-input" type="radio" name="status" id="statusPending" value="pending" >
+                                            <label class="form-check-label" for="statusPending"> {{ __('Pending') }} </label>
+                                        </div>
+                                        <div class="form-check form-check-inline pt-2 mb-2">
+                                            <input class="form-check-input" type="radio" name="status" id="statusApproved" value="approved" >
+                                            <label class="form-check-label" for="statusApproved"> {{ __('Approve') }} </label>
+                                        </div>
+                                        <div class="form-check form-check-inline pt-2 mb-2">
+                                            <input class="form-check-input" type="radio" name="status" id="statusRejected" value="rejected" >
+                                            <label class="form-check-label" for="statusRejected"> {{ __('Reject') }} </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <label for="remarks" class="col-12 col-md-4 col-form-label text-md-end text-start" > {{ __('Add Remarks') }} </label>
+                                    <div class="col-12 col-md-8 pt-2">
+                                        <textarea id="remarks" name="remarks" class="form-control" rows="2" ></textarea>
+                                    </div>
+                                </div>
+                                <input type="hidden" name="product_id" value="{{ $product->id }}">
+                            </div>
+                            <hr>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-sm btn-danger" data-bs-dismiss="modal" > {{ __('Cancel') }} </button>
+                                <button type="reset" class="btn btn-sm btn-warning" > {{ __('Reset') }} </button>
+                                <button type="submit" class="btn btn-sm btn-info" id="updateStatusBtn" > {{ __('Update Status') }} </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -276,6 +353,75 @@
 
                     } else {
                         Swal.fire('Cancelled', 'Your Record is in Trash Box.', 'info');
+                    }
+                });
+            });
+
+            /*
+            |--------------------------------------------------------------------------
+            | UPDATE PRODUCT STATUS
+            |--------------------------------------------------------------------------
+            */
+            $('#statusUpdateForm').on('submit', function (e) {
+                e.preventDefault();
+                const form = $(this);
+                const button = $('#updateStatusBtn');
+                const errorBox = $('#statusUpdateError');
+                // Clear Previous Errors
+                errorBox.addClass('d-none').html('');
+
+                // Disable Button
+                button.prop('disabled', true);
+
+                button.html('<i class="ri-loader-4-line ri-spin"></i> {{ __("Updating...") }}');
+
+                $.ajax({
+                    url: form.attr('action'),
+                    type: 'POST',
+                    data: form.serialize(),
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | STATUS UPDATE SUCCESS
+                    |--------------------------------------------------------------------------
+                    */
+                    success: function (response) {
+                        if (response.success) {
+                            sessionStorage.setItem('productToastMessage', response.message || 'Product Status Updated Successfully.');
+                            sessionStorage.setItem('productToastType', 'success');
+                            $('#statusUpdateModal').modal('hide');
+                            window.location.reload();
+                        }
+                    },
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | STATUS UPDATE ERROR
+                    |--------------------------------------------------------------------------
+                    */
+                    error: function (xhr) {
+                        if (xhr.status === 422) {
+                            const errors = xhr.responseJSON?.errors || {};
+                            const messages = [];
+                            $.each(errors, function (field, errorMessages) {
+                                if (errorMessages.length > 0) {
+                                    messages.push(errorMessages[0]);
+                                }
+                            });
+                            errorBox.html(messages.join('<br>')).removeClass('d-none');
+                            return;
+                        }
+
+                        const message = xhr.responseJSON?.message || 'Something went wrong. Please try again.';
+
+                        sessionStorage.setItem('productToastMessage', message);
+                        sessionStorage.setItem('productToastType', 'failed');
+                        window.location.reload();
+                    },
+
+                    complete: function () {
+                        button.prop('disabled', false);
+                        button.html('{{ __("Update Status") }}');
                     }
                 });
             });

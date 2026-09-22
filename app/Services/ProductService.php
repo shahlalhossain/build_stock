@@ -6,8 +6,10 @@ use App\Events\Product\ProductCreated;
 use App\Events\Product\ProductDeleted;
 use App\Events\Product\ProductDestroyed;
 use App\Events\Product\ProductRestored;
+use App\Events\Product\ProductStatusUpdated;
 use App\Events\Product\ProductUpdated;
 use App\Exceptions\GeneralException;
+use App\Models\ApprovalLog;
 use App\Models\Product;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -97,6 +99,62 @@ class ProductService extends BaseService
             Log::alert($exception->getMessage());
             DB::rollBack();
             throw new GeneralException(__('There was a Problem on Updating the Product.'));
+        }
+    }
+
+    /**
+     * @throws GeneralException
+     * @throws Throwable
+     */
+    public function updateProductStatus(int $id, string $status, ?string $remarks = null): bool
+    {
+        DB::beginTransaction();
+        try {
+            $product = Product::findOrFail($id);
+
+            $oldStatus = $product->status;
+
+            if ($oldStatus === $status) {
+                return true;
+            }
+
+            // Update without Triggering Spatie's "updated" Activity Log
+            $product->status = $status;
+            $result = $product->saveQuietly();
+
+            ApprovalLog::create([
+                'model_type' => Product::class,
+                'model_id' => $product->id,
+                'action_name' => $status,
+                'actioned_by' => Auth::id(),
+                'actioned_at' => now(),
+                'remarks' => $remarks,
+            ]);
+
+            activity()
+                ->performedOn($product)
+                ->causedBy(Auth::user())
+                ->useLog('product')
+                ->event('statusUpdated')
+                ->withProperties([
+                    'old_status' => $oldStatus,
+                    'new_status' => $status,
+                    'remarks' => $remarks,
+                ])
+                ->log('statusUpdated');
+
+            event(new ProductStatusUpdated($product));
+
+            DB::commit();
+
+            return $result;
+        } catch (ModelNotFoundException $exception) {
+            DB::rollBack();
+            throw $exception;
+        } catch (Throwable $exception) {
+            DB::rollBack();
+            Log::error('Product Status Update Failed in Service:'.$exception->getMessage());
+            throw new GeneralException(__('There was an issue on Product Status Update'));
         }
     }
 
