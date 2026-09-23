@@ -285,8 +285,37 @@
                 syncItemTotalCost($(this).closest('.repeater-row'));
             });
 
+            /*
+            |--------------------------------------------------------------------------
+            | PREVENT DUPLICATE PRODUCT SELECTION ACROSS LINE ITEMS
+            |--------------------------------------------------------------------------
+            | Once a Product is picked in one row, it's disabled in every other row's
+            | Product <select> so the same Product can't be added twice.
+            */
+            function refreshProductOptions() {
+                const selectedIds = $('.item-product').map(function () {
+                    return $(this).val();
+                }).get().filter(Boolean);
+
+                $('.item-product').each(function () {
+                    const currentValue = $(this).val();
+
+                    $(this).find('option').each(function () {
+                        if (!$(this).val()) {
+                            return;
+                        }
+
+                        const isSelectedElsewhere = selectedIds.includes($(this).val()) && $(this).val() !== currentValue;
+                        $(this).prop('disabled', isSelectedElsewhere);
+                    });
+                });
+            }
+
+            $(document).on('change', '.item-product', refreshProductOptions);
+
             $(document).on('click', '.add-row', function () {
                 addRow($(this).data('group'));
+                refreshProductOptions();
             });
 
             $(document).on('click', '.remove-row', function () {
@@ -296,6 +325,7 @@
                     return;
                 }
                 $(this).closest('.repeater-row').remove();
+                refreshProductOptions();
             });
 
             // Seed with one starter row.
