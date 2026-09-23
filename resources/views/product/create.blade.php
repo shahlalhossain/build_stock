@@ -117,7 +117,6 @@
                                                             <option value="{{ $unit->id }}" @selected(old('unit_id') == $unit->id)>
                                                                 {{ $unit->name }}
                                                                 ({{ $unit->symbol }})
-{{--                                                                - {{ $unit->group }}--}}
                                                             </option>
                                                         @endforeach
                                                     </select>

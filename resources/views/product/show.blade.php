@@ -23,111 +23,110 @@
                         <div class="card-body">
 
                             <div class="row">
+                                <div class="col-12 col-md-7 order-1">
+                                    <table class="table table-hover table-responsive table-bordered table-sm">
+                                        <tbody>
+                                        <tr><th class="text-end pe-2">{{ __('Name') }}</th><td class="text-start ps-2">{{ $product->name }}</td></tr>
+                                        <tr><th class="text-end pe-2">{{ __('Code') }}</th><td class="text-start ps-2">{{ $product->code }}</td></tr>
+                                        <tr><th class="text-end pe-2">{{ __('SKU') }}</th><td class="text-start ps-2">{{ $product->sku ?? '' }}</td></tr>
+                                        <tr><th class="text-end pe-2">{{ __('Category') }}</th><td class="text-start ps-2">{{ $product->category?->name }}</td></tr>
+                                        <tr><th class="text-end pe-2">{{ __('Sub-Category') }}</th><td class="text-start ps-2">{{ $product->subCategory?->name ?? '' }}</td></tr>
+                                        <tr><th class="text-end pe-2">{{ __('Brand') }}</th><td class="text-start ps-2">{{ $product->brand?->name ?? '' }}</td></tr>
+                                        <tr><th class="text-end pe-2">{{ __('Unit') }}</th><td class="text-start ps-2">{{ $product->unit ? $product->unit->name.' ('.$product->unit->symbol.')' : '' }}</td></tr>
+                                        <tr><th class="text-end pe-2">{{ __('Description') }}</th><td class="text-start ps-2">{{ $product->description ?? '' }}</td></tr>
+                                        <tr><th class="text-end pe-2">{{ __('Is Active') }}</th>
+                                            <td class="text-start ps-2">
+                                                @if($product->is_active == 1)
+                                                    <span class="badge bg-success">{{ __('Yes') }}</span>
+                                                @elseif($product->is_active == 0)
+                                                    <span class="badge bg-warning">{{ __('No') }}</span>
+                                                @else
+                                                    <span class="badge bg-secondary">{{ __('Unknown') }}</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-end pe-2 justify-content-between">{{ __('Status') }}</th>
+                                            <td class="text-start d-flex justify-content-between align-items-center">
+                                                <div class="text-start">
+                                                    @php
+                                                        $status = $product->status;
+                                                        $map = [
+                                                            'pending'  => ['class' => 'text-warning', 'icon' => 'ri-loader-4-line', 'label' => 'Pending'],
+                                                            'approved' => ['class' => 'text-success', 'icon' => 'ri-checkbox-circle-line', 'label' => 'Approved'],
+                                                            'rejected' => ['class' => 'text-danger', 'icon'  => 'ri-close-circle-line', 'label' => 'Rejected'],
+                                                        ];
+                                                    @endphp
 
-                                <div class="row">
-                                    <div class="col-12 col-md-7 order-1">
-                                        <table class="table table-hover table-responsive table-bordered table-sm">
-                                            <tbody>
-                                            <tr><th class="text-end pe-2">{{ __('Name') }}</th><td class="text-start ps-2">{{ $product->name }}</td></tr>
-                                            <tr><th class="text-end pe-2">{{ __('Code') }}</th><td class="text-start ps-2">{{ $product->code }}</td></tr>
-                                            <tr><th class="text-end pe-2">{{ __('SKU') }}</th><td class="text-start ps-2">{{ $product->sku ?? '' }}</td></tr>
-                                            <tr><th class="text-end pe-2">{{ __('Category') }}</th><td class="text-start ps-2">{{ $product->category?->name }}</td></tr>
-                                            <tr><th class="text-end pe-2">{{ __('Sub-Category') }}</th><td class="text-start ps-2">{{ $product->subCategory?->name ?? '' }}</td></tr>
-                                            <tr><th class="text-end pe-2">{{ __('Brand') }}</th><td class="text-start ps-2">{{ $product->brand?->name ?? '' }}</td></tr>
-                                            <tr><th class="text-end pe-2">{{ __('Unit') }}</th><td class="text-start ps-2">{{ $product->unit ? $product->unit->name.' ('.$product->unit->symbol.')' : '' }}</td></tr>
-                                            <tr><th class="text-end pe-2">{{ __('Description') }}</th><td class="text-start ps-2">{{ $product->description ?? '' }}</td></tr>
-                                            <tr><th class="text-end pe-2">{{ __('Is Active') }}</th>
-                                                <td class="text-start ps-2">
-                                                    @if($product->is_active == 1)
-                                                        <span class="badge bg-success">{{ __('Yes') }}</span>
-                                                    @elseif($product->is_active == 0)
-                                                        <span class="badge bg-warning">{{ __('No') }}</span>
+                                                    @if($status && isset($map[$status]))
+                                                        <span class="{{ $map[$status]['class'] }}"><i class="{{ $map[$status]['icon'] }}"></i> {{ __($map[$status]['label']) }}</span>
                                                     @else
-                                                        <span class="badge bg-secondary">{{ __('Unknown') }}</span>
-                                                    @endif
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <th class="text-end pe-2 justify-content-between">{{ __('Status') }}</th>
-                                                <td class="text-start d-flex justify-content-between align-items-center">
-                                                    <div class="text-start">
-                                                        @php
-                                                            $status = $product->status;
-                                                            $map = [
-                                                                'pending'  => ['class' => 'text-warning', 'icon' => 'ri-loader-4-line', 'label' => 'Pending'],
-                                                                'approved' => ['class' => 'text-success', 'icon' => 'ri-checkbox-circle-line', 'label' => 'Approved'],
-                                                                'rejected' => ['class' => 'text-danger', 'icon'  => 'ri-close-circle-line', 'label' => 'Rejected'],
-                                                            ];
-                                                        @endphp
-
-                                                        @if($status && isset($map[$status]))
-                                                            <span class="{{ $map[$status]['class'] }}"><i class="{{ $map[$status]['icon'] }}"></i> {{ __($map[$status]['label']) }}</span>
-                                                        @else
-                                                            {{ '--' }}
-                                                        @endif
-                                                    </div>
-                                                    @unless($product->trashed())
-                                                        <div class="text-end">
-                                                            <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#statusUpdateModal">
-                                                                <i class="ri-fingerprint-line"></i>
-                                                                <span class="btn-text d-none d-sm-inline">{{ __('Update Status') }}</span>
-                                                            </button>
-                                                        </div>
-                                                    @endunless
-                                                </td>
-                                            </tr>
-                                            </tbody>
-                                        </table>
-
-                                        <div class="text-start mt-2 pb-2">
-                                            @if($product->trashed())
-                                                <button class="btn btn-sm btn-soft-success restore-product" id="restoreProduct" data-product-id="{{ $product->id }}"><i class="ri-recycle-line"></i><span class="d-none d-sm-inline"> {{ __('Restore') }}</span></button>
-                                                <button class="btn btn-sm btn-danger delete-product" id="deleteProduct" data-product-id="{{ $product->id }}"><i class="ri-close-line"></i><span class="d-none d-sm-inline"> {{ __('Delete') }}</span></button>
-                                            @else
-                                                <a href="{{ route('product.edit', $product->id) }}" class="btn btn-sm btn-info"><i class="ri-edit-line"></i><span class="d-none d-sm-inline"> {{ __('Edit') }}</span></a>
-                                                <button class="btn btn-sm btn-warning destroy-product" id="destroyProduct" data-product-id="{{ $product->id }}"><i class="ri-delete-bin-line"></i><span class="d-none d-sm-inline"> {{ __('Destroy') }}</span></button>
-                                            @endif
-                                        </div>
-                                    </div>
-                                    <div class="col-12 col-md-5 ps-5 order-2">
-                                        <table class="table table-hover table-responsive table-bordered table-sm">
-                                            <tbody>
-                                            <tr><th class="text-end pe-2">{{ __('Created By') }}</th><td class="text-start ps-2">{{ $product->creator?->name ?? '' }}</td></tr>
-                                            <tr><th class="text-end pe-2">{{ __('Created At') }}</th><td class="text-start ps-2">{{ $product->created_at->format('Y-m-d H:i:s') }}</td></tr>
-                                            <tr><th class="text-end pe-2">{{ __('Updated By') }}</th><td class="text-start ps-2">{{ $product->updater?->name ?? '' }}</td></tr>
-                                            <tr><th class="text-end pe-2">{{ __('Updated At') }}</th><td class="text-start ps-2">{{ $product->updated_at->format('Y-m-d H:i:s') }}</td></tr>
-
-                                            @if($product->trashed())
-                                                <tr><th class="text-end pe-2">{{ __('Deleted By') }}</th><td class="text-start ps-2">{{ $product->deleter?->name ?? '' }}</td></tr>
-                                                <tr><th class="text-end pe-2">{{ __('Deleted At') }}</th><td class="text-start ps-2">{{ $product->deleted_at->format('Y-m-d H:i:s') }}</td></tr>
-                                            @endif
-                                            </tbody>
-                                        </table>
-
-                                        @if($product->approvalLogs->isNotEmpty())
-                                            @foreach($product->approvalLogs as $log)
-                                                <hr style="padding: 0 !important; margin: 0 !important;">
-                                                <div class="pb-2 pt-2">
-                                                    <strong>{{ ucfirst($log->action_name) }}</strong>
-
-                                                    @if($log->actionedBy)
-                                                        by <em>{{ $log->actionedBy->name }}</em>
-                                                    @endif
-
-                                                    @if($log->actioned_at)
-                                                        on {{ $log->actioned_at->format('d F, Y h:i A') }}
-                                                    @endif
-                                                    <br>
-                                                    @if($log->remarks)
-                                                        <strong><em>Remarks: </em></strong> {{ $log->remarks }}
+                                                        {{ '--' }}
                                                     @endif
                                                 </div>
-                                            @endforeach
-                                            <hr style="padding: 0 !important; margin: 0 !important;">
-                                        @else
-                                            <p>No Approval History Found</p>
+                                                @unless($product->trashed())
+                                                    <div class="text-end">
+                                                        <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#statusUpdateModal">
+                                                            <i class="ri-fingerprint-line"></i>
+                                                            <span class="btn-text d-none d-sm-inline">{{ __('Update Status') }}</span>
+                                                        </button>
+                                                    </div>
+                                                @endunless
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="col-12 col-md-5 order-2">
+                                    <table class="table table-hover table-responsive table-bordered table-sm">
+                                        <tbody>
+                                        <tr><th class="text-end pe-2">{{ __('Created By') }}</th><td class="text-start ps-2">{{ $product->creator?->name ?? '' }}</td></tr>
+                                        <tr><th class="text-end pe-2">{{ __('Created At') }}</th><td class="text-start ps-2">{{ $product->created_at->format('Y-m-d H:i:s') }}</td></tr>
+                                        <tr><th class="text-end pe-2">{{ __('Updated By') }}</th><td class="text-start ps-2">{{ $product->updater?->name ?? '' }}</td></tr>
+                                        <tr><th class="text-end pe-2">{{ __('Updated At') }}</th><td class="text-start ps-2">{{ $product->updated_at->format('Y-m-d H:i:s') }}</td></tr>
+
+                                        @if($product->trashed())
+                                            <tr><th class="text-end pe-2">{{ __('Deleted By') }}</th><td class="text-start ps-2">{{ $product->deleter?->name ?? '' }}</td></tr>
+                                            <tr><th class="text-end pe-2">{{ __('Deleted At') }}</th><td class="text-start ps-2">{{ $product->deleted_at->format('Y-m-d H:i:s') }}</td></tr>
                                         @endif
-                                    </div>
+                                        </tbody>
+                                    </table>
+
+                                    @if($product->approvalLogs->isNotEmpty())
+                                        @foreach($product->approvalLogs as $log)
+                                            <hr style="padding: 0 !important; margin: 0 !important;">
+                                            <div class="pb-2 pt-2">
+                                                <strong>{{ ucfirst($log->action_name) }}</strong>
+
+                                                @if($log->actionedBy)
+                                                    by <em>{{ $log->actionedBy->name }}</em>
+                                                @endif
+
+                                                @if($log->actioned_at)
+                                                    on {{ $log->actioned_at->format('d F, Y h:i A') }}
+                                                @endif
+                                                <br>
+                                                @if($log->remarks)
+                                                    <strong><em>Remarks: </em></strong> {{ $log->remarks }}
+                                                @endif
+                                            </div>
+                                        @endforeach
+                                        <hr style="padding: 0 !important; margin: 0 !important;">
+                                    @else
+                                        <p>No Approval History Found</p>
+                                    @endif
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-12 text-start mt-2 pb-2">
+                                    @if($product->trashed())
+                                        <button class="btn btn-sm btn-soft-success restore-product" id="restoreProduct" data-product-id="{{ $product->id }}"><i class="ri-recycle-line"></i><span class="d-none d-sm-inline"> {{ __('Restore') }}</span></button>
+                                        <button class="btn btn-sm btn-danger delete-product" id="deleteProduct" data-product-id="{{ $product->id }}"><i class="ri-close-line"></i><span class="d-none d-sm-inline"> {{ __('Delete') }}</span></button>
+                                    @else
+                                        <a href="{{ route('product.edit', $product->id) }}" class="btn btn-sm btn-info"><i class="ri-edit-line"></i><span class="d-none d-sm-inline"> {{ __('Edit') }}</span></a>
+                                        <button class="btn btn-sm btn-warning destroy-product" id="destroyProduct" data-product-id="{{ $product->id }}"><i class="ri-delete-bin-line"></i><span class="d-none d-sm-inline"> {{ __('Destroy') }}</span></button>
+                                    @endif
                                 </div>
                             </div>
 
