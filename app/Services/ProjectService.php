@@ -148,7 +148,8 @@ class ProjectService extends BaseService
             $oldStatus = $project->status;
 
             if ($oldStatus === $status) {
-                return true;
+                DB::rollBack();
+                throw new GeneralException(__('Project is Already in this Status.'));
             }
 
             // Update without Triggering Spatie's "updated" Activity Log

@@ -150,7 +150,8 @@ class SupplierService extends BaseService
             $oldStatus = $supplier->status;
 
             if ($oldStatus === $status) {
-                return true;
+                DB::rollBack();
+                throw new GeneralException(__('Supplier is Already in this Status.'));
             }
 
             // Update without Triggering Spatie's "updated" Activity Log
