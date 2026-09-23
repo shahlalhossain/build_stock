@@ -154,6 +154,38 @@
                                 </table>
                             </div>
 
+                            <h6 class="fw-bold fst-italic">{{ __('Variants') }}</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered">
+                                    <thead>
+                                    <tr>
+                                        <th>{{ __('SKU') }}</th>
+                                        <th>{{ __('Unit Price') }}</th>
+                                        <th>{{ __('Attributes') }}</th>
+                                        <th>{{ __('Is Active') }}</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    @forelse($product->variants as $variant)
+                                        <tr>
+                                            <td>{{ $variant->sku }}</td>
+                                            <td>{{ $variant->unit_price ?? '' }}</td>
+                                            <td>{{ $variant->attribute_values_label ?: '' }}</td>
+                                            <td>
+                                                @if($variant->is_active)
+                                                    <span class="badge bg-success">{{ __('Yes') }}</span>
+                                                @else
+                                                    <span class="badge bg-warning">{{ __('No') }}</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr><td colspan="4" class="text-center">{{ __('No Variants Added') }}</td></tr>
+                                    @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+
                         </div>
                     </div>
                 </div>

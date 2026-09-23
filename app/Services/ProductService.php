@@ -12,6 +12,7 @@ use App\Exceptions\GeneralException;
 use App\Models\ApprovalLog;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Models\StockTransactionItem;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Auth;
@@ -195,7 +196,7 @@ class ProductService extends BaseService
     {
         $product->variants()->get()->each(function (ProductVariant $variant) {
             $isReferenced = $variant->stocks()->exists()
-                || \App\Models\StockTransactionItem::where('product_variant_id', $variant->id)->exists();
+                || StockTransactionItem::where('product_variant_id', $variant->id)->exists();
 
             $variant->attributeValues()->detach();
 

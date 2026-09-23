@@ -174,6 +174,12 @@
                                                     <option value="">{{ __('== Select Product First ==') }}</option>
                                                 </select>
                                                 <small class="text-danger d-none item-variant-empty">{{ __('No Variants Available for this Product — Add a Variant First') }}</small>
+
+                                                <button type="button" class="btn btn-sm btn-outline-info d-none item-variant-wise-btn">
+                                                    <i class="ri-list-settings-line"></i> {{ __('Set Variant-wise Quantities') }}
+                                                </button>
+                                                <div class="small text-muted d-none item-variant-wise-summary"></div>
+                                                <div class="item-variant-wise-hidden-inputs"></div>
                                             </td>
                                             <td>
                                                 <input type="number" step="0.01" class="form-control item-quantity" name="items[][quantity]" placeholder="{{ __('Quantity') }}">
@@ -210,6 +216,68 @@
             </div>
         </div>
     </div>
+
+    @if($stockTransaction->status === 'pending')
+        <!-- ===================== VARIANT-WISE QUANTITIES MODAL ===================== -->
+        <div class="modal fade" id="variantWiseModal" tabindex="-1" aria-labelledby="variantWiseModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="variantWiseModalLabel">{{ __('Set Variant-wise Quantities') }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <hr>
+                    <div class="modal-body">
+                        <div id="variantWiseError" class="alert alert-danger d-none"></div>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered align-middle">
+                                <thead>
+                                <tr>
+                                    <th style="width: 4%;"></th>
+                                    <th style="width: 32%;">{{ __('Variant') }}</th>
+                                    <th style="width: 18%;">{{ __('Quantity') }}</th>
+                                    <th style="width: 18%;">{{ __('Unit Price') }}</th>
+                                    <th style="width: 18%;">{{ __('Total Price') }}</th>
+                                    <th style="width: 10%;">{{ __('Remarks') }}</th>
+                                </tr>
+                                </thead>
+                                <tbody id="variantWiseRows"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="modal-footer justify-content-between">
+                        <div id="variantWiseSummary" class="fw-semibold"></div>
+                        <div>
+                            <button type="button" class="btn btn-sm btn-danger" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                            <button type="button" class="btn btn-sm btn-info" id="variantWiseSaveBtn" disabled>{{ __('Save') }}</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <template id="variant-wise-row-template">
+            <tr class="variant-wise-row">
+                <td class="text-center">
+                    <input type="checkbox" class="form-check-input variant-wise-check" checked>
+                </td>
+                <td class="variant-wise-label"></td>
+                <td>
+                    <input type="number" step="0.01" class="form-control variant-wise-quantity">
+                </td>
+                <td>
+                    <input type="number" step="0.01" min="0" class="form-control variant-wise-unit-price">
+                </td>
+                <td>
+                    <input type="text" class="form-control variant-wise-total-price" readonly tabindex="-1">
+                </td>
+                <td>
+                    <input type="text" class="form-control variant-wise-remarks">
+                </td>
+            </tr>
+        </template>
+    @endif
     <!-- End Page Content -->
 @endsection
 
@@ -217,18 +285,34 @@
     @if($stockTransaction->status === 'pending')
         <script>
             $(document).ready(function () {
+                /*
+                |--------------------------------------------------------------------------
+                | GROUP EXISTING ITEMS BY PRODUCT
+                |--------------------------------------------------------------------------
+                | A Product with MORE THAN ONE existing Line Item row was clearly
+                | submitted via Variant-wise mode (the plain 1-Variant path can only ever
+                | produce a single Line Item per Product) — that Row reopens directly in
+                | Variant-wise Summary mode, pre-filled from these grouped rows, rather
+                | than the plain single-select dropdown.
+                */
                 @php
-                    $existingItemsList = $stockTransaction->items->map(function ($item) {
-                        return [
-                            'product_id' => $item->productVariant?->product_id,
-                            'product_variant_id' => $item->product_variant_id,
-                            'quantity' => $item->quantity,
-                            'unit_cost' => $item->unit_cost,
-                            'remarks' => $item->remarks,
-                        ];
-                    });
+                    $existingGroupsList = $stockTransaction->items
+                        ->groupBy(fn ($item) => $item->productVariant?->product_id)
+                        ->map(function ($items) {
+                            return [
+                                'product_id' => $items->first()->productVariant?->product_id,
+                                'is_variant_wise' => $items->count() > 1,
+                                'items' => $items->map(fn ($item) => [
+                                    'product_variant_id' => $item->product_variant_id,
+                                    'quantity' => $item->quantity,
+                                    'unit_cost' => $item->unit_cost,
+                                    'remarks' => $item->remarks,
+                                ])->values(),
+                            ];
+                        })
+                        ->values();
                 @endphp
-                const existingItems = @json($existingItemsList);
+                const existingGroups = @json($existingGroupsList);
 
                 /*
                 |--------------------------------------------------------------------------
@@ -240,53 +324,91 @@
                 @php
                     $productVariantsMap = $products->mapWithKeys(function ($product) {
                         $variantList = $product->variants->map(function ($variant) {
-                            return ['id' => $variant->id, 'label' => $variant->display_label, 'unit_price' => $variant->unit_price];
+                            return [
+                                'id' => $variant->id,
+                                'label' => $variant->display_label,
+                                'sku' => $variant->sku,
+                                'unit_price' => $variant->unit_price,
+                                'attribute_label' => $variant->attribute_values_label,
+                            ];
                         });
 
-                        return [$product->id => $variantList];
+                        return [
+                            $product->id => [
+                                'name' => $product->name,
+                                'variants' => $variantList,
+                            ],
+                        ];
                     });
                 @endphp
                 const productVariants = @json($productVariantsMap);
+
+                let $activeVariantWiseRow = null;
+
+                function variantWiseLabel(productName, variant) {
+                    return variant.attribute_label
+                        ? (productName + ' - ' + variant.attribute_label)
+                        : (productName + ' - ' + variant.sku);
+                }
 
                 function populateVariantSelect($row, selectedVariantId, unitPriceCallback) {
                     const productId = $row.find('.item-product').val();
                     const $variantSelect = $row.find('.item-variant');
                     const $variantEmpty = $row.find('.item-variant-empty');
+                    const $variantWiseBtn = $row.find('.item-variant-wise-btn');
 
                     $variantSelect.empty();
+                    $variantWiseBtn.addClass('d-none');
+
+                    if (!$row.hasClass('is-variant-wise')) {
+                        exitVariantWiseMode($row);
+                    }
 
                     if (!productId) {
                         $variantSelect.append('<option value="">{{ __("== Select Product First ==") }}</option>');
-                        $variantSelect.prop('disabled', true).removeClass('is-invalid');
+                        $variantSelect.prop('disabled', true).removeClass('is-invalid').removeClass('d-none');
                         $variantEmpty.addClass('d-none');
                         return;
                     }
 
-                    const variants = productVariants[productId] || [];
+                    const product = productVariants[productId] || {name: '', variants: []};
+                    const variants = product.variants || [];
 
                     if (!variants.length) {
                         $variantSelect.append('<option value="">{{ __("== No Variants Available ==") }}</option>');
-                        $variantSelect.prop('disabled', true);
+                        $variantSelect.prop('disabled', true).removeClass('d-none');
                         $variantEmpty.removeClass('d-none');
                         return;
                     }
 
                     $variantEmpty.addClass('d-none');
-                    $variantSelect.prop('disabled', false);
-                    $variantSelect.append('<option value="">{{ __("== Select Variant ==") }}</option>');
 
-                    variants.forEach(function (variant) {
-                        const $option = $('<option>').val(variant.id).text(variant.label).attr('data-unit-price', variant.unit_price ?? '');
-                        $variantSelect.append($option);
-                    });
+                    if (variants.length === 1) {
+                        $variantSelect.removeClass('d-none').prop('disabled', false);
+                        $variantSelect.append('<option value="">{{ __("== Select Variant ==") }}</option>');
 
-                    if (selectedVariantId) {
-                        $variantSelect.val(String(selectedVariantId));
+                        variants.forEach(function (variant) {
+                            const $option = $('<option>').val(variant.id).text(variant.label).attr('data-unit-price', variant.unit_price ?? '');
+                            $variantSelect.append($option);
+                        });
+
+                        $variantSelect.val(String(variants[0].id));
+
+                        if (selectedVariantId) {
+                            $variantSelect.val(String(selectedVariantId));
+                        }
+
+                        if (typeof unitPriceCallback === 'function') {
+                            unitPriceCallback();
+                        }
+
+                        return;
                     }
 
-                    if (typeof unitPriceCallback === 'function') {
-                        unitPriceCallback();
-                    }
+                    // 2+ Variants: hide the plain Select, show the "Set Variant-wise
+                    // Quantities" button instead.
+                    $variantSelect.addClass('d-none').prop('disabled', true);
+                    $variantWiseBtn.removeClass('d-none').data('product-id', productId);
                 }
 
                 $(document).on('change', '.item-product', function () {
@@ -331,7 +453,10 @@
                 }
 
                 $(document).on('input', '.item-quantity, .item-unit-cost', function () {
-                    syncItemTotalCost($(this).closest('.repeater-row'));
+                    const $row = $(this).closest('.repeater-row');
+                    if (!$row.hasClass('is-variant-wise')) {
+                        syncItemTotalCost($row);
+                    }
                 });
 
                 /*
@@ -390,20 +515,45 @@
 
                 /*
                 |--------------------------------------------------------------------------
-                | LINE ITEMS REPEATER (Pre-Filled from Existing Items)
+                | LINE ITEMS REPEATER (Pre-Filled from Existing Items, Grouped by Product)
                 |--------------------------------------------------------------------------
                 */
-                function addRow(group, data) {
+                function addRow(group, itemGroup) {
                     const template = document.getElementById(group + '-row-template').innerHTML;
                     const $row = $(template);
 
-                    if (data) {
-                        $row.find('.item-product').val(data.product_id);
-                        populateVariantSelect($row, data.product_variant_id);
-                        $row.find('.item-quantity').val(data.quantity);
-                        $row.find('.item-unit-cost').val(data.unit_cost);
-                        $row.find('.item-remarks').val(data.remarks);
-                        syncItemTotalCost($row);
+                    if (itemGroup) {
+                        const firstItem = itemGroup.items[0];
+                        $row.find('.item-product').val(itemGroup.product_id);
+                        populateVariantSelect($row, firstItem.product_variant_id);
+
+                        if (itemGroup.is_variant_wise) {
+                            // Reopens directly in Variant-wise Summary mode — a Product
+                            // with more than one existing Line Item row can only have
+                            // been submitted via Variant-wise mode.
+                            const $hiddenContainer = $row.find('.item-variant-wise-hidden-inputs');
+                            let checkedCount = 0;
+                            let totalQuantity = 0;
+
+                            itemGroup.items.forEach(function (item) {
+                                checkedCount++;
+                                totalQuantity += parseFloat(item.quantity) || 0;
+
+                                const $hGroup = $('<div class="hidden-variant-group">');
+                                $hGroup.append($('<input type="hidden" name="items[][product_variant_id]">').val(item.product_variant_id));
+                                $hGroup.append($('<input type="hidden" name="items[][quantity]">').val(item.quantity));
+                                $hGroup.append($('<input type="hidden" name="items[][unit_cost]">').val(item.unit_cost));
+                                $hGroup.append($('<input type="hidden" name="items[][remarks]">').val(item.remarks));
+                                $hiddenContainer.append($hGroup);
+                            });
+
+                            enterVariantWiseMode($row, checkedCount, totalQuantity);
+                        } else {
+                            $row.find('.item-quantity').val(firstItem.quantity);
+                            $row.find('.item-unit-cost').val(firstItem.unit_cost);
+                            $row.find('.item-remarks').val(firstItem.remarks);
+                            syncItemTotalCost($row);
+                        }
                     }
 
                     $('#' + group + '-rows').append($row);
@@ -419,7 +569,193 @@
                         Swal.fire('Notice', 'At Least One Line Item is Required.', 'warning');
                         return;
                     }
+                    // Removing the Row also removes its injected variant-wise hidden inputs.
                     $(this).closest('.repeater-row').remove();
+                });
+
+                /*
+                |--------------------------------------------------------------------------
+                | VARIANT-WISE QUANTITIES MODAL (identical behavior to create.blade.php)
+                |--------------------------------------------------------------------------
+                */
+                const $modal = $('#variantWiseModal');
+                const $modalRows = $('#variantWiseRows');
+                const $modalSummary = $('#variantWiseSummary');
+                const $modalSaveBtn = $('#variantWiseSaveBtn');
+                const $modalError = $('#variantWiseError');
+
+                function buildVariantWiseRow(productName, variant, seedData) {
+                    const rowTemplate = document.getElementById('variant-wise-row-template').innerHTML;
+                    const $row = $(rowTemplate);
+
+                    $row.attr('data-variant-id', variant.id);
+                    $row.find('.variant-wise-label').text(variantWiseLabel(productName, variant));
+                    $row.find('.variant-wise-unit-price').val(
+                        seedData ? seedData.unit_cost : (variant.unit_price ?? '')
+                    );
+                    $row.find('.variant-wise-remarks').val(seedData ? (seedData.remarks || '') : '');
+
+                    if (seedData) {
+                        $row.find('.variant-wise-quantity').val(seedData.quantity);
+                    } else {
+                        $row.find('.variant-wise-check').prop('checked', true);
+                    }
+
+                    return $row;
+                }
+
+                function syncVariantWiseRowTotal($row) {
+                    const quantity = parseFloat($row.find('.variant-wise-quantity').val());
+                    const unitPrice = parseFloat($row.find('.variant-wise-unit-price').val());
+                    const $total = $row.find('.variant-wise-total-price');
+
+                    if (isNaN(quantity) || isNaN(unitPrice)) {
+                        $total.val('');
+                        return;
+                    }
+
+                    $total.val((quantity * unitPrice).toFixed(2));
+                }
+
+                function syncVariantWiseSummary() {
+                    const targetQuantity = parseFloat($activeVariantWiseRow.find('.item-quantity').val());
+                    let allocated = 0;
+
+                    $modalRows.find('.variant-wise-row').each(function () {
+                        if (!$(this).find('.variant-wise-check').prop('checked')) {
+                            return;
+                        }
+
+                        const quantity = parseFloat($(this).find('.variant-wise-quantity').val());
+                        allocated += isNaN(quantity) ? 0 : quantity;
+                    });
+
+                    const target = isNaN(targetQuantity) ? 0 : targetQuantity;
+                    const remaining = target - allocated;
+                    const matches = Math.abs(remaining) < 0.005 && target > 0;
+
+                    $modalSummary
+                        .removeClass('text-danger text-success')
+                        .addClass(matches ? 'text-success' : 'text-danger')
+                        .text(
+                            '{{ __("Target Quantity") }}: ' + target.toFixed(2) +
+                            ' | {{ __("Allocated") }}: ' + allocated.toFixed(2) +
+                            ' | {{ __("Remaining") }}: ' + remaining.toFixed(2)
+                        );
+
+                    $modalSaveBtn.prop('disabled', !matches);
+                    $modalError.addClass('d-none');
+
+                    return matches;
+                }
+
+                $(document).on('click', '.item-variant-wise-btn', function () {
+                    $activeVariantWiseRow = $(this).closest('.repeater-row');
+                    const productId = $(this).data('product-id');
+                    const product = productVariants[productId] || {name: '', variants: []};
+
+                    const targetQuantity = $activeVariantWiseRow.find('.item-quantity').val();
+                    if (!targetQuantity || parseFloat(targetQuantity) === 0) {
+                        Swal.fire('Notice', '{{ __("Enter this Line Item\'s Quantity First.") }}', 'warning');
+                        return;
+                    }
+
+                    $modalRows.empty();
+
+                    const existingHidden = $activeVariantWiseRow.find('.item-variant-wise-hidden-inputs input[name$="[product_variant_id]"]');
+                    const seedByVariantId = {};
+
+                    if (existingHidden.length) {
+                        existingHidden.each(function () {
+                            const $group = $(this).closest('.hidden-variant-group');
+                            seedByVariantId[$(this).val()] = {
+                                quantity: $group.find('input[name$="[quantity]"]').val(),
+                                unit_cost: $group.find('input[name$="[unit_cost]"]').val(),
+                                remarks: $group.find('input[name$="[remarks]"]').val(),
+                            };
+                        });
+                    }
+
+                    (product.variants || []).forEach(function (variant) {
+                        const seedData = seedByVariantId[variant.id] || null;
+                        const $row = buildVariantWiseRow(product.name, variant, seedData);
+                        $modalRows.append($row);
+                        syncVariantWiseRowTotal($row);
+                    });
+
+                    syncVariantWiseSummary();
+
+                    $modal.modal('show');
+                });
+
+                $(document).on('change', '.variant-wise-check', function () {
+                    const $row = $(this).closest('.variant-wise-row');
+                    $row.find('.variant-wise-quantity, .variant-wise-unit-price, .variant-wise-remarks').prop('disabled', !this.checked);
+                    $row.toggleClass('opacity-50', !this.checked);
+                    syncVariantWiseSummary();
+                });
+
+                $(document).on('input', '.variant-wise-quantity, .variant-wise-unit-price', function () {
+                    const $row = $(this).closest('.variant-wise-row');
+                    syncVariantWiseRowTotal($row);
+                    syncVariantWiseSummary();
+                });
+
+                function enterVariantWiseMode($row, checkedCount, targetQuantity) {
+                    $row.addClass('is-variant-wise');
+                    $row.find('.item-quantity').val(targetQuantity).prop('readonly', true);
+                    $row.find('.item-unit-cost').val('').prop('disabled', true).attr('placeholder', '{{ __("Multiple") }}');
+                    $row.find('.item-total-cost').val('').attr('placeholder', '{{ __("Multiple") }}');
+                    $row.find('.item-variant-wise-summary')
+                        .removeClass('d-none')
+                        .text('{{ __("Variant-wise") }}: ' + checkedCount + ' {{ __("Variants") }}');
+                    $row.find('.item-variant-wise-btn').text('{{ __("Edit Variant-wise Quantities") }}');
+                }
+
+                function exitVariantWiseMode($row) {
+                    $row.removeClass('is-variant-wise');
+                    $row.find('.item-quantity').prop('readonly', false);
+                    $row.find('.item-unit-cost').prop('disabled', false).attr('placeholder', '{{ __("Unit Cost") }}');
+                    $row.find('.item-total-cost').attr('placeholder', '{{ __("Total Cost") }}');
+                    $row.find('.item-variant-wise-summary').addClass('d-none').text('');
+                    $row.find('.item-variant-wise-hidden-inputs').empty();
+                    $row.find('.item-variant-wise-btn').text('{{ __("Set Variant-wise Quantities") }}');
+                }
+
+                $modalSaveBtn.on('click', function () {
+                    if (!syncVariantWiseSummary()) {
+                        $modalError.text('{{ __("Allocated Quantity must exactly match the Target Quantity before Saving.") }}').removeClass('d-none');
+                        return;
+                    }
+
+                    const $row = $activeVariantWiseRow;
+                    const $hiddenContainer = $row.find('.item-variant-wise-hidden-inputs');
+                    $hiddenContainer.empty();
+
+                    let checkedCount = 0;
+                    const targetQuantity = $row.find('.item-quantity').val();
+
+                    $modalRows.find('.variant-wise-row').each(function () {
+                        if (!$(this).find('.variant-wise-check').prop('checked')) {
+                            return;
+                        }
+
+                        checkedCount++;
+                        const variantId = $(this).data('variant-id');
+                        const quantity = $(this).find('.variant-wise-quantity').val();
+                        const unitCost = $(this).find('.variant-wise-unit-price').val();
+                        const remarks = $(this).find('.variant-wise-remarks').val();
+
+                        const $group = $('<div class="hidden-variant-group">');
+                        $group.append($('<input type="hidden" name="items[][product_variant_id]">').val(variantId));
+                        $group.append($('<input type="hidden" name="items[][quantity]">').val(quantity));
+                        $group.append($('<input type="hidden" name="items[][unit_cost]">').val(unitCost));
+                        $group.append($('<input type="hidden" name="items[][remarks]">').val(remarks));
+                        $hiddenContainer.append($group);
+                    });
+
+                    enterVariantWiseMode($row, checkedCount, targetQuantity);
+                    $modal.modal('hide');
                 });
 
                 /*
@@ -429,18 +765,35 @@
                 */
                 $('form').on('submit', function (e) {
                     const $blockedRow = $('.repeater-row[data-group="items"]').filter(function () {
-                        return $(this).find('.item-product').val() && $(this).find('.item-variant option').length <= 1 && $(this).find('.item-variant').prop('disabled');
+                        const $r = $(this);
+                        if (!$r.find('.item-product').val() || $r.hasClass('is-variant-wise')) {
+                            return false;
+                        }
+                        return $r.find('.item-variant option').length <= 1 && $r.find('.item-variant').prop('disabled') && $r.find('.item-variant-wise-btn').hasClass('d-none');
                     }).first();
 
                     if ($blockedRow.length) {
                         e.preventDefault();
                         Swal.fire('Notice', '{{ __("One or More Line Items have No Variants Available. Add a Variant First.") }}', 'warning');
+                        return;
+                    }
+
+                    const $unsavedVariantWiseRow = $('.repeater-row[data-group="items"]').filter(function () {
+                        const $r = $(this);
+                        return $r.find('.item-product').val()
+                            && !$r.find('.item-variant-wise-btn').hasClass('d-none')
+                            && !$r.hasClass('is-variant-wise');
+                    }).first();
+
+                    if ($unsavedVariantWiseRow.length) {
+                        e.preventDefault();
+                        Swal.fire('Notice', '{{ __("Set Variant-wise Quantities for Every Line Item with Multiple Variants.") }}', 'warning');
                     }
                 });
 
-                if (existingItems.length) {
-                    existingItems.forEach(function (item) {
-                        addRow('items', item);
+                if (existingGroups.length) {
+                    existingGroups.forEach(function (itemGroup) {
+                        addRow('items', itemGroup);
                     });
                 } else {
                     addRow('items');

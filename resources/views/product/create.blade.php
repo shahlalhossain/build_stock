@@ -171,6 +171,57 @@
                                     </div>
                                 </template>
 
+                                <hr>
+
+                                <!-- ===================== VARIANTS ===================== -->
+                                <div class="d-flex align-items-center mb-2">
+                                    <h5 class="mb-0 flex-grow-1 fst-italic">{{ __('Variants') }} <small class="text-muted">({{ __('Optional') }})</small></h5>
+                                    <button type="button" class="btn btn-sm btn-success add-row" data-group="variants"><i class="ri-add-line"></i> {{ __('Add Variant') }}</button>
+                                </div>
+                                @error('variants')<small class="text-danger d-block mb-2">{{ $message }}</small>@enderror
+                                <div id="variants-rows"></div>
+
+                                <template id="variants-row-template">
+                                    <div class="card mb-2 repeater-row" data-group="variants">
+                                        <div class="card-body">
+                                            <div class="row mb-2 align-items-start">
+                                                <div class="col-12 col-md-1 pt-2 text-md-center">
+                                                    <button type="button" class="btn btn-sm btn-outline-danger remove-row"><i class="ri-close-line"></i></button>
+                                                </div>
+                                                <div class="col-12 col-md-4 mb-2 mb-md-0">
+                                                    <input type="text" class="form-control variant-sku" placeholder="{{ __('SKU') }}">
+                                                </div>
+                                                <div class="col-12 col-md-3 mb-2 mb-md-0">
+                                                    <input type="number" step="0.01" min="0" class="form-control variant-unit-price" placeholder="{{ __('Unit Price') }}">
+                                                </div>
+                                            </div>
+
+                                            <div class="d-flex align-items-center mb-2">
+                                                <h6 class="mb-0 flex-grow-1 fst-italic">{{ __('Attribute Values') }} <small class="text-muted">({{ __('Optional') }})</small></h6>
+                                                <button type="button" class="btn btn-sm btn-outline-success add-variant-spec-row"><i class="ri-add-line"></i> {{ __('Add Attribute') }}</button>
+                                            </div>
+                                            <div class="variant-specs-rows"></div>
+                                        </div>
+                                    </div>
+                                </template>
+
+                                <template id="variant-specs-row-template">
+                                    <div class="row mb-2 align-items-start repeater-row">
+                                        <div class="col-12 col-sm-4 col-md-2 pt-2 d-flex align-items-center gap-2">
+                                            <button type="button" class="btn btn-sm btn-outline-danger remove-row flex-shrink-0"><i class="ri-close-line"></i></button>
+                                            <select class="form-select variant-spec-attribute">
+                                                <option value="">{{ __('== Select Attribute ==') }}</option>
+                                                @foreach($attributes as $attribute)
+                                                    <option value="{{ $attribute->id }}">{{ $attribute->name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div class="col-12 col-sm-7 col-md-8 pt-2">
+                                            <div class="variant-spec-values d-flex flex-wrap gap-3 pt-2 text-muted">{{ __('Select an Attribute First') }}</div>
+                                        </div>
+                                    </div>
+                                </template>
+
                             </div>
                             <div class="card-footer">
                                 <div class="row">
@@ -247,12 +298,22 @@
                 refreshAttributeOptions();
             }
 
+            // NOTE: '.add-row'/'.remove-row' are shared with the Variants repeater
+            // below (data-group="variants") — each handler ignores clicks that
+            // belong to the other group so both repeaters coexist correctly.
             $(document).on('click', '.add-row', function () {
+                if ($(this).data('group') === 'variants') {
+                    return;
+                }
                 addRow($(this).data('group'));
             });
 
             $(document).on('click', '.remove-row', function () {
-                $(this).closest('.repeater-row').remove();
+                const $row = $(this).closest('.repeater-row');
+                if ($row.data('group') === 'variants') {
+                    return;
+                }
+                $row.remove();
                 refreshAttributeOptions();
             });
 
@@ -311,6 +372,133 @@
 
             // Seed with one starter row.
             addRow('specs');
+
+            /*
+            |--------------------------------------------------------------------------
+            | VARIANTS REPEATER (Top Level) + PER-VARIANT ATTRIBUTE MINI-REPEATER
+            |--------------------------------------------------------------------------
+            | Reuses the exact Specifications repeater pattern (Attribute select ->
+            | checkbox group of that Attribute's Values, template cloning,
+            | duplicate-prevention), nested one level deeper: each Variant row owns
+            | its own mini-repeater, scoped by that row's own index so multiple
+            | Variants' Attribute pickers never collide with each other.
+            */
+            let variantRowSeq = 0;
+
+            function reindexVariantRows() {
+                $('#variants-rows > .repeater-row').each(function (index) {
+                    const $row = $(this);
+                    $row.find('.variant-sku').attr('name', 'variants[' + index + '][sku]');
+                    $row.find('.variant-unit-price').attr('name', 'variants[' + index + '][unit_price]');
+                    $row.find('.variant-spec-value-check-input').each(function () {
+                        $(this).attr('name', 'variants[' + index + '][attribute_value_ids][]');
+                    });
+                });
+            }
+
+            function addVariantRow() {
+                const template = document.getElementById('variants-row-template').innerHTML;
+                const $row = $(template);
+                const rowSeq = variantRowSeq++;
+                $row.attr('data-variant-seq', rowSeq);
+
+                $('#variants-rows').append($row);
+                addVariantSpecRow($row);
+                reindexVariantRows();
+            }
+
+            function addVariantSpecRow($variantRow) {
+                const template = document.getElementById('variant-specs-row-template').innerHTML;
+                $variantRow.find('.variant-specs-rows').append(template);
+                refreshVariantAttributeOptions($variantRow);
+            }
+
+            $(document).on('click', '.add-variant-spec-row', function () {
+                addVariantSpecRow($(this).closest('.repeater-row[data-group="variants"]'));
+            });
+
+            $(document).on('click', '.add-row', function () {
+                if ($(this).data('group') === 'variants') {
+                    addVariantRow();
+                }
+            });
+
+            // Removing a Variant's own mini attribute-spec row (nested one level deeper
+            // than the top-level Variant row itself).
+            $(document).on('click', '.variant-specs-rows .remove-row', function () {
+                const $variantRow = $(this).closest('.repeater-row[data-group="variants"]');
+                $(this).closest('.repeater-row').remove();
+                refreshVariantAttributeOptions($variantRow);
+            });
+
+            // Removing a whole top-level Variant row.
+            $(document).on('click', '.repeater-row[data-group="variants"] > .card-body > .row > div > .remove-row', function () {
+                $(this).closest('.repeater-row[data-group="variants"]').remove();
+                reindexVariantRows();
+            });
+
+            $(document).on('change', '.variant-spec-attribute', function () {
+                const $specRow = $(this).closest('.repeater-row');
+                const $variantRow = $(this).closest('.repeater-row[data-group="variants"]');
+                const attributeId = $(this).val();
+                const $values = $specRow.find('.variant-spec-values');
+
+                $values.empty();
+
+                const values = attributeValues[attributeId] || [];
+
+                if (!values.length) {
+                    $values.text('{{ __("No Values Available for This Attribute") }}');
+                } else {
+                    values.forEach(function (value) {
+                        const checkboxId = 'variant-spec-value-' + $variantRow.attr('data-variant-seq') + '-' + attributeId + '-' + value.id;
+
+                        $values.append(
+                            $('<div class="form-check form-check-success spec-value-check">').append(
+                                $('<input type="checkbox">')
+                                    .addClass('form-check-input variant-spec-value-check-input')
+                                    .attr('id', checkboxId)
+                                    .val(value.id),
+                                $('<label class="form-check-label">').attr('for', checkboxId).text(value.value)
+                            )
+                        );
+                    });
+                }
+
+                refreshVariantAttributeOptions($variantRow);
+                reindexVariantRows();
+            });
+
+            /*
+            |--------------------------------------------------------------------------
+            | PREVENT DUPLICATE ATTRIBUTE SELECTION WITHIN ONE VARIANT ROW ONLY
+            |--------------------------------------------------------------------------
+            | Scoped to the single Variant row passed in — duplicate prevention does
+            | NOT apply across different Variants (each Variant independently picks
+            | its own Color/Size/etc. combination).
+            */
+            function refreshVariantAttributeOptions($variantRow) {
+                const $attributeSelects = $variantRow.find('.variant-spec-attribute');
+
+                const selectedIds = $attributeSelects.map(function () {
+                    return $(this).val();
+                }).get().filter(Boolean);
+
+                $attributeSelects.each(function () {
+                    const currentValue = $(this).val();
+
+                    $(this).find('option').each(function () {
+                        if (!$(this).val()) {
+                            return;
+                        }
+
+                        const isSelectedElsewhere = selectedIds.includes($(this).val()) && $(this).val() !== currentValue;
+                        $(this).prop('disabled', isSelectedElsewhere);
+                    });
+                });
+            }
+
+            // No starter Variant row — Variants are fully Optional.
         });
     </script>
 @endpush

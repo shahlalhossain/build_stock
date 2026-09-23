@@ -64,7 +64,7 @@ class ProductsController extends Controller
 
     public function show(Product $product)
     {
-        $data['product'] = $product->load(['category', 'subCategory', 'brand', 'unit', 'attributeValues.attribute', 'creator', 'updater', 'deleter', 'approvalLogs.actionedBy']);
+        $data['product'] = $product->load(['category', 'subCategory', 'brand', 'unit', 'attributeValues.attribute', 'variants.attributeValues.attribute', 'creator', 'updater', 'deleter', 'approvalLogs.actionedBy']);
 
         return view('product.show', $data);
     }
@@ -72,7 +72,7 @@ class ProductsController extends Controller
     public function edit(Product $product): View
     {
         $data = $this->formLookups();
-        $data['product'] = $product->load(['attributeValues']);
+        $data['product'] = $product->load(['attributeValues', 'variants.attributeValues.attribute']);
 
         return view('product.edit', $data);
     }
