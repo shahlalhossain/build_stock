@@ -141,7 +141,7 @@ class StockTransactionService extends BaseService
     {
         foreach ($items as $item) {
             $stockTransaction->items()->create([
-                'product_variant_id' => $item['product_variant_id'] ?? null,
+                'product_id' => $item['product_id'] ?? null,
                 'quantity' => $item['quantity'] ?? 0,
                 'unit_cost' => $item['unit_cost'] ?? null,
                 'remarks' => $item['remarks'] ?? null,
@@ -352,14 +352,14 @@ class StockTransactionService extends BaseService
                 : (float) $item->quantity * ($isSubtract ? -1 : 1);
 
             $productStock = ProductStock::query()
-                ->where('product_variant_id', $item->product_variant_id)
+                ->where('product_id', $item->product_id)
                 ->where('store_id', $stockTransaction->store_id)
                 ->lockForUpdate()
                 ->first();
 
             if (! $productStock) {
                 $productStock = ProductStock::create([
-                    'product_variant_id' => $item->product_variant_id,
+                    'product_id' => $item->product_id,
                     'store_id' => $stockTransaction->store_id,
                     'quantity' => 0,
                 ]);
@@ -368,12 +368,10 @@ class StockTransactionService extends BaseService
             $newQuantity = (float) $productStock->quantity + $delta;
 
             if ($newQuantity < 0) {
-                $variant = $item->productVariant()->with('product')->first();
-                $label = $variant
-                    ? ($variant->sku.($variant->product?->name ? ' — '.$variant->product->name : ''))
-                    : (string) $item->product_variant_id;
+                $product = $item->product()->first();
+                $label = $product ? ($product->code.' — '.$product->name) : (string) $item->product_id;
 
-                throw new GeneralException(__('Insufficient Stock for Product Variant :label at this Store. Approval Cancelled.', ['label' => $label]));
+                throw new GeneralException(__('Insufficient Stock for Product :label at this Store. Approval Cancelled.', ['label' => $label]));
             }
 
             $productStock->quantity = $newQuantity;

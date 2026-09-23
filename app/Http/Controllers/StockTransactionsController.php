@@ -66,7 +66,7 @@ class StockTransactionsController extends Controller
             'store',
             'supplier',
             'linkedTransaction',
-            'items.productVariant.product',
+            'items.product',
             'creator',
             'updater',
             'deleter',
@@ -79,7 +79,7 @@ class StockTransactionsController extends Controller
     public function edit(StockTransaction $stockTransaction): View
     {
         $data = $this->formLookups();
-        $data['stockTransaction'] = $stockTransaction->load(['items.productVariant', 'linkedTransaction']);
+        $data['stockTransaction'] = $stockTransaction->load(['items.product', 'linkedTransaction']);
 
         return view('stock-transaction.edit', $data);
     }
@@ -197,11 +197,7 @@ class StockTransactionsController extends Controller
         return [
             'stores' => Store::query()->where('is_active', true)->orderBy('name')->get(['id', 'name']),
             'suppliers' => Supplier::query()->where('is_active', true)->orderBy('name')->get(['id', 'name']),
-            'products' => Product::query()->where('is_active', true)->orderBy('name')
-                ->with(['variants' => function ($query) {
-                    $query->where('is_active', true)->orderBy('sku');
-                }])
-                ->get(['id', 'name', 'code']),
+            'products' => Product::query()->where('is_active', true)->orderBy('name')->get(['id', 'name', 'code']),
         ];
     }
 }

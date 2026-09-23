@@ -10,9 +10,8 @@ use App\Events\Product\ProductStatusUpdated;
 use App\Events\Product\ProductUpdated;
 use App\Exceptions\GeneralException;
 use App\Models\ApprovalLog;
+use App\Models\AttributeValue;
 use App\Models\Product;
-use App\Models\ProductVariant;
-use App\Models\StockTransactionItem;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Auth;
@@ -57,7 +56,6 @@ class ProductService extends BaseService
             $product = $this->model::create($productData);
 
             $this->attachAttributeValues($product, $data['attribute_value_ids'] ?? []);
-            $this->syncVariants($product, $data['variants'] ?? []);
 
             event(new ProductCreated($product));
 
@@ -92,7 +90,6 @@ class ProductService extends BaseService
             ]);
 
             $this->attachAttributeValues($product, $data['attribute_value_ids'] ?? []);
-            $this->syncVariants($product, $data['variants'] ?? []);
 
             event(new ProductUpdated($product));
 
@@ -168,6 +165,10 @@ class ProductService extends BaseService
      * assignments (merge/add-only) rather than replacing them, so
      * updating a Product never silently drops previously-saved
      * specifications that the current form submission didn't resend.
+     *
+     * product_attribute_values also stores attribute_id directly (alongside
+     * attribute_value_id) so a row's Attribute is readable without joining
+     * through attribute_values — resolved here from each submitted Value.
      */
     protected function attachAttributeValues(Product $product, array $attributeValueIds): void
     {
@@ -177,60 +178,13 @@ class ProductService extends BaseService
             return;
         }
 
-        $product->attributeValues()->syncWithoutDetaching($ids);
-    }
+        $attributeIdsByValueId = AttributeValue::whereIn('id', $ids)->pluck('attribute_id', 'id');
 
-    /**
-     * Delete-all-and-recreate the Product's Variants (matching this app's
-     * existing sub-resource sync convention, e.g. Supplier's
-     * Contacts/Addresses). Absent/empty $rows is fully valid — a Product
-     * may have zero Variants.
-     *
-     * Variants already referenced by Stock Transactions/Stocks cannot be
-     * hard-deleted (stock_transaction_items.product_variant_id has no
-     * cascade, unlike the pivot table), so those are soft-deleted with
-     * their pivot rows detached instead, to avoid an FK violation while
-     * still fully replacing the Variant's own data on the next line.
-     */
-    protected function syncVariants(Product $product, array $rows): void
-    {
-        $product->variants()->get()->each(function (ProductVariant $variant) {
-            $isReferenced = $variant->stocks()->exists()
-                || StockTransactionItem::where('product_variant_id', $variant->id)->exists();
+        $syncData = collect($ids)
+            ->mapWithKeys(fn ($valueId) => [$valueId => ['attribute_id' => $attributeIdsByValueId[$valueId]]])
+            ->all();
 
-            $variant->attributeValues()->detach();
-
-            if ($isReferenced) {
-                $variant->delete();
-
-                return;
-            }
-
-            $variant->forceDelete();
-        });
-
-        foreach ($rows as $row) {
-            $sku = $row['sku'] ?? null;
-
-            if (! $sku) {
-                continue;
-            }
-
-            $variant = $product->variants()->create([
-                'sku' => $sku,
-                'variant_name' => $row['variant_name'] ?? null,
-                'unit_price' => $row['unit_price'] ?? null,
-                'is_active' => true,
-                'created_by' => Auth::id(),
-                'updated_by' => Auth::id(),
-            ]);
-
-            $attributeValueIds = array_filter($row['attribute_value_ids'] ?? []);
-
-            if (! empty($attributeValueIds)) {
-                $variant->attributeValues()->sync($attributeValueIds);
-            }
-        }
+        $product->attributeValues()->syncWithoutDetaching($syncData);
     }
 
     /**

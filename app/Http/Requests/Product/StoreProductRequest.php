@@ -35,18 +35,6 @@ class StoreProductRequest extends FormRequest
 
             'attribute_value_ids' => ['nullable', 'array'],
             'attribute_value_ids.*' => ['integer', Rule::exists('attribute_values', 'id')],
-
-            'variants' => ['nullable', 'array'],
-            'variants.*.sku' => [
-                'required_with:variants.*',
-                'string',
-                'max:255',
-                'distinct',
-                Rule::unique('product_variants', 'sku'),
-            ],
-            'variants.*.unit_price' => ['nullable', 'numeric', 'min:0'],
-            'variants.*.attribute_value_ids' => ['nullable', 'array'],
-            'variants.*.attribute_value_ids.*' => ['integer', Rule::exists('attribute_values', 'id')],
         ];
     }
 
@@ -72,18 +60,6 @@ class StoreProductRequest extends FormRequest
             'description.max' => __('Description may not exceed 255 Characters'),
 
             'attribute_value_ids.*.exists' => __('One of the Selected Attribute Values does not Exist'),
-
-            'variants.*.sku.required_with' => __('SKU is Required for Every Variant'),
-            'variants.*.sku.string' => __('Variant SKU must be a Valid String'),
-            'variants.*.sku.max' => __('Variant SKU may not exceed 255 Characters'),
-            'variants.*.sku.distinct' => __('Variant SKUs must be Unique within this Product'),
-            'variants.*.sku.unique' => __('This Variant SKU already Exists'),
-
-            'variants.*.unit_price.numeric' => __('Variant Unit Price must be a Valid Number'),
-            'variants.*.unit_price.min' => __('Variant Unit Price may not be Negative'),
-
-            'variants.*.attribute_value_ids.*.integer' => __('One of the Selected Variant Attribute Values is Invalid'),
-            'variants.*.attribute_value_ids.*.exists' => __('One of the Selected Variant Attribute Values does not Exist'),
         ];
     }
 }

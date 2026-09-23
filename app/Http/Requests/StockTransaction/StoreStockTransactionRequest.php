@@ -32,7 +32,7 @@ class StoreStockTransactionRequest extends FormRequest
             'transaction_date' => ['required', 'date'],
             'remarks' => ['nullable', 'string'],
             'items' => ['required', 'array', 'min:1'],
-            'items.*.product_variant_id' => ['required', 'integer', Rule::exists('product_variants', 'id')],
+            'items.*.product_id' => ['required', 'integer', Rule::exists('products', 'id')],
             'items.*.quantity' => ['required', 'numeric', 'not_in:0'],
             'items.*.unit_cost' => ['nullable', 'numeric', 'min:0'],
             'items.*.remarks' => ['nullable', 'string'],
@@ -67,9 +67,9 @@ class StoreStockTransactionRequest extends FormRequest
             'items.array' => __('Line Items must be a Valid List'),
             'items.min' => __('At Least One Line Item is Required'),
 
-            'items.*.product_variant_id.required' => __('Product Variant is Required for Every Line Item'),
-            'items.*.product_variant_id.integer' => __('Selected Product Variant is Invalid'),
-            'items.*.product_variant_id.exists' => __('Selected Product Variant does not Exist'),
+            'items.*.product_id.required' => __('Product is Required for Every Line Item'),
+            'items.*.product_id.integer' => __('Selected Product is Invalid'),
+            'items.*.product_id.exists' => __('Selected Product does not Exist'),
 
             'items.*.quantity.required' => __('Quantity is Required for Every Line Item'),
             'items.*.quantity.numeric' => __('Quantity must be a Valid Number'),
