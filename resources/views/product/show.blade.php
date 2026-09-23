@@ -162,7 +162,7 @@
             <div class="modal fade" id="statusUpdateModal" tabindex="-1" aria-labelledby="statusUpdateModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
-                        <form id="statusUpdateForm" action="{{ route('product.update-status', $product->id) }}" method="POST">
+                        <form id="statusUpdateForm" action="{{ route('product.update-status', $product->id) }}" method="POST" data-current-status="{{ $product->status }}">
                             @csrf
                             <div class="modal-header">
                                 <h5 class="modal-title" id="statusUpdateModalLabel"> {{ __('Update Product Status') }} </h5>
@@ -175,15 +175,15 @@
                                     <label class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory"> {{ __('Select Status') }} </label>
                                     <div class="col-12 col-md-8">
                                         <div class="form-check form-check-inline pt-2 mb-2">
-                                            <input class="form-check-input" type="radio" name="status" id="statusPending" value="pending" >
+                                            <input class="form-check-input" type="radio" name="status" id="statusPending" value="pending" @checked($product->status === 'pending')>
                                             <label class="form-check-label" for="statusPending"> {{ __('Pending') }} </label>
                                         </div>
                                         <div class="form-check form-check-inline pt-2 mb-2">
-                                            <input class="form-check-input" type="radio" name="status" id="statusApproved" value="approved" >
+                                            <input class="form-check-input" type="radio" name="status" id="statusApproved" value="approved" @checked($product->status === 'approved')>
                                             <label class="form-check-label" for="statusApproved"> {{ __('Approve') }} </label>
                                         </div>
                                         <div class="form-check form-check-inline pt-2 mb-2">
-                                            <input class="form-check-input" type="radio" name="status" id="statusRejected" value="rejected" >
+                                            <input class="form-check-input" type="radio" name="status" id="statusRejected" value="rejected" @checked($product->status === 'rejected')>
                                             <label class="form-check-label" for="statusRejected"> {{ __('Reject') }} </label>
                                         </div>
                                     </div>
@@ -361,13 +361,41 @@
             | UPDATE PRODUCT STATUS
             |--------------------------------------------------------------------------
             */
-            $('#statusUpdateForm').on('submit', function (e) {
+            const $statusForm = $('#statusUpdateForm');
+            const currentStatus = $statusForm.data('current-status');
+            const $statusUpdateBtn = $('#updateStatusBtn');
+            const $statusUpdateError = $('#statusUpdateError');
+
+            function syncStatusSubmitState() {
+                const selected = $statusForm.find('input[name="status"]:checked').val();
+                const unchanged = selected === currentStatus;
+
+                $statusUpdateBtn.prop('disabled', unchanged);
+
+                if (unchanged) {
+                    $statusUpdateError.html('{{ __("Select a Different Status to Update.") }}').removeClass('d-none');
+                } else {
+                    $statusUpdateError.addClass('d-none').html('');
+                }
+            }
+
+            $(document).on('shown.bs.modal', '#statusUpdateModal', syncStatusSubmitState);
+            $statusForm.on('change', 'input[name="status"]', syncStatusSubmitState);
+            syncStatusSubmitState();
+
+            $statusForm.on('submit', function (e) {
                 e.preventDefault();
                 const form = $(this);
-                const button = $('#updateStatusBtn');
-                const errorBox = $('#statusUpdateError');
+                const button = $statusUpdateBtn;
+                const errorBox = $statusUpdateError;
                 // Clear Previous Errors
                 errorBox.addClass('d-none').html('');
+
+                const selectedStatus = form.find('input[name="status"]:checked').val();
+                if (selectedStatus === currentStatus) {
+                    errorBox.html('{{ __("Product is already in this status. Select a different status to update.") }}').removeClass('d-none');
+                    return;
+                }
 
                 // Disable Button
                 button.prop('disabled', true);
@@ -407,7 +435,12 @@
                                     messages.push(errorMessages[0]);
                                 }
                             });
-                            errorBox.html(messages.join('<br>')).removeClass('d-none');
+
+                            if (!messages.length && xhr.responseJSON?.message) {
+                                messages.push(xhr.responseJSON.message);
+                            }
+
+                            errorBox.html(messages.join('<br>') || '{{ __("Validation Failed. Please Check Your Input.") }}').removeClass('d-none');
                             return;
                         }
 
