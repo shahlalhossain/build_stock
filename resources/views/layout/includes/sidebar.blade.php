@@ -103,6 +103,13 @@
                 </li>
                 <div class="divider"></div>
 
+                <li class="nav-item {{ request()->routeIs('stock-transaction.*') ? 'active-menu' : '' }}">
+                    <a class="nav-link" href="{{ route('stock-transaction.index') }}">
+                        <i class="ri-exchange-2-line"></i><span>{{ __('Stock Transaction') }}</span>
+                    </a>
+                </li>
+                <div class="divider"></div>
+
                 <li class="nav-item {{ request()->routeIs('supplier.*') ? 'active-menu' : '' }}">
                     <a class="nav-link" href="{{ route('supplier.index') }}">
                         <i class="ri-apps-2-line"></i><span>{{ __('Manage Suppliers') }}</span>

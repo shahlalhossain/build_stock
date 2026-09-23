@@ -15,6 +15,7 @@ use App\Http\Controllers\ProductUnitsController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectsController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\StockTransactionsController;
 use App\Http\Controllers\StoresController;
 use App\Http\Controllers\SubCategoriesController;
 use App\Http\Controllers\SuppliersController;
@@ -236,6 +237,22 @@ Route::middleware('auth:web')->group(function () {
             Route::delete('/', [StoresController::class, 'destroy'])->name('destroy');
             Route::post('restore', [StoresController::class, 'restore'])->name('restore');
             Route::delete('force-delete', [StoresController::class, 'delete'])->name('delete');
+        });
+    });
+
+    Route::group(['prefix' => 'stock-transaction', 'as' => 'stock-transaction.'], function () {
+        Route::get('/', [StockTransactionsController::class, 'index'])->name('index');
+        Route::get('create', [StockTransactionsController::class, 'create'])->name('create');
+        Route::post('/', [StockTransactionsController::class, 'store'])->name('store');
+        Route::get('/trash', [StockTransactionsController::class, 'trash'])->name('trash');
+        Route::group(['prefix' => '{stock_transaction}'], function () {
+            Route::get('/', [StockTransactionsController::class, 'show'])->name('show')->withTrashed();
+            Route::get('edit', [StockTransactionsController::class, 'edit'])->name('edit');
+            Route::patch('/', [StockTransactionsController::class, 'update'])->name('update');
+            Route::post('update-status', [StockTransactionsController::class, 'updateStatus'])->name('update-status');
+            Route::delete('/', [StockTransactionsController::class, 'destroy'])->name('destroy');
+            Route::post('restore', [StockTransactionsController::class, 'restore'])->name('restore');
+            Route::delete('force-delete', [StockTransactionsController::class, 'delete'])->name('delete');
         });
     });
 
