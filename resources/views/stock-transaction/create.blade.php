@@ -125,10 +125,12 @@
                                         <thead>
                                         <tr>
                                             <th style="width: 5%;"></th>
-                                            <th style="width: 30%;">{{ __('Product') }}</th>
-                                            <th style="width: 20%;">{{ __('Quantity') }}</th>
-                                            <th style="width: 20%;">{{ __('Unit Cost') }}</th>
-                                            <th style="width: 25%;">{{ __('Remarks') }}</th>
+                                            <th style="width: 20%;">{{ __('Product') }}</th>
+                                            <th style="width: 20%;">{{ __('Variant') }}</th>
+                                            <th style="width: 12%;">{{ __('Quantity') }}</th>
+                                            <th style="width: 12%;">{{ __('Unit Cost') }}</th>
+                                            <th style="width: 12%;">{{ __('Total Cost') }}</th>
+                                            <th style="width: 19%;">{{ __('Remarks') }}</th>
                                         </tr>
                                         </thead>
                                         <tbody id="items-rows"></tbody>
@@ -141,7 +143,7 @@
                                             <button type="button" class="btn btn-sm btn-outline-danger remove-row"><i class="ri-close-line"></i></button>
                                         </td>
                                         <td>
-                                            <select class="form-select item-product" name="items[][product_id]">
+                                            <select class="form-select item-product">
                                                 <option value="">{{ __('== Select Product ==') }}</option>
                                                 @foreach($products as $product)
                                                     <option value="{{ $product->id }}">{{ $product->name }} @if($product->code) ({{ $product->code }}) @endif</option>
@@ -149,10 +151,19 @@
                                             </select>
                                         </td>
                                         <td>
+                                            <select class="form-select item-variant" name="items[][product_variant_id]" disabled>
+                                                <option value="">{{ __('== Select Product First ==') }}</option>
+                                            </select>
+                                            <small class="text-danger d-none item-variant-empty">{{ __('No Variants Available for this Product — Add a Variant First') }}</small>
+                                        </td>
+                                        <td>
                                             <input type="number" step="0.01" class="form-control item-quantity" name="items[][quantity]" placeholder="{{ __('Quantity') }}">
                                         </td>
                                         <td>
                                             <input type="number" step="0.01" min="0" class="form-control item-unit-cost" name="items[][unit_cost]" placeholder="{{ __('Unit Cost') }}">
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control item-total-cost" readonly tabindex="-1" placeholder="{{ __('Total Cost') }}">
                                         </td>
                                         <td>
                                             <input type="text" class="form-control item-remarks" name="items[][remarks]" placeholder="{{ __('Remarks') }}">
@@ -259,6 +270,114 @@
                 $('#' + group + '-rows').append(template);
             }
 
+            /*
+            |--------------------------------------------------------------------------
+            | PRODUCT -> VARIANT: CLIENT-SIDE CASCADE (NO AJAX)
+            |--------------------------------------------------------------------------
+            | All active Variants for all Products are preloaded here, keyed by
+            | Product ID, matching this app's existing Attribute->Value cascade
+            | convention in product/create.blade.php. Selecting a Product just
+            | repopulates the Variant <select> from this JS object.
+            */
+            @php
+                $productVariantsMap = $products->mapWithKeys(function ($product) {
+                    $variantList = $product->variants->map(function ($variant) {
+                        return ['id' => $variant->id, 'label' => $variant->display_label, 'unit_price' => $variant->unit_price];
+                    });
+
+                    return [$product->id => $variantList];
+                });
+            @endphp
+            const productVariants = @json($productVariantsMap);
+
+            function populateVariantSelect($row, selectedVariantId, unitPriceCallback) {
+                const productId = $row.find('.item-product').val();
+                const $variantSelect = $row.find('.item-variant');
+                const $variantEmpty = $row.find('.item-variant-empty');
+
+                $variantSelect.empty();
+
+                if (!productId) {
+                    $variantSelect.append('<option value="">{{ __("== Select Product First ==") }}</option>');
+                    $variantSelect.prop('disabled', true).removeClass('is-invalid');
+                    $variantEmpty.addClass('d-none');
+                    return;
+                }
+
+                const variants = productVariants[productId] || [];
+
+                if (!variants.length) {
+                    $variantSelect.append('<option value="">{{ __("== No Variants Available ==") }}</option>');
+                    $variantSelect.prop('disabled', true);
+                    $variantEmpty.removeClass('d-none');
+                    return;
+                }
+
+                $variantEmpty.addClass('d-none');
+                $variantSelect.prop('disabled', false);
+                $variantSelect.append('<option value="">{{ __("== Select Variant ==") }}</option>');
+
+                variants.forEach(function (variant) {
+                    const $option = $('<option>').val(variant.id).text(variant.label).attr('data-unit-price', variant.unit_price ?? '');
+                    $variantSelect.append($option);
+                });
+
+                if (selectedVariantId) {
+                    $variantSelect.val(String(selectedVariantId));
+                }
+
+                if (typeof unitPriceCallback === 'function') {
+                    unitPriceCallback();
+                }
+            }
+
+            $(document).on('change', '.item-product', function () {
+                const $row = $(this).closest('.repeater-row');
+                populateVariantSelect($row);
+                $row.find('.item-unit-cost').val('');
+                syncItemTotalCost($row);
+            });
+
+            /*
+            |--------------------------------------------------------------------------
+            | VARIANT -> UNIT COST: AUTO-FILL FROM THE VARIANT'S CATALOG PRICE
+            |--------------------------------------------------------------------------
+            | The Unit Cost remains editable — this only sets a sensible default
+            | when a Variant is (re)selected, and re-triggers the Total Cost calc.
+            */
+            $(document).on('change', '.item-variant', function () {
+                const $row = $(this).closest('.repeater-row');
+                const unitPrice = $(this).find('option:selected').data('unit-price');
+
+                if (unitPrice !== undefined && unitPrice !== '' && unitPrice !== null) {
+                    $row.find('.item-unit-cost').val(parseFloat(unitPrice).toFixed(2));
+                }
+
+                syncItemTotalCost($row);
+            });
+
+            /*
+            |--------------------------------------------------------------------------
+            | LINE ITEM TOTAL COST: AUTO-CALCULATE FROM QUANTITY x UNIT COST
+            |--------------------------------------------------------------------------
+            */
+            function syncItemTotalCost($row) {
+                const quantity = parseFloat($row.find('.item-quantity').val());
+                const unitCost = parseFloat($row.find('.item-unit-cost').val());
+                const $total = $row.find('.item-total-cost');
+
+                if (isNaN(quantity) || isNaN(unitCost)) {
+                    $total.val('');
+                    return;
+                }
+
+                $total.val((quantity * unitCost).toFixed(2));
+            }
+
+            $(document).on('input', '.item-quantity, .item-unit-cost', function () {
+                syncItemTotalCost($(this).closest('.repeater-row'));
+            });
+
             $(document).on('click', '.add-row', function () {
                 addRow($(this).data('group'));
             });
@@ -270,6 +389,22 @@
                     return;
                 }
                 $(this).closest('.repeater-row').remove();
+            });
+
+            /*
+            |--------------------------------------------------------------------------
+            | PREVENT SUBMIT WHEN A ROW HAS NO VARIANTS AVAILABLE
+            |--------------------------------------------------------------------------
+            */
+            $('form').on('submit', function (e) {
+                const $blockedRow = $('.repeater-row[data-group="items"]').filter(function () {
+                    return $(this).find('.item-product').val() && $(this).find('.item-variant option').length <= 1 && $(this).find('.item-variant').prop('disabled');
+                }).first();
+
+                if ($blockedRow.length) {
+                    e.preventDefault();
+                    Swal.fire('Notice', '{{ __("One or More Line Items have No Variants Available. Add a Variant First.") }}', 'warning');
+                }
             });
 
             // Seed with one starter row.

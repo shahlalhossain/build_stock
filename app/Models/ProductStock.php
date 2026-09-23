@@ -15,7 +15,7 @@ class ProductStock extends Model
      * @var list<string>
      */
     protected $fillable = [
-        'product_id',
+        'product_variant_id',
         'store_id',
         'quantity',
     ];
@@ -32,15 +32,15 @@ class ProductStock extends Model
         return [
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
-            'product_id' => 'integer',
+            'product_variant_id' => 'integer',
             'store_id' => 'integer',
             'quantity' => 'decimal:2',
         ];
     }
 
-    public function product(): BelongsTo
+    public function productVariant(): BelongsTo
     {
-        return $this->belongsTo(Product::class, 'product_id');
+        return $this->belongsTo(ProductVariant::class, 'product_variant_id');
     }
 
     public function store(): BelongsTo

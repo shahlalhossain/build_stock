@@ -92,6 +92,7 @@
                                             <thead>
                                             <tr>
                                                 <th>{{ __('Product') }}</th>
+                                                <th>{{ __('Variant') }}</th>
                                                 <th>{{ __('Quantity') }}</th>
                                                 <th>{{ __('Unit Cost') }}</th>
                                                 <th>{{ __('Remarks') }}</th>
@@ -100,13 +101,14 @@
                                             <tbody>
                                             @forelse($stockTransaction->items as $item)
                                                 <tr>
-                                                    <td>{{ $item->product?->name }}</td>
+                                                    <td>{{ $item->productVariant?->product?->name }}</td>
+                                                    <td>{{ $item->productVariant?->display_label }}</td>
                                                     <td>{{ $item->quantity }}</td>
                                                     <td>{{ $item->unit_cost ?? '' }}</td>
                                                     <td>{{ $item->remarks }}</td>
                                                 </tr>
                                             @empty
-                                                <tr><td colspan="4" class="text-center">{{ __('No Line Items Found') }}</td></tr>
+                                                <tr><td colspan="5" class="text-center">{{ __('No Line Items Found') }}</td></tr>
                                             @endforelse
                                             </tbody>
                                         </table>

@@ -132,4 +132,9 @@ class Product extends Model
     {
         return $this->hasMany(ProductStock::class, 'product_id');
     }
+
+    public function variants(): HasMany
+    {
+        return $this->hasMany(ProductVariant::class, 'product_id');
+    }
 }
