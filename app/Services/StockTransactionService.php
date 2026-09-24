@@ -10,6 +10,7 @@ use App\Events\StockTransaction\StockTransactionStatusUpdated;
 use App\Events\StockTransaction\StockTransactionUpdated;
 use App\Exceptions\GeneralException;
 use App\Models\ApprovalLog;
+use App\Models\ProductAttributeValue;
 use App\Models\ProductStock;
 use App\Models\StockTransaction;
 use Exception;
@@ -58,6 +59,8 @@ class StockTransactionService extends BaseService
             $type = $data['type'] ?? null;
             $items = $data['items'] ?? [];
 
+            $headerProductFields = $this->headerProductFields($items);
+
             if ($type === StockTransaction::TYPE_TRANSFER) {
                 $destinationStoreId = $data['destination_store_id'] ?? null;
 
@@ -65,7 +68,7 @@ class StockTransactionService extends BaseService
                     throw new GeneralException(__('Destination Store must be Different from the Source Store.'));
                 }
 
-                $transferOut = $this->model::create([
+                $transferOut = $this->model::create(array_merge($headerProductFields, [
                     'code' => $this->generateCode(),
                     'type' => StockTransaction::TYPE_TRANSFER_OUT,
                     'store_id' => $data['store_id'] ?? null,
@@ -76,9 +79,9 @@ class StockTransactionService extends BaseService
                     'is_active' => true,
                     'created_by' => Auth::id(),
                     'updated_by' => Auth::id(),
-                ]);
+                ]));
 
-                $transferIn = $this->model::create([
+                $transferIn = $this->model::create(array_merge($headerProductFields, [
                     'code' => $this->generateCode(),
                     'type' => StockTransaction::TYPE_TRANSFER_IN,
                     'store_id' => $destinationStoreId,
@@ -89,7 +92,7 @@ class StockTransactionService extends BaseService
                     'is_active' => true,
                     'created_by' => Auth::id(),
                     'updated_by' => Auth::id(),
-                ]);
+                ]));
 
                 $transferOut->update(['linked_transaction_id' => $transferIn->id]);
 
@@ -104,7 +107,7 @@ class StockTransactionService extends BaseService
                 return $transferOut;
             }
 
-            $stockTransaction = $this->model::create([
+            $stockTransaction = $this->model::create(array_merge($headerProductFields, [
                 'code' => $this->generateCode(),
                 'type' => $type,
                 'store_id' => $data['store_id'] ?? null,
@@ -115,7 +118,7 @@ class StockTransactionService extends BaseService
                 'is_active' => true,
                 'created_by' => Auth::id(),
                 'updated_by' => Auth::id(),
-            ]);
+            ]));
 
             $this->createItems($stockTransaction, $items);
 
@@ -135,17 +138,99 @@ class StockTransactionService extends BaseService
     }
 
     /**
+     * Derive the header-level product_id/product_attribute_value_id from the first
+     * Line Item (and its first Variant, if any) — a "primary item" convenience
+     * reference only; stock_transaction_items remains the source of truth for
+     * quantities. A Transaction with no Items yields nulls (both columns are nullable).
+     */
+    protected function headerProductFields(array $items): array
+    {
+        $firstItem = $items[0] ?? null;
+
+        if (! $firstItem) {
+            return ['product_id' => null, 'product_attribute_value_id' => null];
+        }
+
+        $firstVariant = $firstItem['variants'][0] ?? null;
+        $firstAttributeValueId = $firstVariant['attribute_value_ids'][0] ?? null;
+
+        return [
+            'product_id' => $firstItem['product_id'] ?? null,
+            'product_attribute_value_id' => $firstAttributeValueId
+                ? $this->resolveProductAttributeValueId((int) $firstItem['product_id'], (int) $firstAttributeValueId)
+                : null,
+        ];
+    }
+
+    /**
+     * Resolve the product_attribute_values.id pivot row for a given (product, attribute_value)
+     * pair — this is what stock_transaction_items.product_attribute_value_id actually
+     * points to, not attribute_values.id directly.
+     *
+     * @throws GeneralException
+     */
+    protected function resolveProductAttributeValueId(int $productId, int $attributeValueId): int
+    {
+        $id = ProductAttributeValue::query()
+            ->where('product_id', $productId)
+            ->where('attribute_value_id', $attributeValueId)
+            ->value('id');
+
+        if (! $id) {
+            throw new GeneralException(__('Selected Variant Value does not Belong to the Selected Product.'));
+        }
+
+        return $id;
+    }
+
+    /**
      * Create the Line Items for a given Stock Transaction.
+     *
+     * When an Item carries a Variant breakdown (from the "Setup Product Variants"
+     * modal), one stock_transaction_item row is inserted PER attribute-value in each
+     * selected combination, with the combination's quantity split evenly across
+     * those rows. This is an accounting-split convention (not a real per-attribute
+     * stock count) required because product_attribute_value_id is a single FK and
+     * cannot reference a whole combination — any future sum of quantity by product
+     * MUST dedupe/reconstruct combinations first, or totals will read correctly only
+     * by coincidence for single-attribute variants.
+     *
+     * @throws GeneralException
      */
     protected function createItems(StockTransaction $stockTransaction, array $items): void
     {
         foreach ($items as $item) {
-            $stockTransaction->items()->create([
-                'product_id' => $item['product_id'] ?? null,
-                'quantity' => $item['quantity'] ?? 0,
-                'unit_cost' => $item['unit_cost'] ?? null,
-                'remarks' => $item['remarks'] ?? null,
-            ]);
+            $variants = $item['variants'] ?? [];
+
+            if (empty($variants)) {
+                $stockTransaction->items()->create([
+                    'product_id' => $item['product_id'] ?? null,
+                    'product_attribute_value_id' => null,
+                    'quantity' => $item['quantity'] ?? 0,
+                    'unit_cost' => $item['unit_cost'] ?? null,
+                    'remarks' => $item['remarks'] ?? null,
+                ]);
+
+                continue;
+            }
+
+            foreach ($variants as $variant) {
+                $attributeValueIds = $variant['attribute_value_ids'] ?? [];
+                $variantQuantity = (float) ($variant['quantity'] ?? 0);
+                $splitQuantity = count($attributeValueIds) > 0
+                    ? $variantQuantity / count($attributeValueIds)
+                    : $variantQuantity;
+
+                foreach ($attributeValueIds as $attributeValueId) {
+                    $stockTransaction->items()->create([
+                        'product_id' => $item['product_id'] ?? null,
+                        'product_attribute_value_id' => $this->resolveProductAttributeValueId((int) $item['product_id'], (int) $attributeValueId),
+                        'quantity' => $splitQuantity,
+                        'unit_cost' => $variant['unit_cost'] ?? ($item['unit_cost'] ?? null),
+                        'remarks' => $variant['remarks'] ?? null,
+                    ]);
+                }
+            }
         }
     }
 
@@ -354,12 +439,18 @@ class StockTransactionService extends BaseService
             $productStock = ProductStock::query()
                 ->where('product_id', $item->product_id)
                 ->where('store_id', $stockTransaction->store_id)
+                ->when(
+                    $item->product_attribute_value_id !== null,
+                    fn ($query) => $query->where('product_attribute_value_id', $item->product_attribute_value_id),
+                    fn ($query) => $query->whereNull('product_attribute_value_id')
+                )
                 ->lockForUpdate()
                 ->first();
 
             if (! $productStock) {
                 $productStock = ProductStock::create([
                     'product_id' => $item->product_id,
+                    'product_attribute_value_id' => $item->product_attribute_value_id,
                     'store_id' => $stockTransaction->store_id,
                     'quantity' => 0,
                 ]);

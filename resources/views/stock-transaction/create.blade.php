@@ -125,11 +125,11 @@
                                         <thead>
                                         <tr>
                                             <th style="width: 5%;"></th>
-                                            <th style="width: 27%;">{{ __('Product') }}</th>
-                                            <th style="width: 15%;">{{ __('Quantity') }}</th>
-                                            <th style="width: 15%;">{{ __('Unit Cost') }}</th>
-                                            <th style="width: 15%;">{{ __('Total Cost') }}</th>
-                                            <th style="width: 23%;">{{ __('Remarks') }}</th>
+                                            <th style="width: 25%;">{{ __('Product') }}</th>
+                                            <th style="width: 17%;">{{ __('Quantity') }}</th>
+                                            <th style="width: 14%;">{{ __('Unit Cost') }}</th>
+                                            <th style="width: 14%;">{{ __('Total Cost') }}</th>
+                                            <th style="width: 20%;">{{ __('Remarks') }}</th>
                                         </tr>
                                         </thead>
                                         <tbody id="items-rows"></tbody>
@@ -142,7 +142,7 @@
                                             <button type="button" class="btn btn-sm btn-outline-danger remove-row"><i class="ri-close-line"></i></button>
                                         </td>
                                         <td>
-                                            <select class="form-select item-product" name="items[][product_id]">
+                                            <select class="form-select item-product" data-field="product_id">
                                                 <option value="">{{ __('== Select Product ==') }}</option>
                                                 @foreach($products as $product)
                                                     <option value="{{ $product->id }}">{{ $product->name }} @if($product->code) ({{ $product->code }}) @endif</option>
@@ -150,21 +150,92 @@
                                             </select>
                                         </td>
                                         <td>
-                                            <input type="number" step="0.01" class="form-control item-quantity" name="items[][quantity]" placeholder="{{ __('Quantity') }}">
+                                            <div class="d-flex gap-1">
+                                                <input type="number" step="0.01" class="form-control item-quantity" data-field="quantity" placeholder="{{ __('Quantity') }}">
+                                                <button type="button" class="btn btn-sm btn-outline-secondary item-setup-variants flex-shrink-0" disabled title="{{ __('Setup Product Variants') }}">
+                                                    <i class="ri-stack-line"></i>
+                                                </button>
+                                            </div>
+                                            <input type="hidden" class="item-variants-payload" value="">
                                         </td>
                                         <td>
-                                            <input type="number" step="0.01" min="0" class="form-control item-unit-cost" name="items[][unit_cost]" placeholder="{{ __('Unit Cost') }}">
+                                            <input type="number" step="0.01" min="0" class="form-control item-unit-cost" data-field="unit_cost" placeholder="{{ __('Unit Cost') }}">
                                         </td>
                                         <td>
                                             <input type="text" class="form-control item-total-cost" readonly tabindex="-1" placeholder="{{ __('Total Cost') }}">
                                         </td>
                                         <td>
-                                            <input type="text" class="form-control item-remarks" name="items[][remarks]" placeholder="{{ __('Remarks') }}">
+                                            <input type="text" class="form-control item-remarks" data-field="remarks" placeholder="{{ __('Remarks') }}">
                                         </td>
                                     </tr>
                                 </template>
 
                             </div>
+
+                            <!-- ===================== SETUP PRODUCT VARIANTS MODAL ===================== -->
+                            <div class="modal fade" id="variantsModal" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-xl modal-dialog-scrollable">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">{{ __('Setup Product Variants') }} — <span id="variantsModalProductName"></span></h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div id="variantsModalWarning" class="alert alert-warning d-none mb-3"></div>
+                                            <div class="table-responsive">
+                                                <table class="table table-sm table-bordered align-middle">
+                                                    <thead>
+                                                    <tr>
+                                                        <th style="width: 4%;"></th>
+                                                        <th style="width: 4%;"></th>
+                                                        <th style="width: 26%;">{{ __('Variant') }}</th>
+                                                        <th style="width: 14%;">{{ __('Quantity') }}</th>
+                                                        <th style="width: 14%;">{{ __('Unit Price') }}</th>
+                                                        <th style="width: 14%;">{{ __('Total Price') }}</th>
+                                                        <th style="width: 24%;">{{ __('Remarks') }}</th>
+                                                    </tr>
+                                                    </thead>
+                                                    <tbody id="variantsModalRows"></tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer justify-content-between">
+                                            <div>
+                                                <strong>{{ __('Variants Total') }}:</strong> <span id="variantsModalTotal">0.00</span>
+                                                / <strong>{{ __('Line Quantity') }}:</strong> <span id="variantsModalTargetQuantity">0.00</span>
+                                            </div>
+                                            <div>
+                                                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                                                <button type="button" class="btn btn-sm btn-info" id="variantsModalSave">{{ __('Save Variants') }}</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <template id="variants-modal-row-template">
+                                <tr class="variant-row">
+                                    <td class="text-center pt-2">
+                                        <button type="button" class="btn btn-sm btn-outline-danger variant-row-remove"><i class="ri-close-line"></i></button>
+                                    </td>
+                                    <td class="text-center pt-2">
+                                        <input type="checkbox" class="form-check-input variant-row-enabled" checked>
+                                    </td>
+                                    <td class="pt-2 variant-row-label"></td>
+                                    <td>
+                                        <input type="number" step="0.01" class="form-control variant-row-quantity" placeholder="{{ __('Quantity') }}">
+                                    </td>
+                                    <td>
+                                        <input type="number" step="0.01" min="0" class="form-control variant-row-unit-price" placeholder="{{ __('Unit Price') }}">
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control variant-row-total-price" readonly tabindex="-1" placeholder="{{ __('Total Price') }}">
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control variant-row-remarks" placeholder="{{ __('Remarks') }}">
+                                    </td>
+                                </tr>
+                            </template>
                             <div class="card-footer">
                                 <div class="row">
                                     <div class="col-6 text-start">
@@ -265,6 +336,246 @@
 
             /*
             |--------------------------------------------------------------------------
+            | RE-INDEX LINE ITEM FIELD NAMES: items[N][field]
+            |--------------------------------------------------------------------------
+            | Explicit numeric indices (not items[][field]) are required so that a
+            | Row's several fields (product_id, quantity, unit_cost, remarks, variants)
+            | are parsed back into ONE Item per Row — PHP's auto-increment for repeated
+            | items[][field] assigns a NEW top-level index to every field occurrence
+            | regardless of which Row it came from, which silently corrupts any
+            | Transaction with more than one Line Item. Called after every add/remove.
+            */
+            function reindexItemRows() {
+                $('.repeater-row[data-group="items"]').each(function (rowIndex) {
+                    $(this).find('[data-field]').each(function () {
+                        $(this).attr('name', 'items[' + rowIndex + '][' + $(this).data('field') + ']');
+                    });
+                });
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | SETUP PRODUCT VARIANTS
+            |--------------------------------------------------------------------------
+            | Per-Product Attribute-Value groups are preloaded as JSON (no AJAX round-
+            | trip), matching this app's existing Specifications/Category filter
+            | convention. Each group is one Attribute with its available Values for
+            | that Product; the Modal builds the Attribute x Value Combinations
+            | (cartesian product) client-side and lets the User optionally break the
+            | Line's Quantity down per Combination.
+            */
+            const productVariantAttributes = @json($productVariantAttributes ?? []);
+            const productNames = @json($products->mapWithKeys(fn ($product) => [$product->id => $product->name]));
+
+            let $activeVariantsRow = null;
+
+            function productHasVariants(productId) {
+                const groups = productVariantAttributes[productId];
+                return Array.isArray(groups) && groups.length > 0;
+            }
+
+            function refreshVariantsButtonState($row) {
+                const productId = $row.find('.item-product').val();
+                const quantity = parseFloat($row.find('.item-quantity').val());
+                const $button = $row.find('.item-setup-variants');
+
+                const canSetup = !!productId && productHasVariants(productId) && !isNaN(quantity) && quantity !== 0;
+                $button.prop('disabled', !canSetup);
+            }
+
+            function clearRowVariants($row) {
+                $row.find('.item-variants-payload').val('');
+                $row.find('.item-setup-variants').removeClass('btn-info').addClass('btn-outline-secondary');
+            }
+
+            $(document).on('change', '.item-product', function () {
+                // Product changed: any previously configured Variant breakdown no
+                // longer applies to the newly selected Product.
+                const $row = $(this).closest('.repeater-row');
+                clearRowVariants($row);
+                refreshVariantsButtonState($row);
+            });
+
+            $(document).on('input change', '.item-quantity', function () {
+                refreshVariantsButtonState($(this).closest('.repeater-row'));
+            });
+
+            /*
+            |--------------------------------------------------------------------------
+            | VARIANTS MODAL: BUILD COMBINATIONS (CARTESIAN PRODUCT OF ATTRIBUTE GROUPS)
+            |--------------------------------------------------------------------------
+            */
+            function buildCombinations(groups) {
+                let combinations = [[]];
+
+                groups.forEach(function (group) {
+                    const next = [];
+
+                    combinations.forEach(function (combo) {
+                        group.values.forEach(function (value) {
+                            next.push(combo.concat([{
+                                attribute_id: group.attribute_id,
+                                attribute_name: group.attribute_name,
+                                attribute_value_id: value.attribute_value_id,
+                                value: value.value,
+                            }]));
+                        });
+                    });
+
+                    combinations = next;
+                });
+
+                return combinations;
+            }
+
+            function formatCombinationLabel(combo) {
+                return combo.map(part => part.attribute_name + ': ' + part.value).join(' — ');
+            }
+
+            function syncVariantRowTotal($row) {
+                const quantity = parseFloat($row.find('.variant-row-quantity').val());
+                const unitPrice = parseFloat($row.find('.variant-row-unit-price').val());
+                const $total = $row.find('.variant-row-total-price');
+
+                if (isNaN(quantity) || isNaN(unitPrice)) {
+                    $total.val('');
+                    return;
+                }
+
+                $total.val((quantity * unitPrice).toFixed(2));
+            }
+
+            function syncVariantsModalSummary() {
+                const targetQuantity = parseFloat($('#variantsModalTargetQuantity').data('value')) || 0;
+                let variantsTotal = 0;
+
+                $('#variantsModalRows .variant-row').each(function () {
+                    if (!$(this).find('.variant-row-enabled').prop('checked')) {
+                        return;
+                    }
+
+                    const quantity = parseFloat($(this).find('.variant-row-quantity').val());
+                    variantsTotal += isNaN(quantity) ? 0 : quantity;
+                });
+
+                $('#variantsModalTotal').text(variantsTotal.toFixed(2));
+
+                const $warning = $('#variantsModalWarning');
+                if (Math.abs(variantsTotal - targetQuantity) > 0.01) {
+                    $warning.removeClass('d-none').text(
+                        '{{ __("Variants Total does not match the Line Quantity.") }} ' +
+                        '({{ __("Variants") }}: ' + variantsTotal.toFixed(2) + ' / {{ __("Line Quantity") }}: ' + targetQuantity.toFixed(2) + ')'
+                    );
+                } else {
+                    $warning.addClass('d-none').text('');
+                }
+            }
+
+            $(document).on('input change', '#variantsModalRows .variant-row-quantity, #variantsModalRows .variant-row-unit-price', function () {
+                syncVariantRowTotal($(this).closest('.variant-row'));
+                syncVariantsModalSummary();
+            });
+
+            $(document).on('change', '#variantsModalRows .variant-row-enabled', syncVariantsModalSummary);
+
+            $(document).on('click', '#variantsModalRows .variant-row-remove', function () {
+                $(this).closest('.variant-row').remove();
+                syncVariantsModalSummary();
+            });
+
+            $(document).on('click', '.item-setup-variants', function () {
+                const $row = $(this).closest('.repeater-row');
+                const productId = $row.find('.item-product').val();
+                const groups = productVariantAttributes[productId];
+
+                if (!groups || !groups.length) {
+                    return;
+                }
+
+                $activeVariantsRow = $row;
+
+                const lineQuantity = parseFloat($row.find('.item-quantity').val()) || 0;
+                const lineUnitCost = $row.find('.item-unit-cost').val();
+
+                $('#variantsModalProductName').text(productNames[productId] || '');
+                $('#variantsModalTargetQuantity').text(lineQuantity.toFixed(2)).data('value', lineQuantity);
+
+                const $rows = $('#variantsModalRows').empty();
+                const rowTemplate = document.getElementById('variants-modal-row-template').innerHTML;
+
+                const existingPayload = $row.find('.item-variants-payload').val();
+                const existingVariants = existingPayload ? JSON.parse(existingPayload) : [];
+                const existingByKey = {};
+                existingVariants.forEach(function (variant) {
+                    existingByKey[variant.attribute_value_ids.slice().sort().join(',')] = variant;
+                });
+
+                const combinations = buildCombinations(groups);
+
+                combinations.forEach(function (combo) {
+                    const $variantRow = $(rowTemplate);
+                    const attributeValueIds = combo.map(part => part.attribute_value_id);
+                    const key = attributeValueIds.slice().sort().join(',');
+                    const existing = existingByKey[key];
+
+                    $variantRow.attr('data-attribute-value-ids', JSON.stringify(attributeValueIds));
+                    $variantRow.find('.variant-row-label').text(formatCombinationLabel(combo));
+
+                    if (existing) {
+                        $variantRow.find('.variant-row-enabled').prop('checked', true);
+                        $variantRow.find('.variant-row-quantity').val(existing.quantity);
+                        $variantRow.find('.variant-row-unit-price').val(existing.unit_cost ?? lineUnitCost);
+                        $variantRow.find('.variant-row-remarks').val(existing.remarks ?? '');
+                    } else {
+                        $variantRow.find('.variant-row-unit-price').val(lineUnitCost);
+                    }
+
+                    syncVariantRowTotal($variantRow);
+                    $rows.append($variantRow);
+                });
+
+                syncVariantsModalSummary();
+
+                const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('variantsModal'));
+                modal.show();
+            });
+
+            $('#variantsModalSave').on('click', function () {
+                if (!$activeVariantsRow) {
+                    return;
+                }
+
+                const variants = [];
+
+                $('#variantsModalRows .variant-row').each(function () {
+                    if (!$(this).find('.variant-row-enabled').prop('checked')) {
+                        return;
+                    }
+
+                    const quantity = parseFloat($(this).find('.variant-row-quantity').val());
+                    if (isNaN(quantity) || quantity === 0) {
+                        return;
+                    }
+
+                    variants.push({
+                        attribute_value_ids: JSON.parse($(this).attr('data-attribute-value-ids')),
+                        quantity: quantity,
+                        unit_cost: $(this).find('.variant-row-unit-price').val() || null,
+                        remarks: $(this).find('.variant-row-remarks').val() || null,
+                    });
+                });
+
+                $activeVariantsRow.find('.item-variants-payload').val(variants.length ? JSON.stringify(variants) : '');
+                $activeVariantsRow.find('.item-setup-variants')
+                    .toggleClass('btn-info', variants.length > 0)
+                    .toggleClass('btn-outline-secondary', variants.length === 0);
+
+                bootstrap.Modal.getOrCreateInstance(document.getElementById('variantsModal')).hide();
+                $activeVariantsRow = null;
+            });
+
+            /*
+            |--------------------------------------------------------------------------
             | LINE ITEM TOTAL COST: AUTO-CALCULATE FROM QUANTITY x UNIT COST
             |--------------------------------------------------------------------------
             */
@@ -316,6 +627,7 @@
             $(document).on('click', '.add-row', function () {
                 addRow($(this).data('group'));
                 refreshProductOptions();
+                reindexItemRows();
             });
 
             $(document).on('click', '.remove-row', function () {
@@ -326,10 +638,68 @@
                 }
                 $(this).closest('.repeater-row').remove();
                 refreshProductOptions();
+                reindexItemRows();
+            });
+
+            /*
+            |--------------------------------------------------------------------------
+            | EXPAND VARIANTS PAYLOAD INTO SUBMITTABLE NESTED INPUTS
+            |--------------------------------------------------------------------------
+            | The .item-variants-payload hidden input holds a JSON string (built by the
+            | Modal). Laravel needs real nested field names to parse it as an array, so
+            | just before submit each row's JSON is expanded into items[N][variants][n]
+            | hidden inputs (N = this Row's reindexed position) and the JSON placeholder
+            | is removed from submission.
+            */
+            $('form').on('submit', function () {
+                $('.repeater-row[data-group="items"]').each(function (rowIndex) {
+                    const $row = $(this);
+                    const $payload = $row.find('.item-variants-payload');
+                    const raw = $payload.val();
+
+                    $row.find('.item-variants-generated').remove();
+
+                    if (!raw) {
+                        return;
+                    }
+
+                    const variants = JSON.parse(raw);
+
+                    variants.forEach(function (variant, variantIndex) {
+                        const prefix = 'items[' + rowIndex + '][variants][' + variantIndex + ']';
+
+                        variant.attribute_value_ids.forEach(function (attributeValueId) {
+                            $row.append(
+                                $('<input type="hidden" class="item-variants-generated">')
+                                    .attr('name', prefix + '[attribute_value_ids][]')
+                                    .val(attributeValueId)
+                            );
+                        });
+
+                        $row.append(
+                            $('<input type="hidden" class="item-variants-generated">')
+                                .attr('name', prefix + '[quantity]')
+                                .val(variant.quantity)
+                        );
+                        $row.append(
+                            $('<input type="hidden" class="item-variants-generated">')
+                                .attr('name', prefix + '[unit_cost]')
+                                .val(variant.unit_cost ?? '')
+                        );
+                        $row.append(
+                            $('<input type="hidden" class="item-variants-generated">')
+                                .attr('name', prefix + '[remarks]')
+                                .val(variant.remarks ?? '')
+                        );
+                    });
+
+                    $payload.prop('disabled', true);
+                });
             });
 
             // Seed with one starter row.
             addRow('items');
+            reindexItemRows();
         });
     </script>
 @endpush

@@ -26,6 +26,8 @@ class StockTransaction extends Model
         'store_id',
         'supplier_id',
         'linked_transaction_id',
+        'product_id',
+        'product_attribute_value_id',
         'transaction_date',
         'remarks',
         'status',
@@ -102,6 +104,8 @@ class StockTransaction extends Model
             'store_id' => 'integer',
             'supplier_id' => 'integer',
             'linked_transaction_id' => 'integer',
+            'product_id' => 'integer',
+            'product_attribute_value_id' => 'integer',
             'created_by' => 'integer',
             'updated_by' => 'integer',
             'deleted_by' => 'integer',
@@ -142,6 +146,23 @@ class StockTransaction extends Model
     public function items(): HasMany
     {
         return $this->hasMany(StockTransactionItem::class, 'stock_transaction_id');
+    }
+
+    /**
+     * Primary/first line item's Product — a header-level convenience reference,
+     * not the source of truth for quantities (see items()).
+     */
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(Product::class, 'product_id');
+    }
+
+    /**
+     * Primary/first line item's Product Attribute Value — see product() note above.
+     */
+    public function productAttributeValue(): BelongsTo
+    {
+        return $this->belongsTo(ProductAttributeValue::class, 'product_attribute_value_id');
     }
 
     public function approvalLogs()

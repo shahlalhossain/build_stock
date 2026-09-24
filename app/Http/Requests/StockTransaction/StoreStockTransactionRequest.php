@@ -5,6 +5,7 @@ namespace App\Http\Requests\StockTransaction;
 use App\Models\StockTransaction;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 /**
  * Class StoreStockTransactionRequest.
@@ -36,7 +37,49 @@ class StoreStockTransactionRequest extends FormRequest
             'items.*.quantity' => ['required', 'numeric', 'not_in:0'],
             'items.*.unit_cost' => ['nullable', 'numeric', 'min:0'],
             'items.*.remarks' => ['nullable', 'string'],
+
+            // Variants are an Optional per-Item Breakdown (Setup Product Variants Modal).
+            // Each Variant is one Attribute-Value Combination (e.g. Color:Red + Size:Small),
+            // so attribute_value_ids carries every Attribute-Value id in that Combination.
+            'items.*.variants' => ['nullable', 'array'],
+            'items.*.variants.*.attribute_value_ids' => ['required', 'array', 'min:1'],
+            'items.*.variants.*.attribute_value_ids.*' => ['integer', Rule::exists('attribute_values', 'id')],
+            'items.*.variants.*.quantity' => ['required', 'numeric', 'not_in:0'],
+            'items.*.variants.*.unit_cost' => ['nullable', 'numeric', 'min:0'],
+            'items.*.variants.*.remarks' => ['nullable', 'string'],
         ];
+    }
+
+    /**
+     * When an Item carries a Variant Breakdown, its Variant Quantities must sum to
+     * the Item's own Quantity — enforced here since it spans sibling array fields.
+     */
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator) {
+            $items = $this->input('items', []);
+
+            foreach ($items as $index => $item) {
+                $variants = $item['variants'] ?? [];
+
+                if (empty($variants)) {
+                    continue;
+                }
+
+                $itemQuantity = (float) ($item['quantity'] ?? 0);
+                $variantsTotal = array_sum(array_map(fn ($variant) => (float) ($variant['quantity'] ?? 0), $variants));
+
+                if (abs($itemQuantity - $variantsTotal) > 0.01) {
+                    $validator->errors()->add(
+                        "items.{$index}.variants",
+                        __('Variant Quantities (:variants_total) must Sum to the Item Quantity (:item_quantity).', [
+                            'variants_total' => $variantsTotal,
+                            'item_quantity' => $itemQuantity,
+                        ])
+                    );
+                }
+            }
+        });
     }
 
     public function messages(): array
@@ -79,6 +122,21 @@ class StoreStockTransactionRequest extends FormRequest
             'items.*.unit_cost.min' => __('Unit Cost may not be Negative'),
 
             'items.*.remarks.string' => __('Line Remarks must be a Valid String'),
+
+            'items.*.variants.*.attribute_value_ids.required' => __('Variant Selection is Invalid'),
+            'items.*.variants.*.attribute_value_ids.array' => __('Variant Selection is Invalid'),
+            'items.*.variants.*.attribute_value_ids.min' => __('Variant Selection is Invalid'),
+            'items.*.variants.*.attribute_value_ids.*.integer' => __('Variant Selection is Invalid'),
+            'items.*.variants.*.attribute_value_ids.*.exists' => __('Selected Variant Value does not Exist'),
+
+            'items.*.variants.*.quantity.required' => __('Quantity is Required for Every Selected Variant'),
+            'items.*.variants.*.quantity.numeric' => __('Variant Quantity must be a Valid Number'),
+            'items.*.variants.*.quantity.not_in' => __('Variant Quantity may not be Zero'),
+
+            'items.*.variants.*.unit_cost.numeric' => __('Variant Unit Cost must be a Valid Number'),
+            'items.*.variants.*.unit_cost.min' => __('Variant Unit Cost may not be Negative'),
+
+            'items.*.variants.*.remarks.string' => __('Variant Remarks must be a Valid String'),
         ];
     }
 }

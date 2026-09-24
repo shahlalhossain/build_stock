@@ -194,10 +194,39 @@ class StockTransactionsController extends Controller
      */
     protected function formLookups(): array
     {
+        $products = Product::query()
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->with(['productAttributeValues.attribute', 'productAttributeValues.attributeValue'])
+            ->get(['id', 'name', 'code']);
+
         return [
             'stores' => Store::query()->where('is_active', true)->orderBy('name')->get(['id', 'name']),
             'suppliers' => Supplier::query()->where('is_active', true)->orderBy('name')->get(['id', 'name']),
-            'products' => Product::query()->where('is_active', true)->orderBy('name')->get(['id', 'name', 'code']),
+            'products' => $products,
+            // Preloaded per-Product Variant Attribute-Values as JSON (no AJAX round-trip),
+            // matching this app's existing Category/Sub-Category and Specifications
+            // client-side filter convention. Grouped by Attribute so the "Setup Product
+            // Variants" modal can build the Attribute x Value Combinations client-side.
+            'productVariantAttributes' => $products->mapWithKeys(function (Product $product) {
+                $groups = $product->productAttributeValues
+                    ->groupBy('attribute_id')
+                    ->map(function ($rows) {
+                        $attribute = $rows->first()->attribute;
+
+                        return [
+                            'attribute_id' => $attribute->id,
+                            'attribute_name' => $attribute->name,
+                            'values' => $rows->map(fn ($row) => [
+                                'attribute_value_id' => $row->attribute_value_id,
+                                'value' => $row->attributeValue->value,
+                            ])->values(),
+                        ];
+                    })
+                    ->values();
+
+                return [$product->id => $groups];
+            }),
         ];
     }
 }
