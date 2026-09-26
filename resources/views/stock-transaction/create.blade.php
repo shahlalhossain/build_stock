@@ -12,7 +12,7 @@
                 <div class="col-lg-12">
                     <div class="card">
                         <div class="card-header align-items-center d-flex">
-                            <h4 class="card-title mb-0 flex-grow-1">{{ __('New Stock Transaction Create') }}</h4>
+                            <h4 class="card-title mb-0 flex-grow-1">{{ __('New Stock Transaction') }}</h4>
                             <div class="flex-shrink-0">
                                 <a href="{{ route('stock-transaction.index') }}" class="btn btn-sm btn-primary"><i class="ri-list-check-2"></i><span class="d-none d-sm-inline"> {{ __('Back to List') }}</span></a>
                             </div>
@@ -114,9 +114,9 @@
 
                                 <hr>
 
-                                <!-- ===================== LINE ITEMS ===================== -->
+                                <!-- ===================== PRODUCT ITEMS ===================== -->
                                 <div class="d-flex align-items-center mb-2">
-                                    <h5 class="mb-0 flex-grow-1 fst-italic">{{ __('Line Items') }}</h5>
+                                    <h5 class="mb-0 flex-grow-1 fst-italic">{{ __('Product Items') }}</h5>
                                     <button type="button" class="btn btn-sm btn-success add-row" data-group="items"><i class="ri-add-line"></i> {{ __('Add Item') }}</button>
                                 </div>
                                 @error('items')<small class="text-danger d-block mb-2">{{ $message }}</small>@enderror

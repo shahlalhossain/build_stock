@@ -12,7 +12,7 @@
                 <div class="col-lg-12">
                     <div class="card">
                         <div class="card-header align-items-center d-flex">
-                            <h4 class="card-title mb-0 flex-grow-1">{{ __('Manage Stock Transactions') }}</h4>
+                            <h4 class="card-title mb-0 flex-grow-1">{{ __('Stock Transactions') }}</h4>
                             <div class="flex-shrink-0">
                                 <a href="{{ route('stock-transaction.create') }}" class="btn btn-sm btn-success"><i class="ri-add-line"></i><span class="d-none d-sm-inline"> {{ __('Add New') }}</span></a>
                                 <a href="{{ route('stock-transaction.trash') }}" class="btn btn-sm btn-dark"><i class="ri-delete-bin-2-line"></i><span class="d-none d-sm-inline"> {{ __('Trash Box') }}</span></a>
