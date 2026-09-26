@@ -14,9 +14,11 @@ use App\Models\ProductStock;
 use App\Models\StockTransaction;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Throwable;
 
 /**
@@ -53,12 +55,20 @@ class StockTransactionService extends BaseService
      */
     public function storeTransaction(array $data = []): StockTransaction
     {
+        $uploadedAttachmentPath = null;
+
         DB::beginTransaction();
         try {
             $type = $data['type'] ?? null;
             $items = $data['items'] ?? [];
 
             $headerProductFields = $this->headerProductFields($items);
+            $purchaseFields = [];
+
+            if ($type === StockTransaction::TYPE_PURCHASE) {
+                $uploadedAttachmentPath = $this->storeInvoiceAttachment($data['invoice_attachment'] ?? null);
+                $purchaseFields = $this->purchaseFields($data, $items, $uploadedAttachmentPath);
+            }
 
             if ($type === StockTransaction::TYPE_TRANSFER) {
                 $destinationStoreId = $data['destination_store_id'] ?? null;
@@ -106,7 +116,7 @@ class StockTransactionService extends BaseService
                 return $transferOut;
             }
 
-            $stockTransaction = $this->model::create(array_merge($headerProductFields, [
+            $stockTransaction = $this->model::create(array_merge($headerProductFields, $purchaseFields, [
                 'code' => $this->generateCode(),
                 'type' => $type,
                 'store_id' => $data['store_id'] ?? null,
@@ -128,12 +138,93 @@ class StockTransactionService extends BaseService
             return $stockTransaction;
         } catch (GeneralException $generalException) {
             DB::rollBack();
+            $this->deleteInvoiceAttachment($uploadedAttachmentPath);
             throw $generalException;
         } catch (Exception $exception) {
             Log::alert($exception->getMessage());
             DB::rollBack();
+            $this->deleteInvoiceAttachment($uploadedAttachmentPath);
             throw new GeneralException(__('There was a Problem on Creating New Stock Transaction.'));
         }
+    }
+
+    /**
+     * Store the Optional Invoice Attachment on the private "local" Disk.
+     * Runs inside the caller's DB Transaction but writes to disk immediately — the
+     * caller must clean this up via deleteInvoiceAttachment() on any Rollback.
+     */
+    protected function storeInvoiceAttachment(?UploadedFile $file): ?string
+    {
+        if (! $file) {
+            return null;
+        }
+
+        return $file->store('invoices/stock-transactions', 'local');
+    }
+
+    protected function deleteInvoiceAttachment(?string $path): void
+    {
+        if ($path) {
+            Storage::disk('local')->delete($path);
+        }
+    }
+
+    /**
+     * Compute the Purchase-only Header Fields: per-Item Line Totals feed
+     * total_amount, Discount/Tax then derive net_amount.
+     */
+    protected function purchaseFields(array $data, array $items, ?string $uploadedAttachmentPath): array
+    {
+        $totalAmount = $this->calculateItemsTotal($items);
+
+        $discountType = $data['discount_type'] ?? null;
+        $discountAmount = (float) ($data['discount_amount'] ?? 0);
+        $taxAmount = (float) ($data['tax_amount'] ?? 0);
+
+        $discountValue = $discountType === StockTransaction::DISCOUNT_TYPE_PERCENTAGE
+            ? $totalAmount * ($discountAmount / 100)
+            : $discountAmount;
+
+        $netAmount = $totalAmount - $discountValue + $taxAmount;
+
+        return [
+            'invoice_number' => $data['invoice_number'] ?? null,
+            'supplier_invoice_date' => $data['supplier_invoice_date'] ?? null,
+            'invoice_attachment_path' => $uploadedAttachmentPath,
+            'discount_type' => $discountType,
+            'discount_amount' => $discountAmount,
+            'tax_amount' => $taxAmount,
+            'total_amount' => $totalAmount,
+            'net_amount' => $netAmount,
+            'payment_status' => $data['payment_status'] ?? StockTransaction::PAYMENT_STATUS_UNPAID,
+            'paid_amount' => (float) ($data['paid_amount'] ?? 0),
+        ];
+    }
+
+    /**
+     * Sum every Line Item's Total (Quantity × Unit Cost) — Variant Rows are summed
+     * individually, matching how createItems() explodes them into separate rows.
+     */
+    protected function calculateItemsTotal(array $items): float
+    {
+        $total = 0.0;
+
+        foreach ($items as $item) {
+            $variants = $item['variants'] ?? [];
+
+            if (empty($variants)) {
+                $total += (float) ($item['quantity'] ?? 0) * (float) ($item['unit_cost'] ?? 0);
+
+                continue;
+            }
+
+            foreach ($variants as $variant) {
+                $unitCost = $variant['unit_cost'] ?? ($item['unit_cost'] ?? 0);
+                $total += (float) ($variant['quantity'] ?? 0) * (float) $unitCost;
+            }
+        }
+
+        return $total;
     }
 
     /**
@@ -174,11 +265,15 @@ class StockTransactionService extends BaseService
             $variants = $item['variants'] ?? [];
 
             if (empty($variants)) {
+                $quantity = (float) ($item['quantity'] ?? 0);
+                $unitCost = $item['unit_cost'] ?? null;
+
                 $stockTransaction->items()->create([
                     'product_id' => $item['product_id'] ?? null,
                     'product_variant_id' => null,
-                    'quantity' => $item['quantity'] ?? 0,
-                    'unit_cost' => $item['unit_cost'] ?? null,
+                    'quantity' => $quantity,
+                    'unit_cost' => $unitCost,
+                    'line_total' => $unitCost !== null ? $quantity * (float) $unitCost : null,
                     'remarks' => $item['remarks'] ?? null,
                 ]);
 
@@ -186,11 +281,15 @@ class StockTransactionService extends BaseService
             }
 
             foreach ($variants as $variant) {
+                $quantity = (float) ($variant['quantity'] ?? 0);
+                $unitCost = $variant['unit_cost'] ?? ($item['unit_cost'] ?? null);
+
                 $stockTransaction->items()->create([
                     'product_id' => $item['product_id'] ?? null,
                     'product_variant_id' => $variant['product_variant_id'] ?? null,
-                    'quantity' => $variant['quantity'] ?? 0,
-                    'unit_cost' => $variant['unit_cost'] ?? ($item['unit_cost'] ?? null),
+                    'quantity' => $quantity,
+                    'unit_cost' => $unitCost,
+                    'line_total' => $unitCost !== null ? $quantity * (float) $unitCost : null,
                     'remarks' => $variant['remarks'] ?? null,
                 ]);
             }
@@ -258,14 +357,18 @@ class StockTransactionService extends BaseService
                 return $stockTransaction->refresh();
             }
 
-            $stockTransaction->update([
+            $purchaseFields = $type === StockTransaction::TYPE_PURCHASE
+                ? $this->purchaseFields($data, $items, $stockTransaction->invoice_attachment_path)
+                : [];
+
+            $stockTransaction->update(array_merge($purchaseFields, [
                 'type' => $type,
                 'store_id' => $data['store_id'] ?? null,
                 'supplier_id' => $type === StockTransaction::TYPE_PURCHASE ? ($data['supplier_id'] ?? null) : null,
                 'transaction_date' => $data['transaction_date'] ?? null,
                 'remarks' => $data['remarks'] ?? null,
                 'updated_by' => Auth::id(),
-            ]);
+            ]));
 
             $stockTransaction->items()->delete();
             $this->createItems($stockTransaction, $items);

@@ -253,6 +253,7 @@ Route::middleware('auth:web')->group(function () {
             Route::delete('/', [StockTransactionsController::class, 'destroy'])->name('destroy');
             Route::post('restore', [StockTransactionsController::class, 'restore'])->name('restore');
             Route::delete('force-delete', [StockTransactionsController::class, 'delete'])->name('delete');
+            Route::get('invoice-attachment', [StockTransactionsController::class, 'downloadInvoiceAttachment'])->name('invoice-attachment')->withTrashed();
         });
     });
 

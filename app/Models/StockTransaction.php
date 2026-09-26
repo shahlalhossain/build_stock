@@ -30,6 +30,16 @@ class StockTransaction extends Model
         'product_variant_id',
         'transaction_date',
         'remarks',
+        'invoice_number',
+        'supplier_invoice_date',
+        'invoice_attachment_path',
+        'discount_type',
+        'discount_amount',
+        'tax_amount',
+        'total_amount',
+        'net_amount',
+        'payment_status',
+        'paid_amount',
         'status',
         'is_active',
         'created_by',
@@ -81,6 +91,27 @@ class StockTransaction extends Model
         self::STATUS_REJECTED,
     ];
 
+    const DISCOUNT_TYPE_FIXED = 'fixed';
+
+    const DISCOUNT_TYPE_PERCENTAGE = 'percentage';
+
+    const DISCOUNT_TYPES = [
+        self::DISCOUNT_TYPE_FIXED,
+        self::DISCOUNT_TYPE_PERCENTAGE,
+    ];
+
+    const PAYMENT_STATUS_UNPAID = 'unpaid';
+
+    const PAYMENT_STATUS_PARTIAL = 'partial';
+
+    const PAYMENT_STATUS_PAID = 'paid';
+
+    const PAYMENT_STATUSES = [
+        self::PAYMENT_STATUS_UNPAID,
+        self::PAYMENT_STATUS_PARTIAL,
+        self::PAYMENT_STATUS_PAID,
+    ];
+
     protected $guarded = ['id', 'created_at', 'updated_at'];
 
     /**
@@ -106,6 +137,12 @@ class StockTransaction extends Model
             'linked_transaction_id' => 'integer',
             'product_id' => 'integer',
             'product_variant_id' => 'integer',
+            'supplier_invoice_date' => 'date',
+            'discount_amount' => 'decimal:2',
+            'tax_amount' => 'decimal:2',
+            'total_amount' => 'decimal:2',
+            'net_amount' => 'decimal:2',
+            'paid_amount' => 'decimal:2',
             'created_by' => 'integer',
             'updated_by' => 'integer',
             'deleted_by' => 'integer',

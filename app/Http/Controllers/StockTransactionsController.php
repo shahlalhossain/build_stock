@@ -17,7 +17,9 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
 
 class StockTransactionsController extends Controller
@@ -147,6 +149,14 @@ class StockTransactionsController extends Controller
 
             return response()->json(['success' => false, 'message' => 'Unexpected Error Occurred on Deleting the Stock Transaction.'], 500);
         }
+    }
+
+    public function downloadInvoiceAttachment(StockTransaction $stockTransaction): StreamedResponse
+    {
+        abort_unless($stockTransaction->invoice_attachment_path, 404);
+        abort_unless(Storage::disk('local')->exists($stockTransaction->invoice_attachment_path), 404);
+
+        return Storage::disk('local')->download($stockTransaction->invoice_attachment_path);
     }
 
     public function trash(StockTransactionsDataTable $stockTransactionsDataTable)

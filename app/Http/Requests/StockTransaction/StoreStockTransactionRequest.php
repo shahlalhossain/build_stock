@@ -33,6 +33,17 @@ class StoreStockTransactionRequest extends FormRequest
             'destination_store_id' => ['nullable', 'required_if:type,transfer', 'integer', Rule::exists('stores', 'id'), 'different:store_id'],
             'transaction_date' => ['required', 'date'],
             'remarks' => ['nullable', 'string'],
+
+            // Purchase-only Fields.
+            'invoice_number' => ['nullable', 'required_if:type,purchase', 'string', 'max:255'],
+            'supplier_invoice_date' => ['nullable', 'date'],
+            'invoice_attachment' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
+            'discount_type' => ['nullable', Rule::in(StockTransaction::DISCOUNT_TYPES), 'required_with:discount_amount'],
+            'discount_amount' => ['nullable', 'numeric', 'min:0'],
+            'tax_amount' => ['nullable', 'numeric', 'min:0'],
+            'payment_status' => ['nullable', Rule::in(StockTransaction::PAYMENT_STATUSES)],
+            'paid_amount' => ['nullable', 'numeric', 'min:0'],
+
             'items' => ['required', 'array', 'min:1'],
             'items.*.product_id' => ['required', 'integer', Rule::exists('products', 'id')],
             'items.*.quantity' => ['required', 'numeric', 'not_in:0'],
@@ -58,6 +69,11 @@ class StoreStockTransactionRequest extends FormRequest
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $validator) {
+            if ($this->input('discount_type') === StockTransaction::DISCOUNT_TYPE_PERCENTAGE
+                && (float) $this->input('discount_amount', 0) > 100) {
+                $validator->errors()->add('discount_amount', __('Percentage Discount may not Exceed 100.'));
+            }
+
             $items = $this->input('items', []);
 
             foreach ($items as $index => $item) {
@@ -123,6 +139,30 @@ class StoreStockTransactionRequest extends FormRequest
             'transaction_date.date' => __('Transaction Date must be a Valid Date'),
 
             'remarks.string' => __('Remarks must be a Valid String'),
+
+            'invoice_number.required_if' => __('Invoice Number is Required for Purchase Transactions'),
+            'invoice_number.string' => __('Invoice Number must be a Valid String'),
+            'invoice_number.max' => __('Invoice Number may not Exceed 255 Characters'),
+
+            'supplier_invoice_date.date' => __('Supplier Invoice Date must be a Valid Date'),
+
+            'invoice_attachment.file' => __('Invoice Attachment must be a Valid File'),
+            'invoice_attachment.mimes' => __('Invoice Attachment must be a PDF, JPG or PNG File'),
+            'invoice_attachment.max' => __('Invoice Attachment may not Exceed 10 MB'),
+
+            'discount_type.in' => __('Selected Discount Type is Invalid'),
+            'discount_type.required_with' => __('Discount Type is Required when a Discount Amount is Given'),
+
+            'discount_amount.numeric' => __('Discount Amount must be a Valid Number'),
+            'discount_amount.min' => __('Discount Amount may not be Negative'),
+
+            'tax_amount.numeric' => __('Tax Amount must be a Valid Number'),
+            'tax_amount.min' => __('Tax Amount may not be Negative'),
+
+            'payment_status.in' => __('Selected Payment Status is Invalid'),
+
+            'paid_amount.numeric' => __('Paid Amount must be a Valid Number'),
+            'paid_amount.min' => __('Paid Amount may not be Negative'),
 
             'items.required' => __('At Least One Line Item is Required'),
             'items.array' => __('Line Items must be a Valid List'),

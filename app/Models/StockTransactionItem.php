@@ -20,6 +20,7 @@ class StockTransactionItem extends Model
         'product_variant_id',
         'quantity',
         'unit_cost',
+        'line_total',
         'remarks',
     ];
 
@@ -40,6 +41,7 @@ class StockTransactionItem extends Model
             'product_variant_id' => 'integer',
             'quantity' => 'decimal:2',
             'unit_cost' => 'decimal:2',
+            'line_total' => 'decimal:2',
         ];
     }
 
