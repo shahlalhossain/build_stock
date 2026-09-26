@@ -6,8 +6,8 @@
     <style>
         /* Larger tap target for the per-Variant "Enabled" checkbox — web and mobile alike. */
         #variantsModalRows .variant-row-enabled {
-            width: 1.25em;
-            height: 1.25em;
+            width: 1.50em;
+            height: 1.50em;
         }
 
         /*
@@ -64,16 +64,25 @@
             /*
             | Remove (left) + Enabled (right) share ONE row on mobile: both cells sit
             | side by side at 50% width instead of each taking the full row, label and
-            | control laid out inline within each half.
+            | control laid out inline within each half. float (not inline-flex) is used
+            | so the whitespace between the two <td> tags in the source HTML can't push
+            | the second cell onto its own line (the classic inline-block-gap issue).
             */
+            #variants-table tr.variant-row {
+                overflow: hidden;
+            }
+
             #variants-table tr.variant-row td.variant-row-action-cell {
-                display: inline-flex;
+                float: left;
+                display: flex !important;
                 align-items: center;
-                justify-content: center;
                 gap: 0.5rem;
                 width: 50% !important;
+                /* Fixed height (not left to the tallest child) so Remove's button and
+                   Enabled's checkbox — different intrinsic sizes — produce two cells
+                   of IDENTICAL height instead of the row growing/shrinking per child. */
+                height: 44px;
                 box-sizing: border-box;
-                vertical-align: top;
             }
 
             #variants-table tr.variant-row td.variant-row-action-cell:first-child {
@@ -85,9 +94,25 @@
                 justify-content: flex-end;
             }
 
-            #variants-table tr.variant-row td.variant-row-action-cell[data-label]::before {
+            /* Remove: Button then "Remove" text — swap its label from ::before to
+               ::after. Enabled keeps the shared ::before (label first, then checkbox). */
+            #variants-table tr.variant-row td.variant-row-action-cell:first-child[data-label]::before {
+                content: none;
+            }
+
+            #variants-table tr.variant-row td.variant-row-action-cell:first-child[data-label]::after {
+                content: attr(data-label);
                 display: inline;
+                font-size: 0.75rem;
+                font-weight: 600;
+                color: var(--vz-secondary-color);
                 margin-bottom: 0;
+            }
+
+            /* Clear both floated action cells so the Variant cell always starts on
+               its own fresh line below them, instead of flowing beside them. */
+            #variants-table tr.variant-row td.variant-row-label {
+                clear: both;
             }
         }
     </style>
@@ -320,7 +345,7 @@
                                         <input type="number" step="0.01" min="0" class="form-control variant-row-unit-price" placeholder="{{ __('Unit Price') }}">
                                     </td>
                                     <td data-label="{{ __('Total Price') }}">
-                                        <input type="text" class="form-control variant-row-total-price" readonly tabindex="-1" placeholder="{{ __('Total Price') }}">
+                                        <input type="text" class="form-control variant-row-total-price" disabled tabindex="-1" placeholder="{{ __('Total Price') }}">
                                     </td>
                                     <td data-label="{{ __('Remarks') }}">
                                         <input type="text" class="form-control variant-row-remarks" placeholder="{{ __('Remarks') }}">
@@ -531,7 +556,63 @@
                 } else {
                     $warning.addClass('d-none').text('');
                 }
+
+                /*
+                |------------------------------------------------------------------------
+                | LOCK OUT UNTOUCHED ROWS ONCE THE LINE QUANTITY IS FULLY ALLOCATED
+                |------------------------------------------------------------------------
+                | A Row already carrying its own Quantity stays editable regardless (so
+                | the User can always adjust what they've already entered). Only Rows
+                | still at Quantity 0/empty — nothing yet allocated to them — get
+                | force-unchecked and disabled once there's no Quantity left to give
+                | them. Re-evaluated on every change, so freeing Quantity elsewhere
+                | (editing a filled Row down) unlocks them again automatically.
+                */
+                const remainingQuantity = targetQuantity - variantsTotal;
+
+                $('#variantsModalRows .variant-row').each(function () {
+                    const $variantRow = $(this);
+                    const ownQuantity = parseFloat($variantRow.find('.variant-row-quantity').val());
+                    const rowHasOwnQuantity = !isNaN(ownQuantity) && ownQuantity !== 0;
+
+                    if (rowHasOwnQuantity) {
+                        return;
+                    }
+
+                    const shouldLock = remainingQuantity <= 0.01;
+
+                    if (shouldLock) {
+                        $variantRow.find('.variant-row-enabled').prop('checked', false);
+                    }
+
+                    $variantRow
+                        .find('.variant-row-enabled, .variant-row-quantity, .variant-row-unit-price, .variant-row-remarks')
+                        .prop('disabled', shouldLock);
+                });
             }
+
+            /*
+            |----------------------------------------------------------------------------
+            | SEED UNIT PRICE FROM THE BASE FORM ON A ROW'S FIRST QUANTITY ENTRY
+            |----------------------------------------------------------------------------
+            | Only fires the FIRST time a Row goes from an empty Unit Price to having a
+            | Quantity — a convenience default the User can still overwrite. A Row
+            | that's already had a Unit Price typed (or restored from a previous Save)
+            | is never touched here.
+            */
+            $(document).on('input', '#variantsModalRows .variant-row-quantity', function () {
+                const $variantRow = $(this).closest('.variant-row');
+                const quantity = parseFloat($(this).val());
+                const $unitPrice = $variantRow.find('.variant-row-unit-price');
+
+                if (!isNaN(quantity) && quantity !== 0 && !$unitPrice.val()) {
+                    const baseUnitCost = $('#variantsModalRows').data('base-unit-cost');
+
+                    if (baseUnitCost) {
+                        $unitPrice.val(baseUnitCost);
+                    }
+                }
+            });
 
             $(document).on('input change', '#variantsModalRows .variant-row-quantity, #variantsModalRows .variant-row-unit-price', function () {
                 syncVariantRowTotal($(this).closest('.variant-row'));
@@ -562,6 +643,13 @@
                 $('#variantsModalProductName').text(productNames[productId] || '');
                 $('#variantsModalTargetQuantity').text(lineQuantity.toFixed(2)).data('value', lineQuantity);
 
+                // Remembered so a Quantity typed into a still-empty Row later can
+                // default its Unit Price to this, without re-reading a STALE value —
+                // by the second modal open the base Unit Cost has usually become the
+                // Average this same code wrote back on the previous Save (see the
+                // Save handler below), which must never re-seed onto unallocated Rows.
+                $('#variantsModalRows').data('base-unit-cost', lineUnitCost);
+
                 const $rows = $('#variantsModalRows').empty();
                 const rowTemplate = document.getElementById('variants-modal-row-template').innerHTML;
 
@@ -584,9 +672,10 @@
                         $variantRow.find('.variant-row-quantity').val(existing.quantity);
                         $variantRow.find('.variant-row-unit-price').val(existing.unit_cost ?? lineUnitCost);
                         $variantRow.find('.variant-row-remarks').val(existing.remarks ?? '');
-                    } else {
-                        $variantRow.find('.variant-row-unit-price').val(lineUnitCost);
                     }
+                    // No existing allocation: Unit Price starts EMPTY, not pre-filled
+                    // with the base Unit Cost — see the Quantity input handler below,
+                    // which seeds it only once the User actually starts using this Row.
 
                     syncVariantRowTotal($variantRow);
                     $rows.append($variantRow);
@@ -627,6 +716,34 @@
                 $activeVariantsRow.find('.item-setup-variants')
                     .toggleClass('btn-info', variants.length > 0)
                     .toggleClass('btn-outline-secondary', variants.length === 0);
+
+                /*
+                |----------------------------------------------------------------------
+                | CARRY THE WEIGHTED-AVERAGE UNIT PRICE BACK TO THE BASE LINE ITEM
+                |----------------------------------------------------------------------
+                | e.g. 5 @ 500 + 5 @ 550 -> (5*500 + 5*550) / 10 = 525 average Unit Cost.
+                | Total Cost then recalculates itself via the existing Quantity x Unit
+                | Cost sync below, so it never needs to be written here directly.
+                */
+                let totalQuantity = 0;
+                let totalValue = 0;
+
+                variants.forEach(function (variant) {
+                    const unitCost = parseFloat(variant.unit_cost);
+
+                    if (isNaN(unitCost)) {
+                        return;
+                    }
+
+                    totalQuantity += variant.quantity;
+                    totalValue += variant.quantity * unitCost;
+                });
+
+                if (totalQuantity > 0) {
+                    const averageUnitCost = totalValue / totalQuantity;
+                    $activeVariantsRow.find('.item-unit-cost').val(averageUnitCost.toFixed(2));
+                    syncItemTotalCost($activeVariantsRow);
+                }
 
                 bootstrap.Modal.getOrCreateInstance(document.getElementById('variantsModal')).hide();
                 $activeVariantsRow = null;
