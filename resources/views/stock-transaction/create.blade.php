@@ -2,6 +2,97 @@
 
 @section('title', __('Stock Transaction'))
 
+@push('styles')
+    <style>
+        /* Larger tap target for the per-Variant "Enabled" checkbox — web and mobile alike. */
+        #variantsModalRows .variant-row-enabled {
+            width: 1.25em;
+            height: 1.25em;
+        }
+
+        /*
+        |------------------------------------------------------------------------------
+        | PRODUCT ITEMS + SETUP VARIANTS TABLES: MOBILE-RESPONSIVE REFLOW
+        |------------------------------------------------------------------------------
+        | Web view is untouched above the md breakpoint. Below it, the SAME table/row
+        | markup (no separate mobile template, no JS changes) reflows: thead is hidden,
+        | each row becomes a bordered card, and each cell stacks with a label pulled
+        | from its own data-label attribute via ::before. Scoped to #items-table and
+        | #variants-table only so other pages' .table-responsive are unaffected.
+        */
+        @media (max-width: 767.98px) {
+            #items-table thead, #variants-table thead {
+                display: none;
+            }
+
+            #items-table, #items-table tbody, #items-table tr, #items-table td,
+            #variants-table, #variants-table tbody, #variants-table tr, #variants-table td {
+                display: block;
+                width: 100% !important;
+            }
+
+            #items-table tr.repeater-row, #variants-table tr.variant-row {
+                margin-bottom: 0.75rem;
+                border: 1px solid var(--vz-border-color);
+                border-radius: 0.25rem;
+            }
+
+            #items-table td, #variants-table td {
+                border: none;
+                border-bottom: 1px solid var(--vz-border-color);
+                padding: 0.5rem 0.75rem;
+            }
+
+            #items-table td:last-child, #variants-table td:last-child {
+                border-bottom: none;
+            }
+
+            #items-table td[data-label]::before, #variants-table td[data-label]::before {
+                content: attr(data-label);
+                display: block;
+                font-size: 0.75rem;
+                font-weight: 600;
+                color: var(--vz-secondary-color);
+                margin-bottom: 0.25rem;
+            }
+
+            #items-table td:first-child {
+                text-align: end;
+                padding: 0.5rem 0.75rem;
+            }
+
+            /*
+            | Remove (left) + Enabled (right) share ONE row on mobile: both cells sit
+            | side by side at 50% width instead of each taking the full row, label and
+            | control laid out inline within each half.
+            */
+            #variants-table tr.variant-row td.variant-row-action-cell {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.5rem;
+                width: 50% !important;
+                box-sizing: border-box;
+                vertical-align: top;
+            }
+
+            #variants-table tr.variant-row td.variant-row-action-cell:first-child {
+                justify-content: flex-start;
+                border-right: 1px solid var(--vz-border-color);
+            }
+
+            #variants-table tr.variant-row td.variant-row-action-cell:nth-child(2) {
+                justify-content: flex-end;
+            }
+
+            #variants-table tr.variant-row td.variant-row-action-cell[data-label]::before {
+                display: inline;
+                margin-bottom: 0;
+            }
+        }
+    </style>
+@endpush
+
 @section('content')
     <!-- Start Page Content -->
     <div class="page-content">
@@ -121,7 +212,7 @@
                                 </div>
                                 @error('items')<small class="text-danger d-block mb-2">{{ $message }}</small>@enderror
                                 <div class="table-responsive">
-                                    <table class="table table-sm table-bordered align-middle">
+                                    <table class="table table-sm table-bordered align-middle" id="items-table">
                                         <thead>
                                         <tr>
                                             <th style="width: 5%;"></th>
@@ -141,7 +232,7 @@
                                         <td class="text-center pt-2">
                                             <button type="button" class="btn btn-sm btn-outline-danger remove-row"><i class="ri-close-line"></i></button>
                                         </td>
-                                        <td>
+                                        <td data-label="{{ __('Product') }}">
                                             <select class="form-select item-product" data-field="product_id">
                                                 <option value="">{{ __('== Select Product ==') }}</option>
                                                 @foreach($products as $product)
@@ -149,7 +240,7 @@
                                                 @endforeach
                                             </select>
                                         </td>
-                                        <td>
+                                        <td data-label="{{ __('Quantity') }}">
                                             <div class="d-flex gap-1">
                                                 <input type="number" step="0.01" class="form-control item-quantity" data-field="quantity" placeholder="{{ __('Quantity') }}">
                                                 <button type="button" class="btn btn-sm btn-outline-secondary item-setup-variants flex-shrink-0" disabled title="{{ __('Setup Product Variants') }}">
@@ -158,13 +249,13 @@
                                             </div>
                                             <input type="hidden" class="item-variants-payload" value="">
                                         </td>
-                                        <td>
+                                        <td data-label="{{ __('Unit Cost') }}">
                                             <input type="number" step="0.01" min="0" class="form-control item-unit-cost" data-field="unit_cost" placeholder="{{ __('Unit Cost') }}">
                                         </td>
-                                        <td>
+                                        <td data-label="{{ __('Total Cost') }}">
                                             <input type="text" class="form-control item-total-cost" readonly tabindex="-1" placeholder="{{ __('Total Cost') }}">
                                         </td>
-                                        <td>
+                                        <td data-label="{{ __('Remarks') }}">
                                             <input type="text" class="form-control item-remarks" data-field="remarks" placeholder="{{ __('Remarks') }}">
                                         </td>
                                     </tr>
@@ -183,7 +274,7 @@
                                         <div class="modal-body">
                                             <div id="variantsModalWarning" class="alert alert-warning d-none mb-3"></div>
                                             <div class="table-responsive">
-                                                <table class="table table-sm table-bordered align-middle">
+                                                <table class="table table-sm table-bordered align-middle" id="variants-table">
                                                     <thead>
                                                     <tr>
                                                         <th style="width: 4%;"></th>
@@ -215,23 +306,23 @@
 
                             <template id="variants-modal-row-template">
                                 <tr class="variant-row">
-                                    <td class="text-center pt-2">
+                                    <td class="text-center pt-2 variant-row-action-cell" data-label="{{ __('Remove') }}">
                                         <button type="button" class="btn btn-sm btn-outline-danger variant-row-remove"><i class="ri-close-line"></i></button>
                                     </td>
-                                    <td class="text-center pt-2">
+                                    <td class="text-center pt-2 variant-row-action-cell" data-label="{{ __('Enabled') }}">
                                         <input type="checkbox" class="form-check-input variant-row-enabled" checked>
                                     </td>
-                                    <td class="pt-2 variant-row-label"></td>
-                                    <td>
+                                    <td class="pt-2 variant-row-label" data-label="{{ __('Variant') }}"></td>
+                                    <td data-label="{{ __('Quantity') }}">
                                         <input type="number" step="0.01" class="form-control variant-row-quantity" placeholder="{{ __('Quantity') }}">
                                     </td>
-                                    <td>
+                                    <td data-label="{{ __('Unit Price') }}">
                                         <input type="number" step="0.01" min="0" class="form-control variant-row-unit-price" placeholder="{{ __('Unit Price') }}">
                                     </td>
-                                    <td>
+                                    <td data-label="{{ __('Total Price') }}">
                                         <input type="text" class="form-control variant-row-total-price" readonly tabindex="-1" placeholder="{{ __('Total Price') }}">
                                     </td>
-                                    <td>
+                                    <td data-label="{{ __('Remarks') }}">
                                         <input type="text" class="form-control variant-row-remarks" placeholder="{{ __('Remarks') }}">
                                     </td>
                                 </tr>
