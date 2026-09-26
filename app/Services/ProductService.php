@@ -12,6 +12,7 @@ use App\Exceptions\GeneralException;
 use App\Models\ApprovalLog;
 use App\Models\AttributeValue;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Auth;
@@ -56,6 +57,7 @@ class ProductService extends BaseService
             $product = $this->model::create($productData);
 
             $this->attachAttributeValues($product, $data['attribute_value_ids'] ?? []);
+            $this->generateVariantsFromAttributeValues($product);
 
             event(new ProductCreated($product));
 
@@ -90,6 +92,7 @@ class ProductService extends BaseService
             ]);
 
             $this->attachAttributeValues($product, $data['attribute_value_ids'] ?? []);
+            $this->generateVariantsFromAttributeValues($product);
 
             event(new ProductUpdated($product));
 
@@ -161,10 +164,11 @@ class ProductService extends BaseService
     }
 
     /**
-     * Add the submitted attribute-value ids to the product's existing
-     * assignments (merge/add-only) rather than replacing them, so
-     * updating a Product never silently drops previously-saved
-     * specifications that the current form submission didn't resend.
+     * Replace the Product's Specification Attribute Values with the submitted set —
+     * a full sync, not add-only: the Create/Edit form always resends every currently
+     * checked Value, and this is now the sole source Variants are generated from (see
+     * generateVariantsFromAttributeValues), so unchecking a Value must actually detach
+     * it or a Product's Variant set could never shrink.
      *
      * product_attribute_values also stores attribute_id directly (alongside
      * attribute_value_id) so a row's Attribute is readable without joining
@@ -174,17 +178,184 @@ class ProductService extends BaseService
     {
         $ids = array_filter($attributeValueIds);
 
-        if (empty($ids)) {
-            return;
-        }
-
         $attributeIdsByValueId = AttributeValue::whereIn('id', $ids)->pluck('attribute_id', 'id');
 
         $syncData = collect($ids)
             ->mapWithKeys(fn ($valueId) => [$valueId => ['attribute_id' => $attributeIdsByValueId[$valueId]]])
             ->all();
 
-        $product->attributeValues()->syncWithoutDetaching($syncData);
+        $product->attributeValues()->sync($syncData);
+    }
+
+    /**
+     * Generate the Product's Variants automatically from its own Specification
+     * Attribute Values — the full cartesian product across every distinct Attribute
+     * that currently has at least one checked Value (e.g. Color: White/Blue/Black x
+     * Grade: A/B/C x Thickness: 12mm/18mm/25mm -> 27 Variants). There is no separate
+     * Variant UI (Sections 36-37): this runs automatically on every Product save,
+     * right after attachAttributeValues() has synced the current Specification set.
+     *
+     * A Product with Values checked under only ONE Attribute (or none) has no
+     * meaningful combination to build and is kept variant-less (Section 12 — e.g.
+     * Construction Sand tagged only with a single Grade stays a plain Product).
+     *
+     * Matching against what already exists is by the NORMALIZED Attribute-Value set,
+     * not by id or row order: regenerating after checking one more Value must not
+     * churn the SKUs or lose the Stock/Transaction history of combinations that still
+     * exist, and must not create duplicates of them either (Section 28 — order of
+     * Values never affects a combination's identity). A combination with no existing
+     * match (active or previously soft-deleted) is created fresh, auto-named and
+     * auto-SKU'd; an existing Variant whose combination is no longer produced is
+     * soft-deleted (never hard-deleted — see destroyVariant for the stock-referenced
+     * guard this preserves).
+     *
+     * @throws GeneralException
+     */
+    protected function generateVariantsFromAttributeValues(Product $product): void
+    {
+        $groups = $product->attributeValues()
+            ->get()
+            ->groupBy('attribute_id')
+            ->map(fn ($values) => $values->pluck('id')->all())
+            ->values()
+            ->all();
+
+        $combinations = count($groups) >= 2 ? $this->cartesianProduct($groups) : [];
+
+        $existingByCombination = $product->variants()
+            ->withTrashed()
+            ->with('attributeValues')
+            ->get()
+            ->keyBy(fn (ProductVariant $variant) => $this->combinationKey($variant->attributeValues->pluck('id')->all()));
+
+        $matchedIds = [];
+        $nextSkuSequence = null;
+
+        foreach ($combinations as $attributeValueIds) {
+            $productVariant = $existingByCombination->get($this->combinationKey($attributeValueIds));
+
+            if (! $productVariant) {
+                $productVariant = new ProductVariant(['product_id' => $product->id]);
+            } elseif ($productVariant->trashed()) {
+                $productVariant->deleted_at = null;
+                $productVariant->deleted_by = null;
+                $productVariant->is_active = true;
+            }
+
+            $sku = $productVariant->sku;
+
+            if (! $sku) {
+                $nextSkuSequence ??= $this->nextVariantSkuSequence($product);
+                $sku = $product->code.'-'.str_pad((string) $nextSkuSequence, 3, '0', STR_PAD_LEFT);
+                $nextSkuSequence++;
+            }
+
+            $productVariant->fill([
+                'variant_name' => $this->generateVariantName($attributeValueIds),
+                'sku' => $sku,
+                'is_active' => true,
+                'updated_by' => Auth::id(),
+            ]);
+
+            if (! $productVariant->exists) {
+                $productVariant->created_by = Auth::id();
+            }
+
+            $productVariant->save();
+
+            $productVariant->attributeValues()->sync($attributeValueIds);
+
+            $matchedIds[] = $productVariant->id;
+        }
+
+        $product->variants()
+            ->whereNotIn('id', $matchedIds)
+            ->get()
+            ->each(fn (ProductVariant $variant) => $this->destroyVariant($variant));
+
+        $product->updateQuietly(['has_variants' => ! empty($matchedIds)]);
+    }
+
+    /**
+     * Cartesian product across Attribute groups, each an array of Attribute-Value ids
+     * (e.g. [[white,blue,black], [gradeA,gradeB,gradeC]] -> every [color, grade] pair).
+     *
+     * @param  array<int, array<int, int>>  $groups
+     * @return array<int, array<int, int>>
+     */
+    protected function cartesianProduct(array $groups): array
+    {
+        return array_reduce(
+            $groups,
+            function (array $combinations, array $group) {
+                $next = [];
+
+                foreach ($combinations as $combination) {
+                    foreach ($group as $valueId) {
+                        $next[] = [...$combination, $valueId];
+                    }
+                }
+
+                return $next;
+            },
+            [[]]
+        );
+    }
+
+    /**
+     * Order-independent identity for an Attribute-Value combination (Section 28) —
+     * used to match a freshly-generated combination back to an existing Variant.
+     */
+    protected function combinationKey(array $attributeValueIds): string
+    {
+        sort($attributeValueIds);
+
+        return implode(',', $attributeValueIds);
+    }
+
+    /**
+     * Next free numeric suffix for this Product's auto-generated Variant SKUs
+     * (e.g. product code PRD-0125 -> PRD-0125-001, ...-002, ...), continuing past
+     * the highest existing suffix (including Trashed Variants) so a regenerate
+     * never reissues an SKU still held by a restored or soft-deleted row.
+     */
+    protected function nextVariantSkuSequence(Product $product): int
+    {
+        $prefix = $product->code.'-';
+
+        $lastNumber = ProductVariant::withTrashed()
+            ->where('product_id', $product->id)
+            ->where('sku', 'like', $prefix.'%')
+            ->selectRaw('MAX(CAST(SUBSTRING(sku, ?) AS UNSIGNED)) as max_number', [strlen($prefix) + 1])
+            ->value('max_number');
+
+        return (int) $lastNumber + 1;
+    }
+
+    /**
+     * Derive a human-readable Variant Name from its Attribute Values, slash-joined in
+     * Attribute-id order (e.g. "White / Grade A / 12mm") — the actual source of truth
+     * remains product_variant_values, not this string.
+     */
+    protected function generateVariantName(array $attributeValueIds): string
+    {
+        return AttributeValue::whereIn('id', $attributeValueIds)
+            ->orderBy('attribute_id')
+            ->pluck('value')
+            ->implode(' / ');
+    }
+
+    /**
+     * Soft-delete a Variant no longer referenced by the submitted set. Stock/Transaction
+     * history (if any) keeps pointing at this row via product_variant_id, matching the
+     * Product-level destroy convention (status/soft-delete, never a hard delete here).
+     */
+    protected function destroyVariant(ProductVariant $variant): void
+    {
+        $variant->is_active = false;
+        $variant->deleted_by = Auth::id();
+        $variant->save();
+        $variant->delete();
     }
 
     /**

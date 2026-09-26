@@ -67,6 +67,7 @@ class StockTransactionsController extends Controller
             'supplier',
             'linkedTransaction',
             'items.product',
+            'items.productVariant',
             'creator',
             'updater',
             'deleter',
@@ -79,7 +80,7 @@ class StockTransactionsController extends Controller
     public function edit(StockTransaction $stockTransaction): View
     {
         $data = $this->formLookups();
-        $data['stockTransaction'] = $stockTransaction->load(['items.product', 'linkedTransaction']);
+        $data['stockTransaction'] = $stockTransaction->load(['items.product', 'items.productVariant', 'linkedTransaction']);
 
         return view('stock-transaction.edit', $data);
     }
@@ -197,35 +198,28 @@ class StockTransactionsController extends Controller
         $products = Product::query()
             ->where('is_active', true)
             ->orderBy('name')
-            ->with(['productAttributeValues.attribute', 'productAttributeValues.attributeValue'])
+            ->with(['variants' => function ($query) {
+                $query->where('is_active', true)->with('attributeValues.attribute');
+            }])
             ->get(['id', 'name', 'code']);
 
         return [
             'stores' => Store::query()->where('is_active', true)->orderBy('name')->get(['id', 'name']),
             'suppliers' => Supplier::query()->where('is_active', true)->orderBy('name')->get(['id', 'name']),
             'products' => $products,
-            // Preloaded per-Product Variant Attribute-Values as JSON (no AJAX round-trip),
-            // matching this app's existing Category/Sub-Category and Specifications
-            // client-side filter convention. Grouped by Attribute so the "Setup Product
-            // Variants" modal can build the Attribute x Value Combinations client-side.
-            'productVariantAttributes' => $products->mapWithKeys(function (Product $product) {
-                $groups = $product->productAttributeValues
-                    ->groupBy('attribute_id')
-                    ->map(function ($rows) {
-                        $attribute = $rows->first()->attribute;
+            // Preloaded per-Product Variant list as JSON (no AJAX round-trip), matching
+            // this app's existing Category/Sub-Category and Specifications client-side
+            // filter convention. The "Setup Product Variants" modal lists these existing
+            // Variants directly — it no longer builds Attribute x Value Combinations
+            // client-side, since each Variant is now a real product_variants row.
+            'productVariants' => $products->mapWithKeys(function (Product $product) {
+                $variants = $product->variants->map(fn ($variant) => [
+                    'id' => $variant->id,
+                    'label' => $variant->variant_name ?: $variant->attributeValues->pluck('value')->implode(' / '),
+                    'sku' => $variant->sku,
+                ])->values();
 
-                        return [
-                            'attribute_id' => $attribute->id,
-                            'attribute_name' => $attribute->name,
-                            'values' => $rows->map(fn ($row) => [
-                                'attribute_value_id' => $row->attribute_value_id,
-                                'value' => $row->attributeValue->value,
-                            ])->values(),
-                        ];
-                    })
-                    ->values();
-
-                return [$product->id => $groups];
+                return [$product->id => $variants];
             }),
         ];
     }

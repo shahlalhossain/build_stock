@@ -12,14 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('product_attribute_values', function (Blueprint $table) {
-            $table->id();
+            $table->bigIncrements('id');
 
             $table->integer('product_id');
+            $table->integer('attribute_id');
             $table->integer('attribute_value_id');
 
             $table->timestamps();
-
-            $table->unique(['product_id', 'attribute_value_id']);
         });
     }
 

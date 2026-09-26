@@ -20,6 +20,9 @@ class UpdateProductRequest extends FormRequest
 
     /**
      * Get the validation rules that apply to the request.
+     *
+     * Variants are not a Form input: they are generated automatically from
+     * attribute_value_ids (see ProductService::generateVariantsFromAttributeValues).
      */
     public function rules(): array
     {

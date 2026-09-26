@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\StockTransaction;
 
+use App\Models\ProductVariant;
 use App\Models\StockTransaction;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -39,11 +40,9 @@ class StoreStockTransactionRequest extends FormRequest
             'items.*.remarks' => ['nullable', 'string'],
 
             // Variants are an Optional per-Item Breakdown (Setup Product Variants Modal).
-            // Each Variant is one Attribute-Value Combination (e.g. Color:Red + Size:Small),
-            // so attribute_value_ids carries every Attribute-Value id in that Combination.
+            // Each Variant Row picks one of the Product's existing product_variants.
             'items.*.variants' => ['nullable', 'array'],
-            'items.*.variants.*.attribute_value_ids' => ['required', 'array', 'min:1'],
-            'items.*.variants.*.attribute_value_ids.*' => ['integer', Rule::exists('attribute_values', 'id')],
+            'items.*.variants.*.product_variant_id' => ['required', 'integer', Rule::exists('product_variants', 'id')],
             'items.*.variants.*.quantity' => ['required', 'numeric', 'not_in:0'],
             'items.*.variants.*.unit_cost' => ['nullable', 'numeric', 'min:0'],
             'items.*.variants.*.remarks' => ['nullable', 'string'],
@@ -51,8 +50,10 @@ class StoreStockTransactionRequest extends FormRequest
     }
 
     /**
-     * When an Item carries a Variant Breakdown, its Variant Quantities must sum to
-     * the Item's own Quantity — enforced here since it spans sibling array fields.
+     * Cross-field rules that span sibling array fields:
+     * - When an Item carries a Variant Breakdown, its Variant Quantities must sum to
+     *   the Item's own Quantity.
+     * - Every selected product_variant_id must belong to that Item's own product_id.
      */
     public function withValidator(Validator $validator): void
     {
@@ -77,6 +78,23 @@ class StoreStockTransactionRequest extends FormRequest
                             'item_quantity' => $itemQuantity,
                         ])
                     );
+                }
+
+                $productId = (int) ($item['product_id'] ?? 0);
+                $variantIds = array_filter(array_column($variants, 'product_variant_id'));
+
+                if ($productId && $variantIds) {
+                    $validCount = ProductVariant::query()
+                        ->where('product_id', $productId)
+                        ->whereIn('id', $variantIds)
+                        ->count();
+
+                    if ($validCount !== count(array_unique($variantIds))) {
+                        $validator->errors()->add(
+                            "items.{$index}.variants",
+                            __('One or more Selected Variants do not Belong to the Selected Product.')
+                        );
+                    }
                 }
             }
         });
@@ -123,11 +141,9 @@ class StoreStockTransactionRequest extends FormRequest
 
             'items.*.remarks.string' => __('Line Remarks must be a Valid String'),
 
-            'items.*.variants.*.attribute_value_ids.required' => __('Variant Selection is Invalid'),
-            'items.*.variants.*.attribute_value_ids.array' => __('Variant Selection is Invalid'),
-            'items.*.variants.*.attribute_value_ids.min' => __('Variant Selection is Invalid'),
-            'items.*.variants.*.attribute_value_ids.*.integer' => __('Variant Selection is Invalid'),
-            'items.*.variants.*.attribute_value_ids.*.exists' => __('Selected Variant Value does not Exist'),
+            'items.*.variants.*.product_variant_id.required' => __('Variant Selection is Invalid'),
+            'items.*.variants.*.product_variant_id.integer' => __('Variant Selection is Invalid'),
+            'items.*.variants.*.product_variant_id.exists' => __('Selected Variant does not Exist'),
 
             'items.*.variants.*.quantity.required' => __('Quantity is Required for Every Selected Variant'),
             'items.*.variants.*.quantity.numeric' => __('Variant Quantity must be a Valid Number'),

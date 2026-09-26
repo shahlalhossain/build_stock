@@ -21,6 +21,8 @@ return new class extends Migration
 
             $table->string('address');
 
+            $table->string('landmark')->nullable();
+
             $table->double('latitude')->nullable();
             $table->double('longitude')->nullable();
             $table->string('map_address')->nullable();
@@ -32,6 +34,15 @@ return new class extends Migration
             $table->integer('thana_id')->unsigned()->nullable();
             $table->string('thana_name')->nullable();
 
+            $table->text('remarks')->nullable();
+
+            $table->boolean('is_active')->default(true);
+
+            $table->integer('created_by')->nullable();
+            $table->integer('updated_by')->nullable();
+            $table->timestamps();
+            $table->integer('deleted_by')->nullable();
+            $table->softDeletes();
         });
     }
 

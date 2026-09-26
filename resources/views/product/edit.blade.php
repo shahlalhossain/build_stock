@@ -13,6 +13,32 @@
             padding-top: 2px;
             padding-left: 0.25em;
         }
+
+        #product-images-dropzone.dropzone {
+            min-height: unset;
+            padding: 8px 10px;
+        }
+
+        #product-images-dropzone.dropzone .dz-message {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        #product-images-dropzone.dropzone .dz-message .display-6 {
+            font-size: 1.25rem;
+            margin-bottom: 0 !important;
+        }
+
+        #product-images-dropzone.dropzone .dz-message h6 {
+            margin-bottom: 0;
+        }
+
+        #product-images-dropzone.dropzone .dz-message .fs-13 {
+            display: none;
+        }
     </style>
 @endpush
 
@@ -104,15 +130,17 @@
                                         </div>
 
                                         <div class="row mb-2">
-                                            <label for="unit_id" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Unit') }}</label>
+                                            <label for="name" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Product Name') }}</label>
                                             <div class="col-12 col-md-8">
-                                                <select id="unit_id" name="unit_id" class="form-select @error('unit_id') is-invalid @enderror">
-                                                    <option value="">{{ __('== Select Unit ==') }}</option>
-                                                    @foreach($units as $unit)
-                                                        <option value="{{ $unit->id }}" @selected(old('unit_id', $product->unit_id) == $unit->id)>{{ $unit->name }} ({{ $unit->symbol }}) - {{ $unit->group }}</option>
-                                                    @endforeach
-                                                </select>
-                                                @error('unit_id')<small class="text-danger">{{ $message }}</small>@enderror
+                                                <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name', $product->name) }}" required>
+                                                @error('name')<small class="text-danger">{{ $message }}</small>@enderror
+                                            </div>
+                                        </div>
+                                        <div class="row mb-2">
+                                            <label for="description" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Description') }}</label>
+                                            <div class="col-12 col-md-8">
+                                                <textarea class="form-control @error('description') is-invalid @enderror" id="description" name="description" rows="2">{{ old('description', $product->description) }}</textarea>
+                                                @error('description')<small class="text-danger">{{ $message }}</small>@enderror
                                             </div>
                                         </div>
                                     </div>
@@ -121,26 +149,55 @@
                                     <!-- Start Right Column -->
                                     <div class="col-12 col-md-6">
                                         <div class="row mb-2">
-                                            <label for="name" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Product Name') }}</label>
+                                            <label class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Product Images') }}</label>
                                             <div class="col-12 col-md-8">
-                                                <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name', $product->name) }}" required>
-                                                @error('name')<small class="text-danger">{{ $message }}</small>@enderror
-                                            </div>
-                                        </div>
+                                                {{--
+                                                    View only for now — Dropzone stages files client-side (image
+                                                    previews, drag & drop, remove-before-submit) with autoProcessQueue
+                                                    disabled and no live url, so nothing is uploaded on Save yet. Wiring
+                                                    this to storage is a separate follow-up (FileService/ImageService
+                                                    already exist in this app and are the natural fit). This Product
+                                                    has no previously-saved images to seed, for the same reason.
 
-                                        <div class="row mb-2">
-                                            <label for="sku" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('SKU') }}</label>
-                                            <div class="col-12 col-md-8">
-                                                <input type="text" class="form-control @error('sku') is-invalid @enderror" id="sku" name="sku" value="{{ old('sku', $product->sku) }}">
-                                                @error('sku')<small class="text-danger">{{ $message }}</small>@enderror
-                                            </div>
-                                        </div>
+                                                    Markup/init follow Velzon's own Dropzone pattern (see
+                                                    ecommerce-product-create.init.js): #dropzone-preview-list is a
+                                                    hidden ROW TEMPLATE, read once at init time and removed from the DOM,
+                                                    then re-rendered by Dropzone into the separate #dropzone-preview list
+                                                    below the drop area for every accepted File.
+                                                --}}
+                                                <div action="#" class="dropzone" id="product-images-dropzone">
+                                                    <div class="dz-message needsclick">
+                                                        <div class="mb-2"><i class="display-6 text-muted ri-upload-cloud-2-line"></i></div>
+                                                        <h6>{{ __('Drop Files Here or Click to Upload') }}</h6>
+                                                        <span class="text-muted fs-13">{{ __('Upload Multiple Product Images') }}</span>
+                                                    </div>
+                                                </div>
 
-                                        <div class="row mb-2">
-                                            <label for="description" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Description') }}</label>
-                                            <div class="col-12 col-md-8">
-                                                <textarea class="form-control @error('description') is-invalid @enderror" id="description" name="description" rows="2">{{ old('description', $product->description) }}</textarea>
-                                                @error('description')<small class="text-danger">{{ $message }}</small>@enderror
+                                                <ul class="list-unstyled mb-0" id="dropzone-preview">
+                                                    {{--
+                                                        This <li> is the ROW TEMPLATE only (see the note above) —
+                                                        display:none from first paint so it never flashes on screen
+                                                        before JS captures and removes it on window 'load'.
+                                                    --}}
+                                                    <li class="mt-2" id="dropzone-preview-list" style="display: none;">
+                                                        <div class="border rounded">
+                                                            <div class="d-flex p-2">
+                                                                <div class="flex-shrink-0 me-3">
+                                                                    <div class="avatar-sm bg-light rounded p-2">
+                                                                        <img data-dz-thumbnail class="img-fluid rounded d-block" src="{{ asset('assets/images/small/img-9.jpg') }}" alt="">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="pt-1 flex-grow-1">
+                                                                    <h5 class="fs-14 mb-1" data-dz-name></h5>
+                                                                    <p class="fs-13 text-muted mb-0" data-dz-size></p>
+                                                                </div>
+                                                                <div class="flex-shrink-0 ms-3">
+                                                                    <button type="button" class="btn btn-sm btn-danger product-image-remove">{{ __('Delete') }}</button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </li>
+                                                </ul>
                                             </div>
                                         </div>
                                     </div>
@@ -199,7 +256,91 @@
 
 @push('scripts')
     <script>
-        $(document).ready(function () {
+        // Disable Auto-Discovery Globally so Every Dropzone Instance is Explicit.
+        Dropzone.autoDiscover = false;
+
+        /*
+        |------------------------------------------------------------------------------
+        | Deliberately initialized on window 'load', NOT $(document).ready(): this
+        | theme's plugins.js conditionally loads Toastify/Choices.js/Flatpickr via
+        | document.write() (see assets/js/plugins.js), which — because those are
+        | external <script src> tags — pauses HTML parsing until they've downloaded.
+        | $(document).ready() can fire while that pause has left later elements
+        | (including #dropzone-preview-list, further down this same page) not yet
+        | parsed into the DOM, so querying for it there intermittently returns null.
+        | 'load' waits for the ENTIRE page — every resource, including those injected
+        | scripts — so the element is always reliably present by the time this runs.
+        | See product/create.blade.php for the same fix and the full write-up.
+        |------------------------------------------------------------------------------
+        */
+        window.addEventListener('load', function () {
+            /*
+            |--------------------------------------------------------------------------
+            | PRODUCT IMAGES: DROPZONE (DRAG & DROP + PREVIEWS, VIEW ONLY FOR NOW)
+            |--------------------------------------------------------------------------
+            | autoProcessQueue is off and url is a harmless placeholder — Files are
+            | staged client-side only (thumbnail, filename, remove button) and never
+            | actually uploaded. Wiring this to real storage is a separate follow-up.
+            */
+            const dropzonePreviewNode = document.querySelector('#dropzone-preview-list');
+            // The Template row is display:none in the Blade markup so it never flashes
+            // on screen before this runs — strip that back off before capturing the
+            // template string, or every REAL preview clone would render hidden too.
+            dropzonePreviewNode.style.display = '';
+            const previewTemplate = dropzonePreviewNode.parentNode.innerHTML;
+            dropzonePreviewNode.parentNode.removeChild(dropzonePreviewNode);
+
+            const productImagesDropzone = new Dropzone('#product-images-dropzone', {
+                url: '#',
+                autoProcessQueue: false,
+                maxFiles: 10,
+                maxFilesize: 5, // MB
+                acceptedFiles: 'image/jpeg,image/png,image/webp',
+                previewTemplate: previewTemplate,
+                previewsContainer: '#dropzone-preview',
+                dictDefaultMessage: '{{ __('Drop Files Here or Click to Upload') }}',
+                dictMaxFilesExceeded: '{{ __('You cannot Upload any more Files.') }}',
+                dictInvalidFileType: '{{ __('You cannot Upload Files of this Type.') }}',
+                // The "at"-prefixed double-curly below is Blade's literal-brace escape,
+                // needed so Dropzone's OWN filesize/maxFilesize placeholders reach the
+                // browser as-is instead of being parsed as a Blade echo.
+                dictFileTooBig: '{{ __('File is too Big') }} (@{{filesize}}MiB). {{ __('Max Filesize') }}: @{{maxFilesize}}MiB.',
+                init: function () {
+                    this.on('addedfile', function () {
+                        if (this.files.length > this.options.maxFiles) {
+                            this.removeFile(this.files[0]);
+
+                            Toastify({
+                                text: '{{ __('You can Upload a Maximum of 10 Images.') }}',
+                                duration: 3000,
+                                gravity: 'top',
+                                position: 'right',
+                                className: 'failed-toast',
+                                stopOnFocus: true
+                            }).showToast();
+                        }
+                    });
+
+                    /*
+                    |----------------------------------------------------------------
+                    | REMOVE WITHOUT ANY CONFIRM DIALOG
+                    |----------------------------------------------------------------
+                    | The Delete button is deliberately NOT [data-dz-remove] — Dropzone
+                    | auto-wires that attribute to its own removeFileEvent handler,
+                    | which calls window.confirm() whenever a File's status is
+                    | UPLOADING (which every File here transiently is, since
+                    | autoProcessQueue never resolves it to a final state). Binding our
+                    | OWN click handler and calling removeFile() directly skips that
+                    | logic entirely — no dialog, ever.
+                    */
+                    this.on('addedfile', function (file) {
+                        $(file.previewElement).find('.product-image-remove').on('click', function () {
+                            productImagesDropzone.removeFile(file);
+                        });
+                    });
+                }
+            });
+
             /*
             |--------------------------------------------------------------------------
             | CATEGORY -> SUB-CATEGORY: CLIENT-SIDE FILTER
@@ -241,7 +382,12 @@
 
             const existingAttributeValueIds = @json($product->attributeValues->pluck('id'));
 
-            const existingAttributeIds = @json($product->attributeValues->pluck('attribute_id')->unique()->values());
+            const existingAttributeIds = @json(
+                $product->attributeValues->pluck('attribute_id')
+                    ->merge($product->variants->flatMap->attributeValues->pluck('attribute_id'))
+                    ->unique()
+                    ->values()
+            );
 
             function renderValues(row, attributeId, checkedIds) {
                 const $values = row.find('.spec-values');

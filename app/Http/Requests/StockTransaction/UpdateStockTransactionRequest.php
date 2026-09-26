@@ -2,9 +2,11 @@
 
 namespace App\Http\Requests\StockTransaction;
 
+use App\Models\ProductVariant;
 use App\Models\StockTransaction;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 /**
  * Class UpdateStockTransactionRequest.
@@ -36,7 +38,64 @@ class UpdateStockTransactionRequest extends FormRequest
             'items.*.quantity' => ['required', 'numeric', 'not_in:0'],
             'items.*.unit_cost' => ['nullable', 'numeric', 'min:0'],
             'items.*.remarks' => ['nullable', 'string'],
+
+            // Variants are an Optional per-Item Breakdown (Setup Product Variants Modal).
+            // Each Variant Row picks one of the Product's existing product_variants.
+            'items.*.variants' => ['nullable', 'array'],
+            'items.*.variants.*.product_variant_id' => ['required', 'integer', Rule::exists('product_variants', 'id')],
+            'items.*.variants.*.quantity' => ['required', 'numeric', 'not_in:0'],
+            'items.*.variants.*.unit_cost' => ['nullable', 'numeric', 'min:0'],
+            'items.*.variants.*.remarks' => ['nullable', 'string'],
         ];
+    }
+
+    /**
+     * Cross-field rules that span sibling array fields — see
+     * StoreStockTransactionRequest::withValidator for the shared logic.
+     */
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator) {
+            $items = $this->input('items', []);
+
+            foreach ($items as $index => $item) {
+                $variants = $item['variants'] ?? [];
+
+                if (empty($variants)) {
+                    continue;
+                }
+
+                $itemQuantity = (float) ($item['quantity'] ?? 0);
+                $variantsTotal = array_sum(array_map(fn ($variant) => (float) ($variant['quantity'] ?? 0), $variants));
+
+                if (abs($itemQuantity - $variantsTotal) > 0.01) {
+                    $validator->errors()->add(
+                        "items.{$index}.variants",
+                        __('Variant Quantities (:variants_total) must Sum to the Item Quantity (:item_quantity).', [
+                            'variants_total' => $variantsTotal,
+                            'item_quantity' => $itemQuantity,
+                        ])
+                    );
+                }
+
+                $productId = (int) ($item['product_id'] ?? 0);
+                $variantIds = array_filter(array_column($variants, 'product_variant_id'));
+
+                if ($productId && $variantIds) {
+                    $validCount = ProductVariant::query()
+                        ->where('product_id', $productId)
+                        ->whereIn('id', $variantIds)
+                        ->count();
+
+                    if ($validCount !== count(array_unique($variantIds))) {
+                        $validator->errors()->add(
+                            "items.{$index}.variants",
+                            __('One or more Selected Variants do not Belong to the Selected Product.')
+                        );
+                    }
+                }
+            }
+        });
     }
 
     public function messages(): array
@@ -79,6 +138,19 @@ class UpdateStockTransactionRequest extends FormRequest
             'items.*.unit_cost.min' => __('Unit Cost may not be Negative'),
 
             'items.*.remarks.string' => __('Line Remarks must be a Valid String'),
+
+            'items.*.variants.*.product_variant_id.required' => __('Variant Selection is Invalid'),
+            'items.*.variants.*.product_variant_id.integer' => __('Variant Selection is Invalid'),
+            'items.*.variants.*.product_variant_id.exists' => __('Selected Variant does not Exist'),
+
+            'items.*.variants.*.quantity.required' => __('Quantity is Required for Every Selected Variant'),
+            'items.*.variants.*.quantity.numeric' => __('Variant Quantity must be a Valid Number'),
+            'items.*.variants.*.quantity.not_in' => __('Variant Quantity may not be Zero'),
+
+            'items.*.variants.*.unit_cost.numeric' => __('Variant Unit Cost must be a Valid Number'),
+            'items.*.variants.*.unit_cost.min' => __('Variant Unit Cost may not be Negative'),
+
+            'items.*.variants.*.remarks.string' => __('Variant Remarks must be a Valid String'),
         ];
     }
 }

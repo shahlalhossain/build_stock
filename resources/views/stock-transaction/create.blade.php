@@ -236,6 +236,11 @@
                                     </td>
                                 </tr>
                             </template>
+                            <!--
+                            NOTE: The Modal above lists the Product's existing Variants directly (one Row per
+                            product_variants row) — see the script block for how variant-row-label/data-variant-id
+                            are populated. It no longer builds Attribute x Value Combinations client-side.
+                            -->
                             <div class="card-footer">
                                 <div class="row">
                                     <div class="col-6 text-start">
@@ -357,21 +362,19 @@
             |--------------------------------------------------------------------------
             | SETUP PRODUCT VARIANTS
             |--------------------------------------------------------------------------
-            | Per-Product Attribute-Value groups are preloaded as JSON (no AJAX round-
-            | trip), matching this app's existing Specifications/Category filter
-            | convention. Each group is one Attribute with its available Values for
-            | that Product; the Modal builds the Attribute x Value Combinations
-            | (cartesian product) client-side and lets the User optionally break the
-            | Line's Quantity down per Combination.
+            | Each Product's existing Variants (product_variants rows) are preloaded as
+            | JSON (no AJAX round-trip), matching this app's existing Specifications/
+            | Category filter convention. The Modal lists these Variants directly and
+            | lets the User optionally break the Line's Quantity down per Variant.
             */
-            const productVariantAttributes = @json($productVariantAttributes ?? []);
+            const productVariants = @json($productVariants ?? []);
             const productNames = @json($products->mapWithKeys(fn ($product) => [$product->id => $product->name]));
 
             let $activeVariantsRow = null;
 
             function productHasVariants(productId) {
-                const groups = productVariantAttributes[productId];
-                return Array.isArray(groups) && groups.length > 0;
+                const variants = productVariants[productId];
+                return Array.isArray(variants) && variants.length > 0;
             }
 
             function refreshVariantsButtonState($row) {
@@ -399,38 +402,6 @@
             $(document).on('input change', '.item-quantity', function () {
                 refreshVariantsButtonState($(this).closest('.repeater-row'));
             });
-
-            /*
-            |--------------------------------------------------------------------------
-            | VARIANTS MODAL: BUILD COMBINATIONS (CARTESIAN PRODUCT OF ATTRIBUTE GROUPS)
-            |--------------------------------------------------------------------------
-            */
-            function buildCombinations(groups) {
-                let combinations = [[]];
-
-                groups.forEach(function (group) {
-                    const next = [];
-
-                    combinations.forEach(function (combo) {
-                        group.values.forEach(function (value) {
-                            next.push(combo.concat([{
-                                attribute_id: group.attribute_id,
-                                attribute_name: group.attribute_name,
-                                attribute_value_id: value.attribute_value_id,
-                                value: value.value,
-                            }]));
-                        });
-                    });
-
-                    combinations = next;
-                });
-
-                return combinations;
-            }
-
-            function formatCombinationLabel(combo) {
-                return combo.map(part => part.attribute_name + ': ' + part.value).join(' — ');
-            }
 
             function syncVariantRowTotal($row) {
                 const quantity = parseFloat($row.find('.variant-row-quantity').val());
@@ -486,9 +457,9 @@
             $(document).on('click', '.item-setup-variants', function () {
                 const $row = $(this).closest('.repeater-row');
                 const productId = $row.find('.item-product').val();
-                const groups = productVariantAttributes[productId];
+                const variants = productVariants[productId];
 
-                if (!groups || !groups.length) {
+                if (!variants || !variants.length) {
                     return;
                 }
 
@@ -505,21 +476,17 @@
 
                 const existingPayload = $row.find('.item-variants-payload').val();
                 const existingVariants = existingPayload ? JSON.parse(existingPayload) : [];
-                const existingByKey = {};
+                const existingById = {};
                 existingVariants.forEach(function (variant) {
-                    existingByKey[variant.attribute_value_ids.slice().sort().join(',')] = variant;
+                    existingById[variant.product_variant_id] = variant;
                 });
 
-                const combinations = buildCombinations(groups);
-
-                combinations.forEach(function (combo) {
+                variants.forEach(function (variant) {
                     const $variantRow = $(rowTemplate);
-                    const attributeValueIds = combo.map(part => part.attribute_value_id);
-                    const key = attributeValueIds.slice().sort().join(',');
-                    const existing = existingByKey[key];
+                    const existing = existingById[variant.id];
 
-                    $variantRow.attr('data-attribute-value-ids', JSON.stringify(attributeValueIds));
-                    $variantRow.find('.variant-row-label').text(formatCombinationLabel(combo));
+                    $variantRow.attr('data-variant-id', variant.id);
+                    $variantRow.find('.variant-row-label').text(variant.label + (variant.sku ? ' (' + variant.sku + ')' : ''));
 
                     if (existing) {
                         $variantRow.find('.variant-row-enabled').prop('checked', true);
@@ -558,7 +525,7 @@
                     }
 
                     variants.push({
-                        attribute_value_ids: JSON.parse($(this).attr('data-attribute-value-ids')),
+                        product_variant_id: $(this).attr('data-variant-id'),
                         quantity: quantity,
                         unit_cost: $(this).find('.variant-row-unit-price').val() || null,
                         remarks: $(this).find('.variant-row-remarks').val() || null,
@@ -668,13 +635,11 @@
                     variants.forEach(function (variant, variantIndex) {
                         const prefix = 'items[' + rowIndex + '][variants][' + variantIndex + ']';
 
-                        variant.attribute_value_ids.forEach(function (attributeValueId) {
-                            $row.append(
-                                $('<input type="hidden" class="item-variants-generated">')
-                                    .attr('name', prefix + '[attribute_value_ids][]')
-                                    .val(attributeValueId)
-                            );
-                        });
+                        $row.append(
+                            $('<input type="hidden" class="item-variants-generated">')
+                                .attr('name', prefix + '[product_variant_id]')
+                                .val(variant.product_variant_id)
+                        );
 
                         $row.append(
                             $('<input type="hidden" class="item-variants-generated">')

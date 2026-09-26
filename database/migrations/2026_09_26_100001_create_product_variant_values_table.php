@@ -6,20 +6,28 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
-        Schema::create('product_variant_attribute_values', function (Blueprint $table) {
+        Schema::create('product_variant_values', function (Blueprint $table) {
             $table->id();
+
             $table->foreignId('product_variant_id')->constrained('product_variants')->cascadeOnDelete();
-            $table->foreignId('attribute_value_id')->constrained('attribute_values')->cascadeOnDelete();
+            $table->foreignId('attribute_value_id')->constrained('attribute_values');
+
             $table->timestamps();
 
-            $table->unique(['product_variant_id', 'attribute_value_id'], 'pvav_variant_attr_value_unique');
+            $table->unique(['product_variant_id', 'attribute_value_id'], 'product_variant_values_variant_value_unique');
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
-        Schema::dropIfExists('product_variant_attribute_values');
+        Schema::dropIfExists('product_variant_values');
     }
 };

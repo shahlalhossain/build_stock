@@ -259,7 +259,17 @@
 
 <!-- Dropzone min -->
 <script src="{{ asset('assets/libs/dropzone/dropzone-min.js') }}"></script>
-<script src="{{ asset('/assets/js/pages/form-file-upload.init.js') }}"></script>
+{{--
+    Velzon's own demo init script (form-file-upload.init.js) is deliberately NOT
+    loaded here: it hardcodes #dropzone-preview-list and the .dropzone class
+    (Velzon's demo IDs/classes) and unconditionally attaches its own Dropzone
+    instance to ANY .dropzone element on ANY page — colliding with a real
+    page-specific Dropzone (see product/create.blade.php) and silently breaking
+    it via Dropzone's own "already attached" guard. It also unconditionally calls
+    FilePond.registerPlugin(...), which throws "FilePond is not defined" on every
+    page load since this app has no FilePond input anywhere. Nothing in this app
+    depends on it.
+--}}
 
 <!-- ChoiceJS for Multi Select -->
 <script src="{{ asset('assets/libs/choices.js/public/assets/scripts/choices.min.js') }}"></script>

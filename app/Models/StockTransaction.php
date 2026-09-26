@@ -27,7 +27,7 @@ class StockTransaction extends Model
         'supplier_id',
         'linked_transaction_id',
         'product_id',
-        'product_attribute_value_id',
+        'product_variant_id',
         'transaction_date',
         'remarks',
         'status',
@@ -105,7 +105,7 @@ class StockTransaction extends Model
             'supplier_id' => 'integer',
             'linked_transaction_id' => 'integer',
             'product_id' => 'integer',
-            'product_attribute_value_id' => 'integer',
+            'product_variant_id' => 'integer',
             'created_by' => 'integer',
             'updated_by' => 'integer',
             'deleted_by' => 'integer',
@@ -158,11 +158,11 @@ class StockTransaction extends Model
     }
 
     /**
-     * Primary/first line item's Product Attribute Value — see product() note above.
+     * Primary/first line item's Product Variant — see product() note above.
      */
-    public function productAttributeValue(): BelongsTo
+    public function productVariant(): BelongsTo
     {
-        return $this->belongsTo(ProductAttributeValue::class, 'product_attribute_value_id');
+        return $this->belongsTo(ProductVariant::class, 'product_variant_id');
     }
 
     public function approvalLogs()

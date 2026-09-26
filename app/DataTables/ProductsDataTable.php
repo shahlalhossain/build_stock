@@ -26,20 +26,25 @@ class ProductsDataTable extends DataTable
             ->editColumn('name', function (Product $product) {
                 return ucwords($product->name);
             })
+            ->addColumn('variant_count', function (Product $product) {
+                return $product->variants_count;
+            })
             ->editColumn('Category', function (Product $product) {
                 return $product->category?->name;
             })
             ->editColumn('Brand', function (Product $product) {
                 return $product->brand?->name ?? '--';
             })
-            ->editColumn('Unit', function (Product $product) {
-                return $product->unit?->symbol ?? '--';
-            })
-            ->addColumn('is_active', function (Product $product) {
-                return $product->is_active ? '<span class="badge bg-success">Yes</span>' : '<span class="badge bg-danger">No</span>';
-            })
-            ->editColumn('created_at', function (Product $product) {
-                return $product->created_at->format('Y-m-d H:i');
+            ->addColumn('status', function (Product $product) {
+                $map = [
+                    'pending' => 'bg-warning',
+                    'approved' => 'bg-success',
+                    'rejected' => 'bg-danger',
+                ];
+
+                $class = $map[$product->status] ?? 'bg-secondary';
+
+                return '<span class="badge '.$class.'">'.ucfirst($product->status ?? '--').'</span>';
             })
             ->addColumn('actions', function (Product $product) {
                 if ($this->showTrashed) {
@@ -48,7 +53,7 @@ class ProductsDataTable extends DataTable
 
                 return view('product.actions', ['product' => $product]);
             })
-            ->rawColumns(['is_active']);
+            ->rawColumns(['status']);
     }
 
     /**
@@ -57,10 +62,10 @@ class ProductsDataTable extends DataTable
     public function query(Product $model): QueryBuilder
     {
         if ($this->showTrashed) {
-            return $model->newQuery()->with(['category', 'brand', 'unit'])->onlyTrashed();   // Show Trashed Records
+            return $model->newQuery()->with(['category', 'brand'])->withCount('variants')->onlyTrashed();   // Show Trashed Records
         }
 
-        return $model->newQuery()->with(['category', 'brand', 'unit'])->withoutTrashed();    // Show Active Records
+        return $model->newQuery()->with(['category', 'brand'])->withCount('variants')->withoutTrashed();    // Show Active Records
     }
 
     /**
@@ -90,14 +95,12 @@ class ProductsDataTable extends DataTable
     {
         return [
             Column::computed('DT_RowIndex')->title('SN')->orderable(false)->searchable(false)->addClass('text-center'),
-            Column::make('name')->orderable(true)->searchable(true),
-            Column::make('code')->orderable(true)->searchable(true),
+            Column::make('name')->title('Name')->orderable(true)->searchable(true),
             Column::make('sku')->title('SKU')->orderable(true)->searchable(true),
+            Column::computed('variant_count')->title('Variant')->orderable(false)->searchable(false)->addClass('text-center'),
             Column::make('Category', 'category')->orderable(false)->searchable(false),
             Column::make('Brand', 'brand')->orderable(false)->searchable(false),
-            Column::make('Unit', 'unit')->orderable(false)->searchable(false)->addClass('text-center'),
-            Column::computed('is_active')->title('Active')->orderable(false)->searchable(false)->addClass('text-center'),
-            Column::make('created_at')->orderable(true)->searchable(true)->addClass('text-center'),
+            Column::computed('status')->title('Status')->orderable(false)->searchable(false)->addClass('text-center'),
             Column::computed('actions')
                 ->orderable(false)
                 ->searchable(false)

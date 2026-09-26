@@ -5,9 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class ProductStock extends Model
+class ProductVariantValue extends Model
 {
-    protected $table = 'product_stocks';
+    protected $table = 'product_variant_values';
+
+    public $timestamps = true;
 
     /**
      * The attributes that are mass assignable.
@@ -15,13 +17,11 @@ class ProductStock extends Model
      * @var list<string>
      */
     protected $fillable = [
-        'product_id',
         'product_variant_id',
-        'store_id',
-        'quantity',
+        'attribute_value_id',
     ];
 
-    protected $guarded = ['id', 'created_at', 'updated_at'];
+    protected $guarded = ['id'];
 
     /**
      * Get the attributes that should be cast.
@@ -33,16 +33,9 @@ class ProductStock extends Model
         return [
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
-            'product_id' => 'integer',
             'product_variant_id' => 'integer',
-            'store_id' => 'integer',
-            'quantity' => 'decimal:2',
+            'attribute_value_id' => 'integer',
         ];
-    }
-
-    public function product(): BelongsTo
-    {
-        return $this->belongsTo(Product::class, 'product_id');
     }
 
     public function productVariant(): BelongsTo
@@ -50,8 +43,8 @@ class ProductStock extends Model
         return $this->belongsTo(ProductVariant::class, 'product_variant_id');
     }
 
-    public function store(): BelongsTo
+    public function attributeValue(): BelongsTo
     {
-        return $this->belongsTo(Store::class, 'store_id');
+        return $this->belongsTo(AttributeValue::class, 'attribute_value_id');
     }
 }

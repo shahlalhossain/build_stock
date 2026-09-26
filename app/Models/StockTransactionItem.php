@@ -17,7 +17,7 @@ class StockTransactionItem extends Model
     protected $fillable = [
         'stock_transaction_id',
         'product_id',
-        'product_attribute_value_id',
+        'product_variant_id',
         'quantity',
         'unit_cost',
         'remarks',
@@ -37,7 +37,7 @@ class StockTransactionItem extends Model
             'updated_at' => 'datetime',
             'stock_transaction_id' => 'integer',
             'product_id' => 'integer',
-            'product_attribute_value_id' => 'integer',
+            'product_variant_id' => 'integer',
             'quantity' => 'decimal:2',
             'unit_cost' => 'decimal:2',
         ];
@@ -53,8 +53,8 @@ class StockTransactionItem extends Model
         return $this->belongsTo(Product::class, 'product_id');
     }
 
-    public function productAttributeValue(): BelongsTo
+    public function productVariant(): BelongsTo
     {
-        return $this->belongsTo(ProductAttributeValue::class, 'product_attribute_value_id');
+        return $this->belongsTo(ProductVariant::class, 'product_variant_id');
     }
 }

@@ -10,7 +10,6 @@ use App\Events\StockTransaction\StockTransactionStatusUpdated;
 use App\Events\StockTransaction\StockTransactionUpdated;
 use App\Exceptions\GeneralException;
 use App\Models\ApprovalLog;
-use App\Models\ProductAttributeValue;
 use App\Models\ProductStock;
 use App\Models\StockTransaction;
 use Exception;
@@ -138,8 +137,8 @@ class StockTransactionService extends BaseService
     }
 
     /**
-     * Derive the header-level product_id/product_attribute_value_id from the first
-     * Line Item (and its first Variant, if any) — a "primary item" convenience
+     * Derive the header-level product_id/product_variant_id from the first Line
+     * Item (and its first selected Variant, if any) — a "primary item" convenience
      * reference only; stock_transaction_items remains the source of truth for
      * quantities. A Transaction with no Items yields nulls (both columns are nullable).
      */
@@ -148,52 +147,24 @@ class StockTransactionService extends BaseService
         $firstItem = $items[0] ?? null;
 
         if (! $firstItem) {
-            return ['product_id' => null, 'product_attribute_value_id' => null];
+            return ['product_id' => null, 'product_variant_id' => null];
         }
 
         $firstVariant = $firstItem['variants'][0] ?? null;
-        $firstAttributeValueId = $firstVariant['attribute_value_ids'][0] ?? null;
 
         return [
             'product_id' => $firstItem['product_id'] ?? null,
-            'product_attribute_value_id' => $firstAttributeValueId
-                ? $this->resolveProductAttributeValueId((int) $firstItem['product_id'], (int) $firstAttributeValueId)
-                : null,
+            'product_variant_id' => $firstVariant['product_variant_id'] ?? null,
         ];
-    }
-
-    /**
-     * Resolve the product_attribute_values.id pivot row for a given (product, attribute_value)
-     * pair — this is what stock_transaction_items.product_attribute_value_id actually
-     * points to, not attribute_values.id directly.
-     *
-     * @throws GeneralException
-     */
-    protected function resolveProductAttributeValueId(int $productId, int $attributeValueId): int
-    {
-        $id = ProductAttributeValue::query()
-            ->where('product_id', $productId)
-            ->where('attribute_value_id', $attributeValueId)
-            ->value('id');
-
-        if (! $id) {
-            throw new GeneralException(__('Selected Variant Value does not Belong to the Selected Product.'));
-        }
-
-        return $id;
     }
 
     /**
      * Create the Line Items for a given Stock Transaction.
      *
      * When an Item carries a Variant breakdown (from the "Setup Product Variants"
-     * modal), one stock_transaction_item row is inserted PER attribute-value in each
-     * selected combination, with the combination's quantity split evenly across
-     * those rows. This is an accounting-split convention (not a real per-attribute
-     * stock count) required because product_attribute_value_id is a single FK and
-     * cannot reference a whole combination — any future sum of quantity by product
-     * MUST dedupe/reconstruct combinations first, or totals will read correctly only
-     * by coincidence for single-attribute variants.
+     * modal), one stock_transaction_item row is inserted per selected Variant, with
+     * that Variant's own (whole, un-split) Quantity — each Variant is a real
+     * product_variants row, so no accounting-split across Attribute Values is needed.
      *
      * @throws GeneralException
      */
@@ -205,7 +176,7 @@ class StockTransactionService extends BaseService
             if (empty($variants)) {
                 $stockTransaction->items()->create([
                     'product_id' => $item['product_id'] ?? null,
-                    'product_attribute_value_id' => null,
+                    'product_variant_id' => null,
                     'quantity' => $item['quantity'] ?? 0,
                     'unit_cost' => $item['unit_cost'] ?? null,
                     'remarks' => $item['remarks'] ?? null,
@@ -215,21 +186,13 @@ class StockTransactionService extends BaseService
             }
 
             foreach ($variants as $variant) {
-                $attributeValueIds = $variant['attribute_value_ids'] ?? [];
-                $variantQuantity = (float) ($variant['quantity'] ?? 0);
-                $splitQuantity = count($attributeValueIds) > 0
-                    ? $variantQuantity / count($attributeValueIds)
-                    : $variantQuantity;
-
-                foreach ($attributeValueIds as $attributeValueId) {
-                    $stockTransaction->items()->create([
-                        'product_id' => $item['product_id'] ?? null,
-                        'product_attribute_value_id' => $this->resolveProductAttributeValueId((int) $item['product_id'], (int) $attributeValueId),
-                        'quantity' => $splitQuantity,
-                        'unit_cost' => $variant['unit_cost'] ?? ($item['unit_cost'] ?? null),
-                        'remarks' => $variant['remarks'] ?? null,
-                    ]);
-                }
+                $stockTransaction->items()->create([
+                    'product_id' => $item['product_id'] ?? null,
+                    'product_variant_id' => $variant['product_variant_id'] ?? null,
+                    'quantity' => $variant['quantity'] ?? 0,
+                    'unit_cost' => $variant['unit_cost'] ?? ($item['unit_cost'] ?? null),
+                    'remarks' => $variant['remarks'] ?? null,
+                ]);
             }
         }
     }
@@ -440,9 +403,9 @@ class StockTransactionService extends BaseService
                 ->where('product_id', $item->product_id)
                 ->where('store_id', $stockTransaction->store_id)
                 ->when(
-                    $item->product_attribute_value_id !== null,
-                    fn ($query) => $query->where('product_attribute_value_id', $item->product_attribute_value_id),
-                    fn ($query) => $query->whereNull('product_attribute_value_id')
+                    $item->product_variant_id !== null,
+                    fn ($query) => $query->where('product_variant_id', $item->product_variant_id),
+                    fn ($query) => $query->whereNull('product_variant_id')
                 )
                 ->lockForUpdate()
                 ->first();
@@ -450,7 +413,7 @@ class StockTransactionService extends BaseService
             if (! $productStock) {
                 $productStock = ProductStock::create([
                     'product_id' => $item->product_id,
-                    'product_attribute_value_id' => $item->product_attribute_value_id,
+                    'product_variant_id' => $item->product_variant_id,
                     'store_id' => $stockTransaction->store_id,
                     'quantity' => 0,
                 ]);
