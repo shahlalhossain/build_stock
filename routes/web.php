@@ -16,6 +16,7 @@ use App\Http\Controllers\UnitConversionsController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectsController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\ProductDeliveriesController;
 use App\Http\Controllers\ProductPurchasesController;
 use App\Http\Controllers\ProductReceivesController;
 use App\Http\Controllers\ProductRequisitionsController;
@@ -322,6 +323,22 @@ Route::middleware('auth:web')->group(function () {
             Route::delete('/', [ProductReceivesController::class, 'destroy'])->name('destroy');
             Route::post('restore', [ProductReceivesController::class, 'restore'])->name('restore');
             Route::delete('force-delete', [ProductReceivesController::class, 'delete'])->name('delete');
+        });
+    });
+
+    Route::group(['prefix' => 'product-delivery', 'as' => 'product-delivery.'], function () {
+        Route::get('/', [ProductDeliveriesController::class, 'index'])->name('index');
+        Route::get('create', [ProductDeliveriesController::class, 'create'])->name('create');
+        Route::post('/', [ProductDeliveriesController::class, 'store'])->name('store');
+        Route::get('/trash', [ProductDeliveriesController::class, 'trash'])->name('trash');
+        Route::group(['prefix' => '{product_delivery}'], function () {
+            Route::get('/', [ProductDeliveriesController::class, 'show'])->name('show')->withTrashed();
+            Route::get('edit', [ProductDeliveriesController::class, 'edit'])->name('edit');
+            Route::patch('/', [ProductDeliveriesController::class, 'update'])->name('update');
+            Route::post('update-status', [ProductDeliveriesController::class, 'updateStatus'])->name('update-status');
+            Route::delete('/', [ProductDeliveriesController::class, 'destroy'])->name('destroy');
+            Route::post('restore', [ProductDeliveriesController::class, 'restore'])->name('restore');
+            Route::delete('force-delete', [ProductDeliveriesController::class, 'delete'])->name('delete');
         });
     });
 

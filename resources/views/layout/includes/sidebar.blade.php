@@ -135,6 +135,13 @@
                 </li>
                 <div class="divider"></div>
 
+                <li class="nav-item {{ request()->routeIs('product-delivery.*') ? 'active-menu' : '' }}">
+                    <a class="nav-link" href="{{ route('product-delivery.index') }}">
+                        <i class="ri-apps-2-line"></i><span>{{ __('Product Delivery') }}</span>
+                    </a>
+                </li>
+                <div class="divider"></div>
+
                 <li class="nav-item {{ request()->routeIs('stock-transaction.*') ? 'active-menu' : '' }}">
                     <a class="nav-link" href="{{ route('stock-transaction.index') }}">
                         <i class="ri-apps-2-line"></i><span>{{ __('Stock Transaction') }}</span>
