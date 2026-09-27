@@ -47,11 +47,6 @@
                                                 @error('store_id')<small class="text-danger">{{ $message }}</small>@enderror
                                             </div>
                                         </div>
-                                    </div>
-                                    <!-- End Left Column -->
-
-                                    <!-- Start Right Column -->
-                                    <div class="col-12 col-md-6">
                                         <div class="row mb-2">
                                             <label for="transaction_date" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Requisition Date') }}</label>
                                             <div class="col-12 col-md-8">
@@ -59,11 +54,15 @@
                                                 @error('transaction_date')<small class="text-danger">{{ $message }}</small>@enderror
                                             </div>
                                         </div>
+                                    </div>
+                                    <!-- End Left Column -->
 
+                                    <!-- Start Right Column -->
+                                    <div class="col-12 col-md-6">
                                         <div class="row mb-2">
                                             <label for="remarks" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Remarks') }}</label>
                                             <div class="col-12 col-md-8">
-                                                <textarea class="form-control @error('remarks') is-invalid @enderror" id="remarks" name="remarks" rows="2">{{ old('remarks') }}</textarea>
+                                                <textarea class="form-control @error('remarks') is-invalid @enderror" id="remarks" name="remarks" rows="3">{{ old('remarks') }}</textarea>
                                                 @error('remarks')<small class="text-danger">{{ $message }}</small>@enderror
                                             </div>
                                         </div>
@@ -86,8 +85,8 @@
                                             <th style="width: 5%;"></th>
                                             <th style="width: 28%;">{{ __('Product') }}</th>
                                             <th style="width: 20%;">{{ __('Variant') }}</th>
-                                            <th style="width: 15%;">{{ __('Quantity') }}</th>
                                             <th style="width: 12%;">{{ __('Unit') }}</th>
+                                            <th style="width: 15%;">{{ __('Quantity') }}</th>
                                             <th style="width: 20%;">{{ __('Remarks') }}</th>
                                         </tr>
                                         </thead>
@@ -113,16 +112,16 @@
                                                 <option value="">{{ __('== No Variant ==') }}</option>
                                             </select>
                                         </td>
-                                        <td data-label="{{ __('Quantity') }}">
-                                            <input type="number" step="0.01" min="0.01" class="form-control item-quantity" data-field="quantity" placeholder="{{ __('Quantity') }}">
-                                        </td>
                                         <td data-label="{{ __('Unit') }}">
                                             <select class="form-select item-unit" data-field="unit_id">
                                                 <option value="">{{ __('== Unit ==') }}</option>
                                                 @foreach($units as $unit)
-                                                    <option value="{{ $unit->id }}">{{ $unit->name }} @if($unit->symbol) ({{ $unit->symbol }}) @endif</option>
+                                                    <option value="{{ $unit->id }}">{{ $unit->name }}</option>
                                                 @endforeach
                                             </select>
+                                        </td>
+                                        <td data-label="{{ __('Quantity') }}">
+                                            <input type="number" step="0.01" min="0.01" class="form-control item-quantity" data-field="quantity" placeholder="{{ __('Quantity') }}">
                                         </td>
                                         <td data-label="{{ __('Remarks') }}">
                                             <input type="text" class="form-control item-remarks" data-field="remarks" placeholder="{{ __('Remarks') }}">

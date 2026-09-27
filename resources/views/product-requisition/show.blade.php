@@ -23,7 +23,7 @@
                         <div class="card-body">
 
                             <div class="row">
-                                <div class="col-12 col-md-7 order-1">
+                                <div class="col-12 col-md-6 order-1">
                                     <table class="table table-hover table-responsive table-bordered table-sm">
                                         <tbody>
                                         <tr><th class="text-end pe-2">{{ __('Code') }}</th><td class="text-start ps-2">{{ $productRequisition->code }}</td></tr>
@@ -72,49 +72,46 @@
                                         </tr>
                                         </tbody>
                                     </table>
-
-                                    <h6 class="fw-bold fst-italic">{{ __('Requested Items') }}</h6>
-                                    <div class="table-responsive">
-                                        <table class="table table-sm table-bordered">
-                                            <thead>
-                                            <tr>
-                                                <th>{{ __('Product') }}</th>
-                                                <th>{{ __('Variant') }}</th>
-                                                <th>{{ __('Quantity') }}</th>
-                                                <th>{{ __('Unit') }}</th>
-                                                <th>{{ __('Remarks') }}</th>
-                                            </tr>
-                                            </thead>
-                                            <tbody>
-                                            @forelse($productRequisition->items as $item)
-                                                <tr>
-                                                    <td>{{ $item->product?->name }} @if($item->product?->code) ({{ $item->product->code }}) @endif</td>
-                                                    <td>{{ $item->productVariant?->variant_name ?? '' }}</td>
-                                                    <td>{{ $item->quantity }}</td>
-                                                    <td>{{ $item->unit?->name }} @if($item->unit?->symbol) ({{ $item->unit->symbol }}) @endif</td>
-                                                    <td>{{ $item->remarks }}</td>
-                                                </tr>
-                                            @empty
-                                                <tr><td colspan="5" class="text-center">{{ __('No Line Items Found') }}</td></tr>
-                                            @endforelse
-                                            </tbody>
-                                        </table>
-                                    </div>
                                 </div>
-                                <div class="col-12 col-md-5 ps-5 order-2">
-                                    <table class="table table-hover table-responsive table-bordered table-sm">
-                                        <tbody>
-                                        <tr><th class="text-end pe-2">{{ __('Created By') }}</th><td class="text-start ps-2">{{ $productRequisition->creator?->name ?? '' }}</td></tr>
-                                        <tr><th class="text-end pe-2">{{ __('Created At') }}</th><td class="text-start ps-2">{{ $productRequisition->created_at->format('Y-m-d H:i:s') }}</td></tr>
-                                        <tr><th class="text-end pe-2">{{ __('Updated By') }}</th><td class="text-start ps-2">{{ $productRequisition->updater?->name ?? '' }}</td></tr>
-                                        <tr><th class="text-end pe-2">{{ __('Updated At') }}</th><td class="text-start ps-2">{{ $productRequisition->updated_at->format('Y-m-d H:i:s') }}</td></tr>
+                                <div class="col-12 col-md-6 order-2">
+                                    @php
+                                        $auditLogs = [
+                                            [
+                                                'action' => __('Created'),
+                                                'user' => $productRequisition->creator?->name,
+                                                'at' => $productRequisition->created_at,
+                                            ],
+                                            [
+                                                'action' => __('Updated'),
+                                                'user' => $productRequisition->updater?->name,
+                                                'at' => $productRequisition->updated_at,
+                                            ],
+                                        ];
 
-                                        @if($productRequisition->trashed())
-                                            <tr><th class="text-end pe-2">{{ __('Deleted By') }}</th><td class="text-start ps-2">{{ $productRequisition->deleter?->name ?? '' }}</td></tr>
-                                            <tr><th class="text-end pe-2">{{ __('Deleted At') }}</th><td class="text-start ps-2">{{ $productRequisition->deleted_at->format('Y-m-d H:i:s') }}</td></tr>
-                                        @endif
-                                        </tbody>
-                                    </table>
+                                        if ($productRequisition->trashed()) {
+                                            $auditLogs[] = [
+                                                'action' => __('Deleted'),
+                                                'user' => $productRequisition->deleter?->name,
+                                                'at' => $productRequisition->deleted_at,
+                                            ];
+                                        }
+                                    @endphp
+
+                                    @foreach($auditLogs as $log)
+                                        <hr style="padding: 0 !important; margin: 0 !important;">
+
+                                        <div class="pb-2 pt-2">
+                                            <strong>{{ $log['action'] }}</strong>
+
+                                            @if($log['user'])
+                                                by <em>{{ $log['user'] }}</em>
+                                            @endif
+
+                                            @if($log['at'])
+                                                at {{ $log['at']->format('d F, Y h:i A') }}
+                                            @endif
+                                        </div>
+                                    @endforeach
 
                                     @if($productRequisition->approvalLogs->isNotEmpty())
                                         @foreach($productRequisition->approvalLogs as $log)
@@ -127,7 +124,7 @@
                                                 @endif
 
                                                 @if($log->actioned_at)
-                                                    on {{ $log->actioned_at->format('d F, Y h:i A') }}
+                                                    at {{ $log->actioned_at->format('d F, Y h:i A') }}
                                                 @endif
                                                 <br>
                                                 @if($log->remarks)
@@ -136,11 +133,97 @@
                                             </div>
                                         @endforeach
                                         <hr style="padding: 0 !important; margin: 0 !important;">
-                                    @else
-                                        <p>No Approval History Found</p>
                                     @endif
                                 </div>
                             </div>
+
+                            <div class="row">
+                                <div class="col-12 pt-2">
+                                    <h6 class="fw-bold fst-italic">{{ __('Requested Items') }}</h6>
+
+                                    {{-- Desktop / Tablet View --}}
+                                    <div class="table-responsive d-none d-md-block">
+                                        <table class="table table-sm table-bordered">
+                                            <thead>
+                                            <tr>
+                                                <th>{{ __('Product') }}</th>
+                                                <th>{{ __('Variant') }}</th>
+                                                <th>{{ __('Quantity') }}</th>
+                                                <th>{{ __('Remarks') }}</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            @forelse($productRequisition->items as $item)
+                                                <tr>
+                                                    <td class="ps-2">
+                                                        {{ $item->product?->name }}
+                                                        @if($item->product?->code)
+                                                            ({{ $item->product->code }})
+                                                        @endif
+                                                    </td>
+                                                    <td class="ps-2">{{ $item->productVariant?->variant_name ?? '' }}</td>
+                                                    <td class="ps-2">{{ $item->quantity }} ({{ $item->unit?->symbol }})</td>
+                                                    <td class="ps-2">{{ $item->remarks }}</td>
+                                                </tr>
+                                            @empty
+                                                <tr>
+                                                    <td colspan="5" class="text-center">
+                                                        {{ __('No Items Found') }}
+                                                    </td>
+                                                </tr>
+                                            @endforelse
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    {{-- Mobile View --}}
+                                    <div class="d-md-none">
+                                        @forelse($productRequisition->items as $item)
+                                            <div class="border rounded mb-2 p-2">
+                                                {{-- Product --}}
+                                                <div class="mb-2">
+                                                    <div class="small text-muted">{{ __('Product') }}</div>
+                                                    <div class="fw-semibold">
+                                                        {{ $item->product?->name }}
+                                                        @if($item->product?->code)
+                                                            <span class="text-muted">({{ $item->product->code }})</span>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                                {{-- Variant --}}
+                                                @if($item->productVariant?->variant_name)
+                                                    <div class="mb-2">
+                                                        <div class="small text-muted">{{ __('Variant') }}</div>
+                                                        <div>{{ $item->productVariant->variant_name }}</div>
+                                                    </div>
+                                                @endif
+                                                {{-- Quantity + Unit --}}
+                                                <div class="row mb-2">
+                                                    <div class="col-6">
+                                                        <div class="small text-muted">{{ __('Quantity') }}</div>
+                                                        <div class="fw-semibold">
+                                                            {{ $item->quantity }}
+                                                            <span class="text-muted">({{ $item->unit?->symbol }})</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {{-- Remarks --}}
+                                                @if($item->remarks)
+                                                    <div>
+                                                        <div class="small text-muted">{{ __('Remarks') }}</div>
+                                                        <div>{{ $item->remarks }}</div>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        @empty
+                                            <div class="text-center text-muted py-2">
+                                                {{ __('No Items Found') }}
+                                            </div>
+                                        @endforelse
+                                    </div>
+                                </div>
+                            </div>
+
 
                             <div class="row">
                                 <div class="col-12 text-start mt-2 pb-2">

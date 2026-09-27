@@ -53,11 +53,6 @@
                                                 @error('store_id')<small class="text-danger">{{ $message }}</small>@enderror
                                             </div>
                                         </div>
-                                    </div>
-                                    <!-- End Left Column -->
-
-                                    <!-- Start Right Column -->
-                                    <div class="col-12 col-md-6">
                                         <div class="row mb-2">
                                             <label for="transaction_date" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Requisition Date') }}</label>
                                             <div class="col-12 col-md-8">
@@ -65,11 +60,15 @@
                                                 @error('transaction_date')<small class="text-danger">{{ $message }}</small>@enderror
                                             </div>
                                         </div>
+                                    </div>
+                                    <!-- End Left Column -->
 
+                                    <!-- Start Right Column -->
+                                    <div class="col-12 col-md-6">
                                         <div class="row mb-2">
                                             <label for="remarks" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Remarks') }}</label>
                                             <div class="col-12 col-md-8">
-                                                <textarea class="form-control @error('remarks') is-invalid @enderror" id="remarks" name="remarks" rows="2">{{ old('remarks', $productRequisition->remarks) }}</textarea>
+                                                <textarea class="form-control @error('remarks') is-invalid @enderror" id="remarks" name="remarks" rows="3">{{ old('remarks', $productRequisition->remarks) }}</textarea>
                                                 @error('remarks')<small class="text-danger">{{ $message }}</small>@enderror
                                             </div>
                                         </div>
@@ -119,9 +118,6 @@
                                                 <option value="">{{ __('== No Variant ==') }}</option>
                                             </select>
                                         </td>
-                                        <td data-label="{{ __('Quantity') }}">
-                                            <input type="number" step="0.01" min="0.01" class="form-control item-quantity" data-field="quantity" placeholder="{{ __('Quantity') }}">
-                                        </td>
                                         <td data-label="{{ __('Unit') }}">
                                             <select class="form-select item-unit" data-field="unit_id">
                                                 <option value="">{{ __('== Unit ==') }}</option>
@@ -129,6 +125,9 @@
                                                     <option value="{{ $unit->id }}">{{ $unit->name }} @if($unit->symbol) ({{ $unit->symbol }}) @endif</option>
                                                 @endforeach
                                             </select>
+                                        </td>
+                                        <td data-label="{{ __('Quantity') }}">
+                                            <input type="number" step="0.01" min="0.01" class="form-control item-quantity" data-field="quantity" placeholder="{{ __('Quantity') }}">
                                         </td>
                                         <td data-label="{{ __('Remarks') }}">
                                             <input type="text" class="form-control item-remarks" data-field="remarks" placeholder="{{ __('Remarks') }}">
@@ -162,13 +161,16 @@
     <script>
         $(document).ready(function () {
             const productVariants = @json($productVariants ?? []);
-            const existingItems = @json($productRequisition->items->map(fn ($item) => [
-                'product_id' => $item->product_id,
-                'product_variant_id' => $item->product_variant_id,
-                'unit_id' => $item->unit_id,
-                'quantity' => $item->quantity,
-                'remarks' => $item->remarks,
-            ]));
+            @php
+                $existingItemsData = $productRequisition->items->map(fn ($item) => [
+                    'product_id' => $item->product_id,
+                    'product_variant_id' => $item->product_variant_id,
+                    'unit_id' => $item->unit_id,
+                    'quantity' => $item->quantity,
+                    'remarks' => $item->remarks,
+                ]);
+            @endphp
+            const existingItems = @json($existingItemsData);
 
             function addRow(group) {
                 const template = document.getElementById(group + '-row-template').innerHTML;
@@ -208,15 +210,11 @@
                 syncVariantOptions($(this).closest('.repeater-row'), null);
             });
 
-            /*
-            |--------------------------------------------------------------------------
-            | PREVENT DUPLICATE PRODUCT / VARIANT SELECTION ACROSS LINE ITEMS
-            |--------------------------------------------------------------------------
-            | A Variant-less Product can only be picked once (disabled elsewhere as
-            | soon as it's selected). A Product WITH Variants may be picked in
-            | multiple Rows — one per Variant — so it's only disabled elsewhere once
-            | every one of its Variants has already been used up across all Rows.
-            */
+            // PREVENT DUPLICATE PRODUCT / VARIANT SELECTION ACROSS LINE ITEMS
+            // A Variant-less Product can only be picked once (disabled elsewhere as
+            // soon as it's selected). A Product WITH Variants may be picked in
+            // multiple Rows — one per Variant — so it's only disabled elsewhere once
+            // every one of its Variants has already been used up across all Rows.
             function refreshProductOptions() {
                 const $rows = $('.repeater-row[data-group="items"]');
 
@@ -270,11 +268,7 @@
                 });
             }
 
-            /*
-            |--------------------------------------------------------------------------
-            | PREVENT DUPLICATE VARIANT SELECTION WITHIN THE SAME PRODUCT
-            |--------------------------------------------------------------------------
-            */
+            // PREVENT DUPLICATE VARIANT SELECTION WITHIN THE SAME PRODUCT
             function refreshVariantOptions() {
                 const $rows = $('.repeater-row[data-group="items"]');
 
