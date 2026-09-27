@@ -18,6 +18,7 @@ use App\Http\Controllers\ProjectsController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ProductPurchasesController;
 use App\Http\Controllers\ProductRequisitionsController;
+use App\Http\Controllers\ProductTransfersController;
 use App\Http\Controllers\StockTransactionsController;
 use App\Http\Controllers\StoresController;
 use App\Http\Controllers\SubCategoriesController;
@@ -288,6 +289,22 @@ Route::middleware('auth:web')->group(function () {
             Route::post('restore', [ProductPurchasesController::class, 'restore'])->name('restore');
             Route::delete('force-delete', [ProductPurchasesController::class, 'delete'])->name('delete');
             Route::get('invoice-attachment', [ProductPurchasesController::class, 'downloadInvoiceAttachment'])->name('invoice-attachment')->withTrashed();
+        });
+    });
+
+    Route::group(['prefix' => 'product-transfer', 'as' => 'product-transfer.'], function () {
+        Route::get('/', [ProductTransfersController::class, 'index'])->name('index');
+        Route::get('create', [ProductTransfersController::class, 'create'])->name('create');
+        Route::post('/', [ProductTransfersController::class, 'store'])->name('store');
+        Route::get('/trash', [ProductTransfersController::class, 'trash'])->name('trash');
+        Route::group(['prefix' => '{product_transfer}'], function () {
+            Route::get('/', [ProductTransfersController::class, 'show'])->name('show')->withTrashed();
+            Route::get('edit', [ProductTransfersController::class, 'edit'])->name('edit');
+            Route::patch('/', [ProductTransfersController::class, 'update'])->name('update');
+            Route::post('update-status', [ProductTransfersController::class, 'updateStatus'])->name('update-status');
+            Route::delete('/', [ProductTransfersController::class, 'destroy'])->name('destroy');
+            Route::post('restore', [ProductTransfersController::class, 'restore'])->name('restore');
+            Route::delete('force-delete', [ProductTransfersController::class, 'delete'])->name('delete');
         });
     });
 
