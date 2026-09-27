@@ -4,11 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class ProductTransferItem extends Model
+class ProductReceiveItem extends Model
 {
-    protected $table = 'product_transfer_items';
+    protected $table = 'product_receive_items';
 
     /**
      * The attributes that are mass assignable.
@@ -16,12 +15,13 @@ class ProductTransferItem extends Model
      * @var list<string>
      */
     protected $fillable = [
-        'product_transfer_id',
+        'product_receive_id',
+        'transfer_item_id',
         'product_id',
         'product_variant_id',
         'unit_id',
-        'quantity',
-        'remarks',
+        'received_quantity',
+        'variance_remarks',
     ];
 
     protected $guarded = ['id', 'created_at', 'updated_at'];
@@ -36,17 +36,23 @@ class ProductTransferItem extends Model
         return [
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
-            'product_transfer_id' => 'integer',
+            'product_receive_id' => 'integer',
+            'transfer_item_id' => 'integer',
             'product_id' => 'integer',
             'product_variant_id' => 'integer',
             'unit_id' => 'integer',
-            'quantity' => 'decimal:2',
+            'received_quantity' => 'decimal:2',
         ];
     }
 
-    public function productTransfer(): BelongsTo
+    public function productReceive(): BelongsTo
     {
-        return $this->belongsTo(ProductTransfer::class, 'product_transfer_id');
+        return $this->belongsTo(ProductReceive::class, 'product_receive_id');
+    }
+
+    public function transferItem(): BelongsTo
+    {
+        return $this->belongsTo(ProductTransferItem::class, 'transfer_item_id');
     }
 
     public function product(): BelongsTo
@@ -62,10 +68,5 @@ class ProductTransferItem extends Model
     public function unit(): BelongsTo
     {
         return $this->belongsTo(ProductUnit::class, 'unit_id');
-    }
-
-    public function receiveItems(): HasMany
-    {
-        return $this->hasMany(ProductReceiveItem::class, 'transfer_item_id');
     }
 }

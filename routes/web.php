@@ -17,6 +17,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectsController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ProductPurchasesController;
+use App\Http\Controllers\ProductReceivesController;
 use App\Http\Controllers\ProductRequisitionsController;
 use App\Http\Controllers\ProductTransfersController;
 use App\Http\Controllers\StockTransactionsController;
@@ -305,6 +306,22 @@ Route::middleware('auth:web')->group(function () {
             Route::delete('/', [ProductTransfersController::class, 'destroy'])->name('destroy');
             Route::post('restore', [ProductTransfersController::class, 'restore'])->name('restore');
             Route::delete('force-delete', [ProductTransfersController::class, 'delete'])->name('delete');
+        });
+    });
+
+    Route::group(['prefix' => 'product-receive', 'as' => 'product-receive.'], function () {
+        Route::get('/', [ProductReceivesController::class, 'index'])->name('index');
+        Route::get('create', [ProductReceivesController::class, 'create'])->name('create');
+        Route::post('/', [ProductReceivesController::class, 'store'])->name('store');
+        Route::get('/trash', [ProductReceivesController::class, 'trash'])->name('trash');
+        Route::group(['prefix' => '{product_receive}'], function () {
+            Route::get('/', [ProductReceivesController::class, 'show'])->name('show')->withTrashed();
+            Route::get('edit', [ProductReceivesController::class, 'edit'])->name('edit');
+            Route::patch('/', [ProductReceivesController::class, 'update'])->name('update');
+            Route::post('update-status', [ProductReceivesController::class, 'updateStatus'])->name('update-status');
+            Route::delete('/', [ProductReceivesController::class, 'destroy'])->name('destroy');
+            Route::post('restore', [ProductReceivesController::class, 'restore'])->name('restore');
+            Route::delete('force-delete', [ProductReceivesController::class, 'delete'])->name('delete');
         });
     });
 
