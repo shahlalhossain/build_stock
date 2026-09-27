@@ -115,6 +115,19 @@
                                         </div>
 
                                         <div class="row mb-2">
+                                            <label for="unit_id" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Unit') }}</label>
+                                            <div class="col-12 col-md-8">
+                                                <select id="unit_id" name="unit_id" class="form-select @error('unit_id') is-invalid @enderror">
+                                                    <option value="">{{ __('== Select Unit ==') }}</option>
+                                                    @foreach($units as $unit)
+                                                        <option value="{{ $unit->id }}" @selected(old('unit_id') == $unit->id)>{{ $unit->name }} @if($unit->symbol) ({{ $unit->symbol }}) @endif</option>
+                                                    @endforeach
+                                                </select>
+                                                @error('unit_id')<small class="text-danger">{{ $message }}</small>@enderror
+                                            </div>
+                                        </div>
+
+                                        <div class="row mb-2">
                                             <label for="name" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Product Name') }}</label>
                                             <div class="col-12 col-md-8">
                                                 <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name') }}" required>

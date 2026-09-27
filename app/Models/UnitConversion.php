@@ -4,17 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
-class Product extends Model
+class UnitConversion extends Model
 {
     use LogsActivity, SoftDeletes;
 
-    protected $table = 'products';
+    protected $table = 'unit_conversions';
 
     /**
      * The attributes that are mass assignable.
@@ -22,17 +20,10 @@ class Product extends Model
      * @var list<string>
      */
     protected $fillable = [
-        'category_id',
-        'sub_category_id',
-        'brand_id',
+        'product_id',
         'unit_id',
-        'name',
-        'code',
-        'sku',
-        'description',
+        'factor_to_base',
         'is_active',
-        'has_variants',
-        'status',
         'created_by',
         'updated_by',
     ];
@@ -56,12 +47,10 @@ class Product extends Model
         return [
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
-            'category_id' => 'integer',
-            'sub_category_id' => 'integer',
-            'brand_id' => 'integer',
+            'product_id' => 'integer',
             'unit_id' => 'integer',
+            'factor_to_base' => 'decimal:6',
             'is_active' => 'boolean',
-            'has_variants' => 'boolean',
         ];
     }
 
@@ -75,39 +64,19 @@ class Product extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->useLogName('product')
+            ->useLogName('unit_conversion')
             ->logAll()
             ->logOnlyDirty();
     }
 
-    public function category(): BelongsTo
+    public function product(): BelongsTo
     {
-        return $this->belongsTo(Category::class, 'category_id');
-    }
-
-    public function subCategory(): BelongsTo
-    {
-        return $this->belongsTo(SubCategory::class, 'sub_category_id');
-    }
-
-    public function brand(): BelongsTo
-    {
-        return $this->belongsTo(Brand::class, 'brand_id');
+        return $this->belongsTo(Product::class, 'product_id');
     }
 
     public function unit(): BelongsTo
     {
         return $this->belongsTo(ProductUnit::class, 'unit_id');
-    }
-
-    public function attributeValues(): BelongsToMany
-    {
-        return $this->belongsToMany(
-            AttributeValue::class,
-            'product_attribute_values',
-            'product_id',
-            'attribute_value_id'
-        )->withTimestamps();
     }
 
     public function creator(): BelongsTo
@@ -123,30 +92,5 @@ class Product extends Model
     public function deleter(): BelongsTo
     {
         return $this->belongsTo(User::class, 'deleted_by');
-    }
-
-    public function approvalLogs()
-    {
-        return $this->morphMany(ApprovalLog::class, 'model');
-    }
-
-    public function stocks(): HasMany
-    {
-        return $this->hasMany(ProductStock::class, 'product_id');
-    }
-
-    public function productAttributeValues(): HasMany
-    {
-        return $this->hasMany(ProductAttributeValue::class, 'product_id');
-    }
-
-    public function variants(): HasMany
-    {
-        return $this->hasMany(ProductVariant::class, 'product_id');
-    }
-
-    public function unitConversions(): HasMany
-    {
-        return $this->hasMany(UnitConversion::class, 'product_id');
     }
 }

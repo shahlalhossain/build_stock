@@ -65,11 +65,11 @@
                 <div class="divider"></div>
 
                 <li class="nav-item">
-                    <a class="nav-link menu-link" href="#manageProductSettings" data-bs-toggle="collapse" role="button" aria-expanded="{{ request()->routeIs('category.*', 'sub-category.*', 'product-unit.*', 'brand.*', 'attribute.*') ? 'true' : 'false' }}" aria-controls="manageProductSettings">
+                    <a class="nav-link menu-link" href="#manageProductSettings" data-bs-toggle="collapse" role="button" aria-expanded="{{ request()->routeIs('category.*', 'sub-category.*', 'product-unit.*', 'unit-conversion.*', 'brand.*', 'attribute.*') ? 'true' : 'false' }}" aria-controls="manageProductSettings">
                         <i class="ri-apps-2-line"></i><span>{{ __('Product Settings') }}</span>
                     </a>
 
-                    <div class="collapse menu-dropdown {{ request()->routeIs('category.*', 'sub-category.*', 'product-unit.*', 'brand.*', 'attribute.*') ? 'show' : '' }}" id="manageProductSettings">
+                    <div class="collapse menu-dropdown {{ request()->routeIs('category.*', 'sub-category.*', 'product-unit.*', 'unit-conversion.*', 'brand.*', 'attribute.*') ? 'show' : '' }}" id="manageProductSettings">
                         <ul class="nav nav-sm flex-column">
                             <div class="divider"></div>
                             <li class="nav-item {{ request()->routeIs('category.*') ? 'active-menu' : '' }}">
@@ -82,6 +82,10 @@
                             <div class="divider"></div>
                             <li class="nav-item {{ request()->routeIs('product-unit.*') ? 'active-menu' : '' }}">
                                 <a href="{{ route('product-unit.index') }}" class="nav-link"><i class="ri-apps-2-line"></i> {{ __('Product Units') }}</a>
+                            </li>
+                            <div class="divider"></div>
+                            <li class="nav-item {{ request()->routeIs('unit-conversion.*') ? 'active-menu' : '' }}">
+                                <a href="{{ route('unit-conversion.index') }}" class="nav-link"><i class="ri-apps-2-line"></i> {{ __('Unit Conversions') }}</a>
                             </li>
                             <div class="divider"></div>
                             <li class="nav-item {{ request()->routeIs('brand.*') ? 'active-menu' : '' }}">
@@ -99,6 +103,13 @@
                 <li class="nav-item {{ request()->routeIs('product.*') ? 'active-menu' : '' }}">
                     <a class="nav-link" href="{{ route('product.index') }}">
                         <i class="ri-shopping-bag-3-line"></i><span>{{ __('Manage Products') }}</span>
+                    </a>
+                </li>
+                <div class="divider"></div>
+
+                <li class="nav-item {{ request()->routeIs('product-requisition.*') ? 'active-menu' : '' }}">
+                    <a class="nav-link" href="{{ route('product-requisition.index') }}">
+                        <i class="ri-apps-2-line"></i><span>{{ __('Product Requisition') }}</span>
                     </a>
                 </li>
                 <div class="divider"></div>
