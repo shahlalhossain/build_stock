@@ -188,11 +188,12 @@ class ProductsController extends Controller
     protected function formLookups(): array
     {
         return [
-            'categories' => Category::where('is_active', true)->orderBy('name')->get(['id', 'name']),
+            'categories'    => Category::where('is_active', true)->orderBy('name')->get(['id', 'name']),
             'subCategories' => SubCategory::where('is_active', true)->orderBy('name')->get(['id', 'category_id', 'name']),
-            'brands' => Brand::where('is_active', true)->orderBy('name')->get(['id', 'name']),
-            'units' => ProductUnit::where('is_active', true)->orderBy('group')->orderBy('name')->get(['id', 'group', 'name', 'symbol']),
-            'attributes' => Attribute::where('is_active', true)->with(['values' => function ($query) {
+            'brands'        => Brand::where('is_active', true)->orderBy('name')->get(['id', 'name']),
+            'units'         => ProductUnit::where('is_active', true)->orderBy('group')->orderBy('name')->get(['id', 'group', 'name', 'symbol']),
+
+            'attributes'    => Attribute::where('is_active', true)->with(['values' => function ($query) {
                 $query->orderBy('value');
             }])->orderBy('name')->get(),
         ];
