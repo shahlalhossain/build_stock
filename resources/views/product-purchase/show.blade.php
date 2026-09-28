@@ -86,47 +86,30 @@
                                         </tr>
                                         </tbody>
                                     </table>
-
-                                    <h6 class="fw-bold fst-italic">{{ __('Purchase Items') }}</h6>
-                                    <div class="table-responsive">
-                                        <table class="table table-sm table-bordered">
-                                            <thead>
-                                            <tr>
-                                                <th>{{ __('Product') }}</th>
-                                                <th>{{ __('Variant') }}</th>
-                                                <th>{{ __('Quantity') }}</th>
-                                                <th>{{ __('Unit') }}</th>
-                                                <th>{{ __('Unit Cost') }}</th>
-                                                <th>{{ __('Line Total') }}</th>
-                                                <th>{{ __('Remarks') }}</th>
-                                            </tr>
-                                            </thead>
-                                            <tbody>
-                                            @forelse($productPurchase->items as $item)
-                                                <tr>
-                                                    <td>{{ $item->product?->name }} @if($item->product?->code) ({{ $item->product->code }}) @endif</td>
-                                                    <td>{{ $item->productVariant?->variant_name ?? '' }}</td>
-                                                    <td>{{ $item->quantity }}</td>
-                                                    <td>{{ $item->unit?->name }} @if($item->unit?->symbol) ({{ $item->unit->symbol }}) @endif</td>
-                                                    <td>{{ $item->unit_cost !== null ? number_format((float) $item->unit_cost, 2) : '' }}</td>
-                                                    <td>{{ $item->line_total !== null ? number_format((float) $item->line_total, 2) : '' }}</td>
-                                                    <td>{{ $item->remarks }}</td>
-                                                </tr>
-                                            @empty
-                                                <tr><td colspan="7" class="text-center">{{ __('No Line Items Found') }}</td></tr>
-                                            @endforelse
-                                            </tbody>
-                                        </table>
-                                    </div>
                                 </div>
 
                                 <div class="col-12 col-md-5 ps-3 order-2">
+                                    @if($productPurchase->invoice_attachment_path)
+                                        @php
+                                            $invoiceUrl         = \Illuminate\Support\Facades\Storage::disk('public')->url($productPurchase->invoice_attachment_path);
+                                            $invoiceExtension   = strtolower(pathinfo($productPurchase->invoice_attachment_path, PATHINFO_EXTENSION));
+                                            $isImageAttachment  = in_array($invoiceExtension, ['jpg', 'jpeg', 'png', 'gif', 'webp'], true);
+                                        @endphp
 
-                                    <table class="table table-hover table-responsive table-bordered table-sm">
-                                        <tbody>
-
-                                        </tbody>
-                                    </table>
+                                        <div class="text-center mb-3">
+                                            <a href="{{ $invoiceUrl }}" target="_blank" rel="noopener noreferrer">
+                                                @if($isImageAttachment)
+                                                    <img src="{{ $invoiceUrl }}" alt="{{ __('Attached Invoice') }}" class="img-fluid img-thumbnail" style=" max-width: 100%; max-height: 350px; width: auto; height: auto; object-fit: contain;">
+                                                    <div class="mt-2 fw-semibold">{{ __('Attached Invoice') }}</div>
+                                                @else
+                                                    <span class="d-inline-flex flex-column align-items-center text-decoration-none">
+                                                        <i class="ri-file-pdf-2-line" style="font-size: 4rem; line-height: 1;"></i>
+                                                        <span class="mt-1">{{ __('View PDF Invoice') }}</span>
+                                                    </span>
+                                                @endif
+                                            </a>
+                                        </div>
+                                    @endif
 
                                     @php
                                         $auditLogs = [
@@ -188,6 +171,43 @@
                                         @endforeach
                                         <hr style="padding: 0 !important; margin: 0 !important;">
                                     @endif
+                                </div>
+                            </div>
+
+
+                            <div class="row">
+                                <div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
+                                    <h6 class="fw-bold fst-italic">{{ __('Purchase Items') }}</h6>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-bordered">
+                                            <thead>
+                                            <tr>
+                                                <th>{{ __('Product') }}</th>
+                                                <th>{{ __('Variant') }}</th>
+                                                <th>{{ __('Quantity') }}</th>
+                                                <th>{{ __('Unit') }}</th>
+                                                <th>{{ __('Unit Cost') }}</th>
+                                                <th>{{ __('Line Total') }}</th>
+                                                <th>{{ __('Remarks') }}</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            @forelse($productPurchase->items as $item)
+                                                <tr>
+                                                    <td>{{ $item->product?->name }} @if($item->product?->code) ({{ $item->product->code }}) @endif</td>
+                                                    <td>{{ $item->productVariant?->variant_name ?? '' }}</td>
+                                                    <td>{{ $item->quantity }}</td>
+                                                    <td>{{ $item->unit?->name }} @if($item->unit?->symbol) ({{ $item->unit->symbol }}) @endif</td>
+                                                    <td>{{ $item->unit_cost !== null ? number_format((float) $item->unit_cost, 2) : '' }}</td>
+                                                    <td>{{ $item->line_total !== null ? number_format((float) $item->line_total, 2) : '' }}</td>
+                                                    <td>{{ $item->remarks }}</td>
+                                                </tr>
+                                            @empty
+                                                <tr><td colspan="7" class="text-center">{{ __('No Line Items Found') }}</td></tr>
+                                            @endforelse
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
 
