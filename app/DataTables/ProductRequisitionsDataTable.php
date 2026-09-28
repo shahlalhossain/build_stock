@@ -23,15 +23,18 @@ class ProductRequisitionsDataTable extends DataTable
         return (new EloquentDataTable($query))
             ->setRowId('id')
             ->addIndexColumn()
-            ->addColumn('requisition_for', function (ProductRequisition $productRequisition) {
+            ->addColumn('store_location', function (ProductRequisition $productRequisition) {
                 $store = $productRequisition->store;
-                if (!$store) {
+                if (! $store) {
                     return '';
                 }
                 $badgeClass = $store->type === 'warehouse' ? 'bg-info' : 'bg-primary';
                 $location = $store->project_id ? 'Project-Site' : 'Head-Office';
 
-                return $location.' <span class="badge '.$badgeClass.'">'.ucwords($store->type).'</span>'.' - '.e(ucwords($store->name));
+                return $location.' <span class="badge '.$badgeClass.'">'.ucwords($store->type).'</span>';
+            })
+            ->addColumn('store_name', function (ProductRequisition $productRequisition) {
+                return ucwords($productRequisition->store?->name ?? '');
             })
             ->editColumn('transaction_date', function (ProductRequisition $productRequisition) {
                 return $productRequisition->transaction_date?->format('d F, Y');
@@ -43,6 +46,7 @@ class ProductRequisitionsDataTable extends DataTable
                     $label = $variantLabel !== '' ? "{$productName} ({$variantLabel})" : $productName;
                     $quantity = number_format((float) $item->quantity, 2);
                     $unit = $item->unit?->symbol ?? '';
+
                     return e(trim("{$label} {$quantity} {$unit}"));
                 });
 
@@ -69,7 +73,7 @@ class ProductRequisitionsDataTable extends DataTable
 
                 return view('product-requisition.actions', ['productRequisition' => $productRequisition]);
             })
-            ->rawColumns(['requisition_for', 'products', 'status', 'is_active', 'actions']);
+            ->rawColumns(['store_location', 'products', 'status', 'is_active', 'actions']);
     }
 
     /**
@@ -120,7 +124,8 @@ class ProductRequisitionsDataTable extends DataTable
             Column::computed('products')->title('Products')->orderable(false)->searchable(false),
             Column::computed('total_quantity')->title('Total Quantity')->orderable(false)->searchable(false)->addClass('text-center'),
             Column::make('transaction_date')->title('Requisition Date')->orderable(true)->searchable(false),
-            Column::computed('requisition_for')->title('Requisition For')->orderable(false)->searchable(false),
+            Column::computed('store_location')->title('Store/Warehouse Location')->orderable(false)->searchable(false),
+            Column::computed('store_name')->title('Store/Warehouse Name')->orderable(false)->searchable(false),
             Column::computed('status')->title('Status')->orderable(false)->searchable(false)->addClass('text-center'),
             Column::computed('actions')
                 ->orderable(false)
