@@ -38,9 +38,6 @@ class ProductRequisitionsDataTable extends DataTable
             ->editColumn('transaction_date', function (ProductRequisition $productRequisition) {
                 return $productRequisition->transaction_date?->format('d F, Y');
             })
-            ->addColumn('items_count', function (ProductRequisition $productRequisition) {
-                return $productRequisition->items_count;
-            })
             ->addColumn('status', function (ProductRequisition $productRequisition) {
                 if ($productRequisition->status === 'pending') {
                     return '<span class="badge bg-warning">'.ucwords($productRequisition->status).'</span>';
@@ -104,7 +101,6 @@ class ProductRequisitionsDataTable extends DataTable
             Column::make('store.name', 'store')->title('Store/Warehouse')->orderable(false)->searchable(false),
             Column::computed('store_location')->title('Location')->orderable(false)->searchable(false),
             Column::make('transaction_date')->orderable(true)->searchable(false),
-            Column::computed('items_count')->title('Total Product')->orderable(false)->searchable(false)->addClass('text-center'),
             Column::computed('status')->title('Status')->orderable(false)->searchable(false)->addClass('text-center'),
             Column::computed('actions')
                 ->orderable(false)
