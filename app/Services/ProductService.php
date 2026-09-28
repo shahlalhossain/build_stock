@@ -47,8 +47,8 @@ class ProductService extends BaseService
                 'brand_id' => $data['brand_id'] ?? null,
                 'unit_id' => $data['unit_id'] ?? null,
                 'name' => $data['name'] ?? null,
-                'code' => $this->generateCode(),
-                'sku' => $data['sku'] ?? null,
+                'code' => $this->generateProductCode(),
+                'sku' => $this->generateSKU(),
                 'description' => $data['description'] ?? null,
                 'is_active' => true,
                 'created_by' => Auth::id(),
@@ -80,19 +80,36 @@ class ProductService extends BaseService
         DB::beginTransaction();
 
         try {
-            $product->update([
-                'category_id' => $data['category_id'] ?? null,
-                'sub_category_id' => $data['sub_category_id'] ?? null,
-                'brand_id' => $data['brand_id'] ?? null,
-                'unit_id' => $data['unit_id'] ?? null,
-                'name' => $data['name'] ?? null,
-                'sku' => $data['sku'] ?? null,
-                'description' => $data['description'] ?? null,
-                'updated_by' => Auth::id(),
-            ]);
+            $name = $data['name'] ?? null;
 
-            $this->attachAttributeValues($product, $data['attribute_value_ids'] ?? []);
-            $this->generateVariantsFromAttributeValues($product);
+            $updateData = [
+                'category_id'       => $data['category_id'] ?? null,
+                'sub_category_id'   => $data['sub_category_id'] ?? null,
+                'brand_id'          => $data['brand_id'] ?? null,
+                'unit_id'           => $data['unit_id'] ?? null,
+                'name'              => $name,
+                'description'       => $data['description'] ?? null,
+                'updated_by'        => Auth::id(),
+            ];
+
+            // Generate New SKU Only if Product Name Changed
+            if ($product->name !== $name) {
+                $updateData['sku'] = $this->generateSKU();
+            }
+
+            // Check Whether Attributes have Changed
+            $attributeValueIds          = $data['attribute_value_ids'] ?? [];
+            $existingAttributeValueIds  = $product->attributeValues()->pluck('attribute_values.id')->map(fn ($id) => (int) $id)->sort()->values()->toArray();
+            $newAttributeValueIds       = collect($attributeValueIds)->map(fn ($id) => (int) $id)->sort()->values()->toArray();
+            $attributesChanged          = $existingAttributeValueIds !== $newAttributeValueIds;
+
+            $product->update($updateData);
+
+            // Only Execute When Attributes were Added/Removed/Changed
+            if ($attributesChanged) {
+                $this->attachAttributeValues($product, $attributeValueIds);
+                $this->generateVariantsFromAttributeValues($product);
+            }
 
             event(new ProductUpdated($product));
 
@@ -383,10 +400,16 @@ class ProductService extends BaseService
         $variant->delete();
     }
 
+    protected function generateProductCode(): int
+    {
+        $maxCode = Product::max('code');
+        return $maxCode !== null ? (int) $maxCode + 1 : 10000000;
+    }
+
     /**
-     * Generate the next Sequential Product Code (e.g. PRD-0001).
+     * Generate the next Sequential Product SKU (e.g. PRD-0001).
      */
-    protected function generateCode(): string
+    protected function generateSKU() : string
     {
         $lastNumber = Product::withTrashed()
             ->where('code', 'like', 'PRD-%')
