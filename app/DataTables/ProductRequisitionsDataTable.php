@@ -29,14 +29,11 @@ class ProductRequisitionsDataTable extends DataTable
             ->addColumn('store_location', function (ProductRequisition $productRequisition) {
                 $store = $productRequisition->store;
 
-                if (! $store) {
+                if (!$store) {
                     return '';
                 }
 
                 return $store->project_id ? ucwords($store->project?->name ?? '') : 'Head Office';
-            })
-            ->addColumn('store_type', function (ProductRequisition $productRequisition) {
-                return ucwords($productRequisition->store?->type ?? '');
             })
             ->editColumn('transaction_date', function (ProductRequisition $productRequisition) {
                 return $productRequisition->transaction_date?->format('d F, Y');
@@ -104,9 +101,8 @@ class ProductRequisitionsDataTable extends DataTable
     {
         return [
             Column::computed('DT_RowIndex')->title('SN')->orderable(false)->searchable(false)->addClass('text-center'),
-            Column::make('store.name', 'store')->title('Store')->orderable(false)->searchable(false),
+            Column::make('store.name', 'store')->title('Store/Warehouse')->orderable(false)->searchable(false),
             Column::computed('store_location')->title('Location')->orderable(false)->searchable(false),
-            Column::computed('store_type')->title('Store Type')->orderable(false)->searchable(false),
             Column::make('transaction_date')->orderable(true)->searchable(false),
             Column::computed('items_count')->title('Total Product')->orderable(false)->searchable(false)->addClass('text-center'),
             Column::computed('status')->title('Status')->orderable(false)->searchable(false)->addClass('text-center'),
