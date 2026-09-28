@@ -35,7 +35,7 @@
                                         <tr><th class="text-end pe-2">{{ __('Invoice Number') }}</th><td class="text-start ps-2">{{ $productPurchase->invoice_number }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Invoice Date') }}</th><td class="text-start ps-2">{{ optional($productPurchase->supplier_invoice_date)->format('d F, Y') }}</td></tr>
                                         @if($productPurchase->invoice_attachment_path)
-                                            <tr><th class="text-end pe-2">{{ __('Invoice Attachment') }}</th><td class="text-start ps-2"><a href="{{ route('product-purchase.invoice-attachment', $productPurchase->id) }}" target="_blank">{{ __('Download') }}</a></td></tr>
+                                            <tr><th class="text-end pe-2">{{ __('Invoice Attachment') }}</th><td class="text-start ps-2"><a href="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($productPurchase->invoice_attachment_path) }}" target="_blank">{{ __('Download') }}</a></td></tr>
                                         @endif
                                         <tr><th class="text-end pe-2">{{ __('Total Amount') }}</th><td class="text-start ps-2">{{ number_format((float) $productPurchase->total_amount, 2) }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Discount') }}</th><td class="text-start ps-2">{{ $productPurchase->discount_type ? ucfirst($productPurchase->discount_type) . ' - ' . number_format((float) $productPurchase->discount_amount, 2) : '--' }}</td></tr>

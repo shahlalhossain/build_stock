@@ -293,7 +293,6 @@ Route::middleware('auth:web')->group(function () {
             Route::delete('/', [ProductPurchasesController::class, 'destroy'])->name('destroy');
             Route::post('restore', [ProductPurchasesController::class, 'restore'])->name('restore');
             Route::delete('force-delete', [ProductPurchasesController::class, 'delete'])->name('delete');
-            Route::get('invoice-attachment', [ProductPurchasesController::class, 'downloadInvoiceAttachment'])->name('invoice-attachment')->withTrashed();
         });
     });
 

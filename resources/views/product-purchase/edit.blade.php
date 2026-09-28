@@ -121,7 +121,7 @@
                                             <div class="col-12 col-md-8">
                                                 <input type="file" class="form-control @error('invoice_attachment') is-invalid @enderror" id="invoice_attachment" name="invoice_attachment" accept=".pdf,.jpg,.jpeg,.png">
                                                 @if($productPurchase->invoice_attachment_path)
-                                                    <div class="form-text">{{ __('Current: ') }}<a href="{{ route('product-purchase.invoice-attachment', $productPurchase->id) }}" target="_blank">{{ __('View Attachment') }}</a> — {{ __('Uploading a New File Replaces It.') }}</div>
+                                                    <div class="form-text">{{ __('Current: ') }}<a href="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($productPurchase->invoice_attachment_path) }}" target="_blank">{{ __('View Attachment') }}</a> — {{ __('Uploading a New File Replaces It.') }}</div>
                                                 @else
                                                     <div class="form-text">{{ __('Optional. PDF, JPG or PNG — Max 10 MB.') }}</div>
                                                 @endif
@@ -286,18 +286,27 @@
 
 @endsection
 
+@php
+    // Precomputed outside @json(...) — Blade's Directive-Argument Parser tracks
+    // only Parenthesis Depth, so a multi-line Array Literal (with [...]) nested
+    // inside @json(...) can close the Directive early at the first ')' it finds
+    // inside the Expression, truncating the compiled Output (see the PHP Parse
+    // Error this caused: "Unclosed '[' does not match ')'").
+    $existingItemsForJs = $productPurchase->items->map(fn ($item) => [
+        'product_id' => $item->product_id,
+        'product_variant_id' => $item->product_variant_id,
+        'unit_id' => $item->unit_id,
+        'quantity' => $item->quantity,
+        'unit_cost' => $item->unit_cost,
+        'remarks' => $item->remarks,
+    ]);
+@endphp
+
 @push('scripts')
     <script>
         $(document).ready(function () {
             const productVariants = @json($productVariants ?? []);
-            const existingItems = @json($productPurchase->items->map(fn ($item) => [
-                'product_id' => $item->product_id,
-                'product_variant_id' => $item->product_variant_id,
-                'unit_id' => $item->unit_id,
-                'quantity' => $item->quantity,
-                'unit_cost' => $item->unit_cost,
-                'remarks' => $item->remarks,
-            ]));
+            const existingItems = @json($existingItemsForJs ?? []);
 
             function addRow(group) {
                 const template = document.getElementById(group + '-row-template').innerHTML;

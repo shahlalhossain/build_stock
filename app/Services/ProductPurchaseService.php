@@ -233,7 +233,8 @@ class ProductPurchaseService extends BaseService
     }
 
     /**
-     * Store the Optional Invoice Attachment on the private "local" Disk.
+     * Store the Optional Invoice Attachment on the "public" Disk — served
+     * directly by URL via the public/storage Symlink, no Auth Gate.
      */
     protected function storeInvoiceAttachment(?UploadedFile $file): ?string
     {
@@ -241,13 +242,13 @@ class ProductPurchaseService extends BaseService
             return null;
         }
 
-        return $file->store('invoices/product-purchases', 'local');
+        return $file->store('images/invoices/product-purchases', 'public');
     }
 
     protected function deleteInvoiceAttachment(?string $path): void
     {
         if ($path) {
-            Storage::disk('local')->delete($path);
+            Storage::disk('public')->delete($path);
         }
     }
 
@@ -366,7 +367,7 @@ class ProductPurchaseService extends BaseService
 
             // Only remove the OLD file after the new state is safely committed-pending.
             if ($uploadedAttachmentPath && $oldAttachmentPath && $oldAttachmentPath !== $uploadedAttachmentPath) {
-                Storage::disk('local')->delete($oldAttachmentPath);
+                Storage::disk('public')->delete($oldAttachmentPath);
             }
 
             DB::commit();
@@ -577,7 +578,7 @@ class ProductPurchaseService extends BaseService
             }
 
             if ($productPurchase->invoice_attachment_path) {
-                Storage::disk('local')->delete($productPurchase->invoice_attachment_path);
+                Storage::disk('public')->delete($productPurchase->invoice_attachment_path);
             }
 
             activity()->withoutLogs(function () use ($productPurchase) {

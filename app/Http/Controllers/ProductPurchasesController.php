@@ -20,9 +20,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
 
 class ProductPurchasesController extends Controller
@@ -175,14 +173,6 @@ class ProductPurchasesController extends Controller
 
             return response()->json(['success' => false, 'message' => 'Unexpected Error Occurred on Updating the Purchase Status.'], 500);
         }
-    }
-
-    public function downloadInvoiceAttachment(ProductPurchase $productPurchase): StreamedResponse
-    {
-        abort_unless($productPurchase->invoice_attachment_path, 404);
-        abort_unless(Storage::disk('local')->exists($productPurchase->invoice_attachment_path), 404);
-
-        return Storage::disk('local')->download($productPurchase->invoice_attachment_path);
     }
 
     public function destroy($id): JsonResponse
