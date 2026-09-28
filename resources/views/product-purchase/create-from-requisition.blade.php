@@ -143,63 +143,77 @@
                                 <div class="d-flex align-items-center mb-2">
                                     <h5 class="mb-0 flex-grow-1 fst-italic">{{ __('Requisition Items') }}</h5>
                                 </div>
-                                <div class="form-text mb-2">{{ __('Only Products from this Requisition may be Purchased. Uncheck a Row to Skip it, or Adjust Quantity down to Purchase Partially. Quantity cannot Exceed the Remaining Amount.') }}</div>
+                                <div class="form-text mb-2">{{ __('All Products from this Requisition are Listed. Fully Purchased Products are Disabled. Uncheck a Row to Skip it, or Adjust Quantity down to Purchase Partially. Quantity cannot Exceed the Remaining Amount.') }}</div>
                                 @error('items')<small class="text-danger d-block mb-2">{{ $message }}</small>@enderror
                                 <div class="table-responsive">
                                     <table class="table table-sm table-bordered align-middle" id="items-table">
                                         <thead>
                                         <tr>
                                             <th style="width: 4%;" class="text-center">{{ __('Include') }}</th>
-                                            <th style="width: 20%;">{{ __('Product') }}</th>
-                                            <th style="width: 14%;">{{ __('Variant') }}</th>
-                                            <th style="width: 12%;">{{ __('Requisitioned') }}</th>
-                                            <th style="width: 12%;">{{ __('Remaining') }}</th>
+                                            <th style="width: 19%;">{{ __('Product') }}</th>
+                                            <th style="width: 13%;">{{ __('Variant') }}</th>
+                                            <th style="width: 11%;">{{ __('Requisitioned') }}</th>
+                                            <th style="width: 11%;">{{ __('Remaining') }}</th>
                                             <th style="width: 12%;">{{ __('Quantity to Purchase') }}</th>
                                             <th style="width: 10%;">{{ __('Unit Cost') }}</th>
-                                            <th style="width: 12%;">{{ __('Total Cost') }}</th>
+                                            <th style="width: 11%;">{{ __('Total Cost') }}</th>
+                                            <th style="width: 13%;">{{ __('Status') }}</th>
                                         </tr>
                                         </thead>
                                         <tbody id="items-rows">
                                         @foreach($requisition->items as $index => $item)
                                             @php
                                                 $remaining = $item->remaining_quantity;
+                                                $isFullyPurchased = $remaining <= 0;
                                                 $variantLabel = $item->productVariant ? ($item->productVariant->variant_name ?: $item->productVariant->attributeValues->pluck('value')->implode(' / ')) : '';
                                             @endphp
-                                            @if($remaining > 0)
-                                                <tr class="requisition-item-row">
-                                                    <td class="text-center">
-                                                        <input type="checkbox" class="form-check-input item-include" checked>
-                                                    </td>
-                                                    <td data-label="{{ __('Product') }}">
-                                                        {{ $item->product?->name }}
+                                            <tr class="requisition-item-row @if($isFullyPurchased) table-light text-muted @endif">
+                                                <td class="text-center">
+                                                    <input type="checkbox" class="form-check-input item-include" @checked(! $isFullyPurchased) @disabled($isFullyPurchased)>
+                                                </td>
+                                                <td data-label="{{ __('Product') }}">
+                                                    {{ $item->product?->name }}
+                                                    @unless($isFullyPurchased)
                                                         <input type="hidden" name="items[{{ $index }}][requisition_item_id]" value="{{ $item->id }}">
                                                         <input type="hidden" name="items[{{ $index }}][product_id]" value="{{ $item->product_id }}">
-                                                    </td>
-                                                    <td data-label="{{ __('Variant') }}">
-                                                        {{ $variantLabel ?: '—' }}
+                                                    @endunless
+                                                </td>
+                                                <td data-label="{{ __('Variant') }}">
+                                                    {{ $variantLabel ?: '—' }}
+                                                    @unless($isFullyPurchased)
                                                         <input type="hidden" name="items[{{ $index }}][product_variant_id]" value="{{ $item->product_variant_id }}">
-                                                    </td>
-                                                    <td data-label="{{ __('Requisitioned') }}" class="text-end">
-                                                        {{ number_format((float) $item->quantity, 2) }} {{ $item->unit?->symbol }}
+                                                    @endunless
+                                                </td>
+                                                <td data-label="{{ __('Requisitioned') }}" class="text-end">
+                                                    {{ number_format((float) $item->quantity, 2) }} {{ $item->unit?->symbol }}
+                                                    @unless($isFullyPurchased)
                                                         <input type="hidden" name="items[{{ $index }}][unit_id]" value="{{ $item->unit_id }}">
-                                                    </td>
-                                                    <td data-label="{{ __('Remaining') }}" class="text-end fw-bold">
-                                                        {{ number_format($remaining, 2) }} {{ $item->unit?->symbol }}
-                                                    </td>
-                                                    <td data-label="{{ __('Quantity to Purchase') }}">
-                                                        <input type="number" step="0.01" min="0.01" max="{{ $remaining }}"
-                                                               class="form-control item-quantity"
-                                                               name="items[{{ $index }}][quantity]"
-                                                               value="{{ old("items.$index.quantity", $remaining) }}">
-                                                    </td>
-                                                    <td data-label="{{ __('Unit Cost') }}">
-                                                        <input type="number" step="0.01" min="0" class="form-control item-unit-cost" name="items[{{ $index }}][unit_cost]" value="{{ old("items.$index.unit_cost") }}">
-                                                    </td>
-                                                    <td data-label="{{ __('Total Cost') }}">
-                                                        <input type="text" class="form-control item-total-cost" readonly tabindex="-1">
-                                                    </td>
-                                                </tr>
-                                            @endif
+                                                    @endunless
+                                                </td>
+                                                <td data-label="{{ __('Remaining') }}" class="text-end fw-bold">
+                                                    {{ number_format($remaining, 2) }} {{ $item->unit?->symbol }}
+                                                </td>
+                                                <td data-label="{{ __('Quantity to Purchase') }}">
+                                                    <input type="number" step="0.01" min="0.01" max="{{ $remaining }}"
+                                                           class="form-control item-quantity"
+                                                           name="items[{{ $index }}][quantity]"
+                                                           value="{{ old("items.$index.quantity", $isFullyPurchased ? 0 : $remaining) }}"
+                                                           @disabled($isFullyPurchased)>
+                                                </td>
+                                                <td data-label="{{ __('Unit Cost') }}">
+                                                    <input type="number" step="0.01" min="0" class="form-control item-unit-cost" name="items[{{ $index }}][unit_cost]" value="{{ old("items.$index.unit_cost") }}" @disabled($isFullyPurchased)>
+                                                </td>
+                                                <td data-label="{{ __('Total Cost') }}">
+                                                    <input type="text" class="form-control item-total-cost" readonly tabindex="-1">
+                                                </td>
+                                                <td data-label="{{ __('Status') }}" class="text-center">
+                                                    @if($isFullyPurchased)
+                                                        <span class="badge bg-secondary">{{ __('Fully Purchased') }}</span>
+                                                    @else
+                                                        <span class="badge bg-success">{{ __('Available') }}</span>
+                                                    @endif
+                                                </td>
+                                            </tr>
                                         @endforeach
                                         </tbody>
                                     </table>
