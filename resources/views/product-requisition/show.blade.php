@@ -137,8 +137,8 @@
                                 </div>
                             </div>
 
-                            <div class="row">
-                                <div class="col-12 pt-2">
+                            <div class="row pt-3">
+                                <div class="col-12">
                                     <h6 class="fw-bold fst-italic">{{ __('Requested Items') }}</h6>
 
                                     {{-- Desktop / Tablet View --}}

@@ -34,9 +34,6 @@
                                         <tr><th class="text-end pe-2">{{ __('Purchase Date') }}</th><td class="text-start ps-2">{{ optional($productPurchase->transaction_date)->format('d F, Y') }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Invoice Number') }}</th><td class="text-start ps-2">{{ $productPurchase->invoice_number }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Invoice Date') }}</th><td class="text-start ps-2">{{ optional($productPurchase->supplier_invoice_date)->format('d F, Y') }}</td></tr>
-                                        @if($productPurchase->invoice_attachment_path)
-                                            <tr><th class="text-end pe-2">{{ __('Invoice Attachment') }}</th><td class="text-start ps-2"><a href="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($productPurchase->invoice_attachment_path) }}" target="_blank">{{ __('Download') }}</a></td></tr>
-                                        @endif
                                         <tr><th class="text-end pe-2">{{ __('Total Amount') }}</th><td class="text-start ps-2">{{ number_format((float) $productPurchase->total_amount, 2) }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Discount') }}</th><td class="text-start ps-2">{{ $productPurchase->discount_type ? ucfirst($productPurchase->discount_type) . ' - ' . number_format((float) $productPurchase->discount_amount, 2) : '--' }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Tax Amount') }}</th><td class="text-start ps-2">{{ number_format((float) $productPurchase->tax_amount, 2) }}</td></tr>
@@ -99,7 +96,7 @@
                                         <div class="text-center mb-3">
                                             <a href="{{ $invoiceUrl }}" target="_blank" rel="noopener noreferrer">
                                                 @if($isImageAttachment)
-                                                    <img src="{{ $invoiceUrl }}" alt="{{ __('Attached Invoice') }}" class="img-fluid img-thumbnail" style=" max-width: 100%; max-height: 350px; width: auto; height: auto; object-fit: contain;">
+                                                    <img src="{{ $invoiceUrl }}" alt="{{ __('Attached Invoice') }}" class="img-fluid img-thumbnail" style=" max-width: 100%; max-height: 330px; width: auto; height: auto; object-fit: contain;">
                                                     <div class="mt-2 fw-semibold">{{ __('Attached Invoice') }}</div>
                                                 @else
                                                     <span class="d-inline-flex flex-column align-items-center text-decoration-none">
@@ -175,10 +172,12 @@
                             </div>
 
 
-                            <div class="row">
+                            <div class="row pt-3">
                                 <div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
                                     <h6 class="fw-bold fst-italic">{{ __('Purchase Items') }}</h6>
-                                    <div class="table-responsive">
+
+                                    {{-- Desktop / Tablet View --}}
+                                    <div class="table-responsive d-none d-md-block">
                                         <table class="table table-sm table-bordered">
                                             <thead>
                                             <tr>
@@ -207,6 +206,54 @@
                                             @endforelse
                                             </tbody>
                                         </table>
+                                    </div>
+
+                                    {{-- Mobile View --}}
+                                    <div class="d-md-none">
+                                        @forelse($productPurchase->items as $item)
+                                            <div class="border rounded mb-2 p-2">
+                                                {{-- Product --}}
+                                                <div class="row mb-2">
+                                                    <div class="fw-semibold">
+                                                        {{ $item->product?->name }}
+                                                        @if($item->productVariant?->variant_name)
+                                                            <span class="text-muted">({{ $item->productVariant->variant_name }})</span>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                                {{-- Quantity + Unit Price + Total Price --}}
+                                                <div class="row mb-2">
+                                                    <div class="col-4">
+                                                        <div class="small text-muted">{{ __('Quantity') }}</div>
+                                                        <div class="fw-semibold">
+                                                            {{ $item->quantity }}
+                                                            @if($item->unit?->symbol)
+                                                                <span class="text-muted">({{ $item->unit->symbol }})</span>
+                                                            @endif
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-4">
+                                                        <div class="small text-muted">{{ __('Unit Price') }}</div>
+                                                        <div>{{ $item->unit_cost !== null ? number_format((float) $item->unit_cost, 2) : '' }}</div>
+                                                    </div>
+                                                    <div class="col-4">
+                                                        <div class="small text-muted">{{ __('Total Price') }}</div>
+                                                        <div class="fw-semibold">{{ $item->line_total !== null ? number_format((float) $item->line_total, 2) : '' }}</div>
+                                                    </div>
+                                                </div>
+                                                {{-- Remarks --}}
+                                                @if($item->remarks)
+                                                    <div class="row mb-2">
+                                                        <div class="small text-muted">{{ __('Remarks') }}</div>
+                                                        <div>{{ $item->remarks }}</div>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        @empty
+                                            <div class="text-center text-muted py-2">
+                                                {{ __('No Items Found') }}
+                                            </div>
+                                        @endforelse
                                     </div>
                                 </div>
                             </div>
