@@ -26,9 +26,8 @@
                                 <div class="col-12 col-md-7 order-1">
                                     <table class="table table-hover table-responsive table-bordered table-sm">
                                         <tbody>
-                                        <tr><th class="text-end pe-2">{{ __('Code') }}</th><td class="text-start ps-2">{{ $productPurchase->code }}</td></tr>
                                         @if($productPurchase->requisition)
-                                            <tr><th class="text-end pe-2">{{ __('Requisition') }}</th><td class="text-start ps-2"><a href="{{ route('product-requisition.show', $productPurchase->requisition->id) }}" class="badge bg-secondary text-decoration-none">{{ $productPurchase->requisition->code }}</a></td></tr>
+                                            <tr><th class="text-end pe-2">{{ __('Requisition No.') }}</th><td class="text-start ps-2"><a href="{{ route('product-requisition.show', $productPurchase->requisition->id) }}" class="badge bg-secondary text-decoration-none">{{ $productPurchase->requisition->code }}</a></td></tr>
                                         @endif
                                         <tr><th class="text-end pe-2">{{ __('Receiving Store') }}</th><td class="text-start ps-2">{{ $productPurchase->store?->name }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Supplier') }}</th><td class="text-start ps-2">{{ $productPurchase->supplier?->name }}</td></tr>
@@ -38,9 +37,9 @@
                                         @if($productPurchase->invoice_attachment_path)
                                             <tr><th class="text-end pe-2">{{ __('Invoice Attachment') }}</th><td class="text-start ps-2"><a href="{{ route('product-purchase.invoice-attachment', $productPurchase->id) }}" target="_blank">{{ __('Download') }}</a></td></tr>
                                         @endif
+                                        <tr><th class="text-end pe-2">{{ __('Total Amount') }}</th><td class="text-start ps-2">{{ number_format((float) $productPurchase->total_amount, 2) }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Discount') }}</th><td class="text-start ps-2">{{ $productPurchase->discount_type ? ucfirst($productPurchase->discount_type) . ' - ' . number_format((float) $productPurchase->discount_amount, 2) : '--' }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Tax Amount') }}</th><td class="text-start ps-2">{{ number_format((float) $productPurchase->tax_amount, 2) }}</td></tr>
-                                        <tr><th class="text-end pe-2">{{ __('Total Amount') }}</th><td class="text-start ps-2">{{ number_format((float) $productPurchase->total_amount, 2) }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Net Amount') }}</th><td class="text-start ps-2 fw-bold">{{ number_format((float) $productPurchase->net_amount, 2) }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Payment Status') }}</th><td class="text-start ps-2">{{ ucfirst($productPurchase->payment_status) }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Paid Amount') }}</th><td class="text-start ps-2">{{ number_format((float) $productPurchase->paid_amount, 2) }}</td></tr>
@@ -120,20 +119,53 @@
                                         </table>
                                     </div>
                                 </div>
-                                <div class="col-12 col-md-5 ps-5 order-2">
+
+                                <div class="col-12 col-md-5 ps-3 order-2">
+
                                     <table class="table table-hover table-responsive table-bordered table-sm">
                                         <tbody>
-                                        <tr><th class="text-end pe-2">{{ __('Created By') }}</th><td class="text-start ps-2">{{ $productPurchase->creator?->name ?? '' }}</td></tr>
-                                        <tr><th class="text-end pe-2">{{ __('Created At') }}</th><td class="text-start ps-2">{{ $productPurchase->created_at->format('Y-m-d H:i:s') }}</td></tr>
-                                        <tr><th class="text-end pe-2">{{ __('Updated By') }}</th><td class="text-start ps-2">{{ $productPurchase->updater?->name ?? '' }}</td></tr>
-                                        <tr><th class="text-end pe-2">{{ __('Updated At') }}</th><td class="text-start ps-2">{{ $productPurchase->updated_at->format('Y-m-d H:i:s') }}</td></tr>
 
-                                        @if($productPurchase->trashed())
-                                            <tr><th class="text-end pe-2">{{ __('Deleted By') }}</th><td class="text-start ps-2">{{ $productPurchase->deleter?->name ?? '' }}</td></tr>
-                                            <tr><th class="text-end pe-2">{{ __('Deleted At') }}</th><td class="text-start ps-2">{{ $productPurchase->deleted_at->format('Y-m-d H:i:s') }}</td></tr>
-                                        @endif
                                         </tbody>
                                     </table>
+
+                                    @php
+                                        $auditLogs = [
+                                            [
+                                                'action'    => __('Created'),
+                                                'user'      => $productPurchase->creator?->name,
+                                                'at'        => $productPurchase->created_at,
+                                            ],
+                                            [
+                                                'action'    => __('Updated'),
+                                                'user'      => $productPurchase->updater?->name,
+                                                'at'        => $productPurchase->updated_at,
+                                            ],
+                                        ];
+
+                                        if ($productPurchase->trashed()) {
+                                            $auditLogs[] = [
+                                                'action'    => __('Deleted'),
+                                                'user'      => $productPurchase->deleter?->name,
+                                                'at'        => $productPurchase->deleted_at,
+                                            ];
+                                        }
+                                    @endphp
+
+                                    @foreach($auditLogs as $log)
+                                        <hr style="padding: 0 !important; margin: 0 !important;">
+
+                                        <div class="pb-2 pt-2">
+                                            <strong>{{ $log['action'] }}</strong>
+
+                                            @if($log['user'])
+                                                by <em>{{ $log['user'] }}</em>
+                                            @endif
+
+                                            @if($log['at'])
+                                                at {{ $log['at']->format('d F, Y h:i A') }}
+                                            @endif
+                                        </div>
+                                    @endforeach
 
                                     @if($productPurchase->approvalLogs->isNotEmpty())
                                         @foreach($productPurchase->approvalLogs as $log)
@@ -155,8 +187,6 @@
                                             </div>
                                         @endforeach
                                         <hr style="padding: 0 !important; margin: 0 !important;">
-                                    @else
-                                        <p>No Approval History Found</p>
                                     @endif
                                 </div>
                             </div>

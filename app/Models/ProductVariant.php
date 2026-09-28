@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -12,7 +13,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 class ProductVariant extends Model
 {
-    use LogsActivity, SoftDeletes;
+    use HasFactory, LogsActivity, SoftDeletes;
 
     protected $table = 'product_variants';
 
