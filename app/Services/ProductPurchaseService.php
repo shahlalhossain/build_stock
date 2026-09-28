@@ -9,6 +9,7 @@ use App\Models\ProductPurchase;
 use App\Models\ProductRequisition;
 use App\Models\ProductRequisitionItem;
 use App\Models\ProductStock;
+use App\Models\UnitConversion;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\UploadedFile;
@@ -129,6 +130,58 @@ class ProductPurchaseService extends BaseService
     }
 
     /**
+     * Fail Fast at Purchase Creation/Update — rather than only at Approval —
+     * when a Line Item's Unit differs from the Product's own base Unit and no
+     * active unit_conversions Row exists for that Product+Unit Pair. Approval
+     * would otherwise hit the same Error via UnitConversionService::toBaseUnit(),
+     * but by then the Purchase already exists and the User has moved on.
+     *
+     * @throws GeneralException
+     */
+    protected function assertItemsHaveUnitConversions(array $items): void
+    {
+        $productIds = array_unique(array_filter(array_column($items, 'product_id')));
+
+        if (empty($productIds)) {
+            return;
+        }
+
+        $products = Product::query()->whereIn('id', $productIds)->get(['id', 'name', 'unit_id'])->keyBy('id');
+
+        $neededPairs = collect($items)
+            ->filter(fn ($item) => ! empty($item['product_id']) && ! empty($item['unit_id']))
+            ->unique(fn ($item) => $item['product_id'].':'.$item['unit_id']);
+
+        $existingConversions = UnitConversion::query()
+            ->whereIn('product_id', $productIds)
+            ->where('is_active', true)
+            ->get(['product_id', 'unit_id'])
+            ->map(fn ($conversion) => $conversion->product_id.':'.$conversion->unit_id)
+            ->flip();
+
+        foreach ($neededPairs as $item) {
+            $productId = $item['product_id'];
+            $unitId = (int) $item['unit_id'];
+
+            $product = $products->get($productId);
+            if (! $product) {
+                continue;
+            }
+
+            if ($unitId === (int) $product->unit_id) {
+                continue;
+            }
+
+            if (! $existingConversions->has($productId.':'.$unitId)) {
+                throw new GeneralException(__(
+                    'No Unit Conversion is Configured for :product from the Selected Unit to its Base Unit. Add one via Unit Conversion Setup before Purchasing in this Unit.',
+                    ['product' => $product->name]
+                ));
+            }
+        }
+    }
+
+    /**
      * @throws GeneralException
      * @throws Throwable
      */
@@ -140,6 +193,8 @@ class ProductPurchaseService extends BaseService
         try {
             $items = $data['items'] ?? [];
             $uploadedAttachmentPath = $this->storeInvoiceAttachment($data['invoice_attachment'] ?? null);
+
+            $this->assertItemsHaveUnitConversions($items);
 
             if (! empty($data['requisition_id'])) {
                 $this->assertItemsWithinRequisitionRemaining((int) $data['requisition_id'], $items);
@@ -281,6 +336,8 @@ class ProductPurchaseService extends BaseService
 
             $items = $data['items'] ?? [];
             $requisitionId = $data['requisition_id'] ?? $productPurchase->requisition_id;
+
+            $this->assertItemsHaveUnitConversions($items);
 
             if ($requisitionId) {
                 $this->assertItemsWithinRequisitionRemaining((int) $requisitionId, $items, $productPurchase->id);

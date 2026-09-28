@@ -32,7 +32,7 @@ class UpdateProductRequest extends FormRequest
             'category_id' => ['required', 'integer', Rule::exists('categories', 'id')],
             'sub_category_id' => ['nullable', 'integer', Rule::exists('sub_categories', 'id')],
             'brand_id' => ['nullable', 'integer', Rule::exists('brands', 'id')],
-            'unit_id' => ['nullable', 'integer', Rule::exists('product_units', 'id')],
+            'unit_id' => ['required', 'integer', Rule::exists('product_units', 'id')],
 
             'name' => ['required', 'string', 'max:255'],
             'sku' => ['nullable', 'string', 'max:255', Rule::unique('products')->ignore($product)],
@@ -51,6 +51,7 @@ class UpdateProductRequest extends FormRequest
 
             'sub_category_id.exists' => __('Selected Sub-Category does not Exist'),
             'brand_id.exists' => __('Selected Brand does not Exist'),
+            'unit_id.required' => __('Unit is Required'),
             'unit_id.exists' => __('Selected Unit does not Exist'),
 
             'name.required' => __('Product Name is Required'),

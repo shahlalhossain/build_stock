@@ -7,8 +7,10 @@ use App\Models\Product;
 use App\Models\ProductPurchase;
 use App\Models\ProductRequisition;
 use App\Models\ProductRequisitionItem;
+use App\Models\ProductUnit;
 use App\Models\Store;
 use App\Models\Supplier;
+use App\Models\UnitConversion;
 use App\Models\User;
 use App\Services\ProductPurchaseService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -201,6 +203,57 @@ class ProductPurchaseAgainstRequisitionTest extends TestCase
         $this->expectException(GeneralException::class);
 
         $this->service->updatePurchaseStatus($secondPurchase->id, ProductPurchase::STATUS_APPROVED);
+    }
+
+    public function test_purchase_creation_rejects_a_line_unit_with_no_conversion_to_the_products_base_unit(): void
+    {
+        $requisition = $this->makeApprovedRequisitionWithTwoItems();
+        $item = $requisition->items->first();
+
+        $otherUnit = ProductUnit::factory()->create(); // Not the Product's Base Unit, no Conversion Row Exists.
+
+        $payload = $this->purchasePayloadFor($requisition, [
+            [
+                'requisition_item_id' => $item->id,
+                'product_id' => $item->product_id,
+                'unit_id' => $otherUnit->id,
+                'quantity' => 10,
+                'unit_cost' => 10,
+            ],
+        ]);
+
+        $this->expectException(GeneralException::class);
+
+        $this->service->storePurchase($payload);
+    }
+
+    public function test_purchase_creation_succeeds_with_a_non_base_unit_when_a_conversion_row_exists(): void
+    {
+        $requisition = $this->makeApprovedRequisitionWithTwoItems();
+        $item = $requisition->items->first();
+
+        $otherUnit = ProductUnit::factory()->create();
+
+        UnitConversion::query()->create([
+            'product_id' => $item->product_id,
+            'unit_id' => $otherUnit->id,
+            'factor_to_base' => 12, // e.g. 1 Carton = 12 Pieces.
+            'is_active' => true,
+        ]);
+
+        $payload = $this->purchasePayloadFor($requisition, [
+            [
+                'requisition_item_id' => $item->id,
+                'product_id' => $item->product_id,
+                'unit_id' => $otherUnit->id,
+                'quantity' => 5,
+                'unit_cost' => 10,
+            ],
+        ]);
+
+        $purchase = $this->service->storePurchase($payload);
+
+        $this->assertCount(1, $purchase->items);
     }
 
     public function test_requisition_drops_off_the_list_once_every_item_is_fully_purchased_and_approved(): void

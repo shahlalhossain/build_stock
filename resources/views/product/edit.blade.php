@@ -130,9 +130,9 @@
                                         </div>
 
                                         <div class="row mb-2">
-                                            <label for="unit_id" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Unit') }}</label>
+                                            <label for="unit_id" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Unit') }}</label>
                                             <div class="col-12 col-md-8">
-                                                <select id="unit_id" name="unit_id" class="form-select @error('unit_id') is-invalid @enderror">
+                                                <select id="unit_id" name="unit_id" class="form-select @error('unit_id') is-invalid @enderror" required>
                                                     <option value="">{{ __('== Select Unit ==') }}</option>
                                                     @foreach($units as $unit)
                                                         <option value="{{ $unit->id }}" @selected(old('unit_id', $product->unit_id) == $unit->id)>{{ $unit->name }} @if($unit->symbol) ({{ $unit->symbol }}) @endif</option>

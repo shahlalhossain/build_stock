@@ -164,6 +164,30 @@ class ProductService extends BaseService
     }
 
     /**
+     * Re-run Variant Generation for a Product whose Attribute Values are already
+     * synced (i.e. no Form data to re-apply) — used by the one-off Backfill for
+     * Products that predate the single-Attribute Variant fix, and safe to call
+     * repeatedly since generateVariantsFromAttributeValues() is itself idempotent.
+     *
+     * @throws GeneralException
+     * @throws Throwable
+     */
+    public function regenerateVariants(Product $product): void
+    {
+        DB::beginTransaction();
+
+        try {
+            $this->generateVariantsFromAttributeValues($product);
+
+            DB::commit();
+        } catch (Exception $exception) {
+            Log::alert($exception->getMessage());
+            DB::rollBack();
+            throw new GeneralException(__('There was a Problem on Regenerating the Product Variants.'));
+        }
+    }
+
+    /**
      * Replace the Product's Specification Attribute Values with the submitted set —
      * a full sync, not add-only: the Create/Edit form always resends every currently
      * checked Value, and this is now the sole source Variants are generated from (see
@@ -195,9 +219,10 @@ class ProductService extends BaseService
      * Variant UI (Sections 36-37): this runs automatically on every Product save,
      * right after attachAttributeValues() has synced the current Specification set.
      *
-     * A Product with Values checked under only ONE Attribute (or none) has no
-     * meaningful combination to build and is kept variant-less (Section 12 — e.g.
-     * Construction Sand tagged only with a single Grade stays a plain Product).
+     * A Product with Values checked under a single Attribute still gets one Variant
+     * per checked Value (e.g. Construction Sand tagged only with Grade: A/B/C ->
+     * 3 Variants, one per Grade). Only a Product with NO Attribute Values checked
+     * at all stays a plain, variant-less Product.
      *
      * Matching against what already exists is by the NORMALIZED Attribute-Value set,
      * not by id or row order: regenerating after checking one more Value must not
@@ -220,7 +245,7 @@ class ProductService extends BaseService
             ->values()
             ->all();
 
-        $combinations = count($groups) >= 2 ? $this->cartesianProduct($groups) : [];
+        $combinations = count($groups) >= 1 ? $this->cartesianProduct($groups) : [];
 
         $existingByCombination = $product->variants()
             ->withTrashed()
