@@ -78,19 +78,45 @@
                                     </table>
                                 </div>
                                 <div class="col-12 col-md-5 order-2">
-                                    <table class="table table-hover table-responsive table-bordered table-sm">
-                                        <tbody>
-                                        <tr><th class="text-end pe-2">{{ __('Created By') }}</th><td class="text-start ps-2">{{ $product->creator?->name ?? '' }}</td></tr>
-                                        <tr><th class="text-end pe-2">{{ __('Created At') }}</th><td class="text-start ps-2">{{ $product->created_at->format('Y-m-d H:i:s') }}</td></tr>
-                                        <tr><th class="text-end pe-2">{{ __('Updated By') }}</th><td class="text-start ps-2">{{ $product->updater?->name ?? '' }}</td></tr>
-                                        <tr><th class="text-end pe-2">{{ __('Updated At') }}</th><td class="text-start ps-2">{{ $product->updated_at->format('Y-m-d H:i:s') }}</td></tr>
 
-                                        @if($product->trashed())
-                                            <tr><th class="text-end pe-2">{{ __('Deleted By') }}</th><td class="text-start ps-2">{{ $product->deleter?->name ?? '' }}</td></tr>
-                                            <tr><th class="text-end pe-2">{{ __('Deleted At') }}</th><td class="text-start ps-2">{{ $product->deleted_at->format('Y-m-d H:i:s') }}</td></tr>
-                                        @endif
-                                        </tbody>
-                                    </table>
+                                    @php
+                                        $auditLogs = [
+                                            [
+                                                'action'    => __('Created'),
+                                                'user'      => $product->creator?->name,
+                                                'at'        => $product->created_at,
+                                            ],
+                                            [
+                                                'action'    => __('Updated'),
+                                                'user'      => $product->updater?->name,
+                                                'at'        => $product->updated_at,
+                                            ],
+                                        ];
+
+                                        if ($product->trashed()) {
+                                            $auditLogs[] = [
+                                                'action'    => __('Deleted'),
+                                                'user'      => $product->deleter?->name,
+                                                'at'        => $product->deleted_at,
+                                            ];
+                                        }
+                                    @endphp
+
+                                    @foreach($auditLogs as $log)
+                                        <hr style="padding: 0 !important; margin: 0 !important;">
+
+                                        <div class="pb-2 pt-2">
+                                            <strong>{{ $log['action'] }}</strong>
+
+                                            @if($log['user'])
+                                                by <em>{{ $log['user'] }}</em>
+                                            @endif
+
+                                            @if($log['at'])
+                                                at {{ $log['at']->format('d F, Y h:i A') }}
+                                            @endif
+                                        </div>
+                                    @endforeach
 
                                     @if($product->approvalLogs->isNotEmpty())
                                         @foreach($product->approvalLogs as $log)
@@ -112,8 +138,6 @@
                                             </div>
                                         @endforeach
                                         <hr style="padding: 0 !important; margin: 0 !important;">
-                                    @else
-                                        <p>No Approval History Found</p>
                                     @endif
                                 </div>
                             </div>

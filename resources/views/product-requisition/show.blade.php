@@ -224,7 +224,6 @@
                                 </div>
                             </div>
 
-
                             <div class="row">
                                 <div class="col-12 text-start mt-2 pb-2">
                                     @if($productRequisition->trashed())
