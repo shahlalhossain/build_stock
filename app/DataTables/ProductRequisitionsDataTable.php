@@ -117,10 +117,10 @@ class ProductRequisitionsDataTable extends DataTable
     {
         return [
             Column::computed('DT_RowIndex')->title('SN')->orderable(false)->searchable(false)->addClass('text-center'),
-            Column::computed('requisition_for')->title('Requisition For')->orderable(false)->searchable(false),
-            Column::make('transaction_date')->title('Requisition Date')->orderable(true)->searchable(false),
             Column::computed('products')->title('Products')->orderable(false)->searchable(false),
             Column::computed('total_quantity')->title('Total Quantity')->orderable(false)->searchable(false)->addClass('text-center'),
+            Column::make('transaction_date')->title('Requisition Date')->orderable(true)->searchable(false),
+            Column::computed('requisition_for')->title('Requisition For')->orderable(false)->searchable(false),
             Column::computed('status')->title('Status')->orderable(false)->searchable(false)->addClass('text-center'),
             Column::computed('actions')
                 ->orderable(false)
