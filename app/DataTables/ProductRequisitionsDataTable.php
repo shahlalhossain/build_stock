@@ -23,14 +23,26 @@ class ProductRequisitionsDataTable extends DataTable
         return (new EloquentDataTable($query))
             ->setRowId('id')
             ->addIndexColumn()
-            ->editColumn('code', function (ProductRequisition $productRequisition) {
-                return $productRequisition->code;
-            })
             ->editColumn('store.name', function (ProductRequisition $productRequisition) {
                 return ucwords($productRequisition->store?->name ?? '');
             })
+            ->addColumn('store_location', function (ProductRequisition $productRequisition) {
+                $store = $productRequisition->store;
+
+                if (! $store) {
+                    return '';
+                }
+
+                return $store->project_id ? ucwords($store->project?->name ?? '') : 'Head Office';
+            })
+            ->addColumn('store_type', function (ProductRequisition $productRequisition) {
+                return ucwords($productRequisition->store?->type ?? '');
+            })
             ->editColumn('transaction_date', function (ProductRequisition $productRequisition) {
                 return $productRequisition->transaction_date?->format('d F, Y');
+            })
+            ->addColumn('items_count', function (ProductRequisition $productRequisition) {
+                return $productRequisition->items_count;
             })
             ->addColumn('status', function (ProductRequisition $productRequisition) {
                 if ($productRequisition->status === 'pending') {
@@ -42,11 +54,6 @@ class ProductRequisitionsDataTable extends DataTable
                 } else {
                     return '<span class="badge bg-secondary">'.ucwords('Unknown').'</span>';
                 }
-            })
-            ->editColumn('is_active', function (ProductRequisition $productRequisition) {
-                return $productRequisition->is_active
-                    ? '<span class="badge bg-success">'.__('Yes').'</span>'
-                    : '<span class="badge bg-warning">'.__('No').'</span>';
             })
             ->addColumn('actions', function (ProductRequisition $productRequisition) {
                 if ($this->showTrashed) {
@@ -64,10 +71,10 @@ class ProductRequisitionsDataTable extends DataTable
     public function query(ProductRequisition $model): QueryBuilder
     {
         if ($this->showTrashed) {
-            return $model->newQuery()->with(['store'])->onlyTrashed();
+            return $model->newQuery()->with(['store.project'])->withCount('items')->onlyTrashed();
         }
 
-        return $model->newQuery()->with(['store'])->withoutTrashed();
+        return $model->newQuery()->with(['store.project'])->withCount('items')->withoutTrashed();
     }
 
     /**
@@ -97,11 +104,12 @@ class ProductRequisitionsDataTable extends DataTable
     {
         return [
             Column::computed('DT_RowIndex')->title('SN')->orderable(false)->searchable(false)->addClass('text-center'),
-            Column::make('code')->orderable(true)->searchable(true),
             Column::make('store.name', 'store')->title('Store')->orderable(false)->searchable(false),
+            Column::computed('store_location')->title('Location')->orderable(false)->searchable(false),
+            Column::computed('store_type')->title('Store Type')->orderable(false)->searchable(false),
             Column::make('transaction_date')->orderable(true)->searchable(false),
+            Column::computed('items_count')->title('Total Product')->orderable(false)->searchable(false)->addClass('text-center'),
             Column::computed('status')->title('Status')->orderable(false)->searchable(false)->addClass('text-center'),
-            Column::computed('is_active')->title('Is Active')->orderable(false)->searchable(false)->addClass('text-center'),
             Column::computed('actions')
                 ->orderable(false)
                 ->searchable(false)
