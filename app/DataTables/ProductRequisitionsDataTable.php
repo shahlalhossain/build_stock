@@ -131,7 +131,7 @@ class ProductRequisitionsDataTable extends DataTable
             Column::make('store.name', 'store')->title('Store/Warehouse')->orderable(false)->searchable(false),
             Column::computed('store_location')->title('Location')->orderable(false)->searchable(false),
             Column::computed('store_type')->title('Store Type')->orderable(false)->searchable(false),
-            Column::make('transaction_date')->orderable(true)->searchable(false),
+            Column::make('transaction_date')->title('Requisition Date')->orderable(true)->searchable(false),
             Column::computed('products')->title('Products')->orderable(false)->searchable(false),
             Column::computed('total_quantity')->title('Total Quantity')->orderable(false)->searchable(false)->addClass('text-center'),
             Column::computed('status')->title('Status')->orderable(false)->searchable(false)->addClass('text-center'),
