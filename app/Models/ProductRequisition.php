@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -12,7 +13,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 class ProductRequisition extends Model
 {
-    use LogsActivity, SoftDeletes;
+    use HasFactory, LogsActivity, SoftDeletes;
 
     protected $table = 'product_requisitions';
 
@@ -100,6 +101,26 @@ class ProductRequisition extends Model
     public function approvalLogs(): MorphMany
     {
         return $this->morphMany(ApprovalLog::class, 'model');
+    }
+
+    /**
+     * Approved Requisitions that still have at least one Line Item with
+     * Remaining (un-Purchased) Quantity — i.e. eligible for "Purchase against
+     * Requisition". Fully Purchased Requisitions are excluded.
+     */
+    public function scopeAvailableForPurchase($query)
+    {
+        return $query->where('status', self::STATUS_APPROVED)
+            ->whereHas('items', function ($itemQuery) {
+                $itemQuery->whereRaw(
+                    'quantity > (select coalesce(sum(ppi.quantity), 0) '.
+                    'from product_purchase_items as ppi '.
+                    'inner join product_purchases as pp on pp.id = ppi.product_purchase_id '.
+                    'where ppi.requisition_item_id = product_requisition_items.id '.
+                    'and pp.status = ?)',
+                    [ProductPurchase::STATUS_APPROVED]
+                );
+            });
     }
 
     public function creator(): BelongsTo

@@ -6,6 +6,8 @@ use App\Exceptions\GeneralException;
 use App\Models\ApprovalLog;
 use App\Models\Product;
 use App\Models\ProductPurchase;
+use App\Models\ProductRequisition;
+use App\Models\ProductRequisitionItem;
 use App\Models\ProductStock;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -48,6 +50,85 @@ class ProductPurchaseService extends BaseService
     }
 
     /**
+     * Load a Requisition eligible for "Purchase against Requisition" — must be
+     * Approved and have at least one Line Item with Remaining Quantity.
+     *
+     * @throws GeneralException
+     */
+    public function getRequisitionForPurchase(int $requisitionId): ProductRequisition
+    {
+        $requisition = ProductRequisition::query()
+            ->availableForPurchase()
+            ->with(['store', 'items.product', 'items.productVariant.attributeValues', 'items.unit'])
+            ->find($requisitionId);
+
+        if (! $requisition) {
+            throw new GeneralException(__('Requisition is not Available for Purchase (Not Approved, or Already Fully Purchased).'));
+        }
+
+        return $requisition;
+    }
+
+    /**
+     * Validate every submitted Item Line against its linked Requisition Item's
+     * Remaining Quantity. Used only for the "Purchase against Requisition" Flow.
+     *
+     * @throws GeneralException
+     */
+    protected function assertItemsWithinRequisitionRemaining(int $requisitionId, array $items, ?int $excludePurchaseId = null): void
+    {
+        $requisitionItemIds = array_filter(array_column($items, 'requisition_item_id'));
+
+        if (empty($requisitionItemIds)) {
+            return;
+        }
+
+        $requisitionItems = ProductRequisitionItem::query()
+            ->where('product_requisition_id', $requisitionId)
+            ->whereIn('id', $requisitionItemIds)
+            ->lockForUpdate()
+            ->get()
+            ->keyBy('id');
+
+        $requestedByLine = [];
+        foreach ($items as $item) {
+            $requisitionItemId = $item['requisition_item_id'] ?? null;
+            if (! $requisitionItemId) {
+                continue;
+            }
+
+            if (! $requisitionItems->has($requisitionItemId)) {
+                throw new GeneralException(__('One or More Selected Products do not Belong to this Requisition.'));
+            }
+
+            $requestedByLine[$requisitionItemId] = ($requestedByLine[$requisitionItemId] ?? 0) + (float) ($item['quantity'] ?? 0);
+        }
+
+        foreach ($requestedByLine as $requisitionItemId => $requestedQuantity) {
+            /** @var ProductRequisitionItem $requisitionItem */
+            $requisitionItem = $requisitionItems->get($requisitionItemId);
+
+            $alreadyApprovedElsewhere = $requisitionItem->purchaseItems()
+                ->whereHas('productPurchase', function ($query) use ($excludePurchaseId) {
+                    $query->where('status', ProductPurchase::STATUS_APPROVED);
+                    if ($excludePurchaseId) {
+                        $query->where('id', '!=', $excludePurchaseId);
+                    }
+                })
+                ->sum('quantity');
+
+            $remaining = (float) $requisitionItem->quantity - (float) $alreadyApprovedElsewhere;
+
+            if ($requestedQuantity > $remaining + 0.0001) {
+                throw new GeneralException(__(
+                    'Requested Quantity for :product Exceeds the Remaining Requisition Quantity (:remaining Remaining).',
+                    ['product' => $requisitionItem->product?->name ?? __('Selected Product'), 'remaining' => $remaining]
+                ));
+            }
+        }
+    }
+
+    /**
      * @throws GeneralException
      * @throws Throwable
      */
@@ -59,6 +140,10 @@ class ProductPurchaseService extends BaseService
         try {
             $items = $data['items'] ?? [];
             $uploadedAttachmentPath = $this->storeInvoiceAttachment($data['invoice_attachment'] ?? null);
+
+            if (! empty($data['requisition_id'])) {
+                $this->assertItemsWithinRequisitionRemaining((int) $data['requisition_id'], $items);
+            }
 
             $productPurchase = $this->model::create(array_merge(
                 $this->purchaseFields($data, $items, $uploadedAttachmentPath),
@@ -167,6 +252,7 @@ class ProductPurchaseService extends BaseService
             $unitCost = $item['unit_cost'] ?? null;
 
             $productPurchase->items()->create([
+                'requisition_item_id' => $item['requisition_item_id'] ?? null,
                 'product_id' => $item['product_id'] ?? null,
                 'product_variant_id' => $item['product_variant_id'] ?? null,
                 'unit_id' => $item['unit_id'] ?? null,
@@ -194,6 +280,11 @@ class ProductPurchaseService extends BaseService
             }
 
             $items = $data['items'] ?? [];
+            $requisitionId = $data['requisition_id'] ?? $productPurchase->requisition_id;
+
+            if ($requisitionId) {
+                $this->assertItemsWithinRequisitionRemaining((int) $requisitionId, $items, $productPurchase->id);
+            }
 
             $newAttachmentPath = $oldAttachmentPath;
             if (! empty($data['invoice_attachment'])) {
@@ -251,6 +342,16 @@ class ProductPurchaseService extends BaseService
             }
 
             if ($status === ProductPurchase::STATUS_APPROVED) {
+                if ($productPurchase->requisition_id) {
+                    $items = $productPurchase->items()
+                        ->whereNotNull('requisition_item_id')
+                        ->get(['requisition_item_id', 'quantity'])
+                        ->map(fn ($item) => ['requisition_item_id' => $item->requisition_item_id, 'quantity' => $item->quantity])
+                        ->all();
+
+                    $this->assertItemsWithinRequisitionRemaining($productPurchase->requisition_id, $items, $productPurchase->id);
+                }
+
                 $this->applyStockEffect($productPurchase);
             }
 

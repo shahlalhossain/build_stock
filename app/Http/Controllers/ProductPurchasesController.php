@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\DataTables\ProductPurchasesDataTable;
+use App\DataTables\RequisitionsAvailableForPurchaseDataTable;
 use App\Exceptions\GeneralException;
 use App\Http\Requests\ProductPurchase\StoreProductPurchaseRequest;
 use App\Http\Requests\ProductPurchase\UpdateProductPurchaseRequest;
@@ -59,6 +60,49 @@ class ProductPurchasesController extends Controller
             return back()->withInput()->with('error', $generalException->getMessage());
         } catch (Throwable $exception) {
             Log::error('Unexpected Error on Creating Purchase: '.$exception->getMessage());
+
+            return back()->withInput()->with('error', 'Unexpected Error Occurred. Try Again.');
+        }
+    }
+
+    /**
+     * List of Approved Requisitions still Eligible for Purchase (Full or Partial).
+     */
+    public function requisitionList(RequisitionsAvailableForPurchaseDataTable $requisitionsDataTable)
+    {
+        return $requisitionsDataTable->render('product-purchase.requisition-list');
+    }
+
+    /**
+     * The Locked-Down Purchase Form for a single Requisition — only the
+     * Requisition's own Products may be Purchased, Quantity capped at Remaining.
+     */
+    public function createFromRequisition(ProductRequisition $productRequisition)
+    {
+        try {
+            $requisition = $this->productPurchaseService->getRequisitionForPurchase($productRequisition->id);
+        } catch (GeneralException $generalException) {
+            return redirect()->route('product-purchase.requisition-list')->with('error', $generalException->getMessage());
+        }
+
+        $data = $this->formLookups();
+        $data['requisition'] = $requisition;
+
+        return view('product-purchase.create-from-requisition', $data);
+    }
+
+    public function storeFromRequisition(StoreProductPurchaseRequest $productPurchaseRequest)
+    {
+        try {
+            $this->productPurchaseService->storePurchase($productPurchaseRequest->validated());
+
+            return redirect()->route('product-purchase.index')->with('success', 'New Purchase Created Successfully.');
+        } catch (GeneralException $generalException) {
+            Log::error('Purchase against Requisition Creation Failed: '.$generalException->getMessage());
+
+            return back()->withInput()->with('error', $generalException->getMessage());
+        } catch (Throwable $exception) {
+            Log::error('Unexpected Error on Creating Purchase against Requisition: '.$exception->getMessage());
 
             return back()->withInput()->with('error', 'Unexpected Error Occurred. Try Again.');
         }

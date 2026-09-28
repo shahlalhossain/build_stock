@@ -43,6 +43,7 @@ class StoreProductPurchaseRequest extends FormRequest
             'paid_amount' => ['nullable', 'numeric', 'min:0'],
 
             'items' => ['required', 'array', 'min:1'],
+            'items.*.requisition_item_id' => ['nullable', 'integer', Rule::exists('product_requisition_items', 'id')],
             'items.*.product_id' => ['required', 'integer', Rule::exists('products', 'id')],
             'items.*.product_variant_id' => ['nullable', 'integer', Rule::exists('product_variants', 'id')],
             'items.*.unit_id' => ['required', 'integer', Rule::exists('product_units', 'id')],
@@ -130,6 +131,9 @@ class StoreProductPurchaseRequest extends FormRequest
             'items.required' => __('At Least One Line Item is Required'),
             'items.array' => __('Line Items must be a Valid List'),
             'items.min' => __('At Least One Line Item is Required'),
+
+            'items.*.requisition_item_id.integer' => __('Selected Requisition Line is Invalid'),
+            'items.*.requisition_item_id.exists' => __('Selected Requisition Line does not Exist'),
 
             'items.*.product_id.required' => __('Product is Required for Every Line Item'),
             'items.*.product_id.integer' => __('Selected Product is Invalid'),

@@ -11,9 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('products', function (Blueprint $table) {
-            $table->boolean('has_variants')->default(false)->after('description');
-        });
+        // Already Present on a Fresh Database — create_products_table Creates it
+        // Directly. Only Needed on Databases Migrated before that Column Existed.
+        if (! Schema::hasColumn('products', 'has_variants')) {
+            Schema::table('products', function (Blueprint $table) {
+                $table->boolean('has_variants')->default(false)->after('description');
+            });
+        }
     }
 
     /**
@@ -21,8 +25,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('products', function (Blueprint $table) {
-            $table->dropColumn('has_variants');
-        });
+        // No-Op: create_products_table owns this Column — Dropping it here would
+        // also break Databases where this Migration never had to run its up().
     }
 };

@@ -16,9 +16,13 @@ return new class extends Migration
                 ->constrained('product_variants')->nullOnDelete();
         });
 
-        Schema::table('stock_transaction_items', function (Blueprint $table) {
-            $table->dropConstrainedForeignId('product_attribute_value_id');
-        });
+        // Only Present on Databases where this Column was Added before Migrations
+        // were Squashed — a Fresh Migrate never creates it, so Skip the Drop then.
+        if (Schema::hasColumn('stock_transaction_items', 'product_attribute_value_id')) {
+            Schema::table('stock_transaction_items', function (Blueprint $table) {
+                $table->dropConstrainedForeignId('product_attribute_value_id');
+            });
+        }
     }
 
     /**

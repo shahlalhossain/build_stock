@@ -12,13 +12,17 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('stock_transactions', function (Blueprint $table) {
-            $table->foreignId('product_variant_id')->nullable()->after('product_id')
+            $table->foreignId('product_variant_id')->nullable()
                 ->constrained('product_variants')->nullOnDelete();
         });
 
-        Schema::table('stock_transactions', function (Blueprint $table) {
-            $table->dropConstrainedForeignId('product_attribute_value_id');
-        });
+        // Only Present on Databases where this Column Predates the Variant
+        // Refactor — a Fresh Migrate never creates it.
+        if (Schema::hasColumn('stock_transactions', 'product_attribute_value_id')) {
+            Schema::table('stock_transactions', function (Blueprint $table) {
+                $table->dropConstrainedForeignId('product_attribute_value_id');
+            });
+        }
     }
 
     /**

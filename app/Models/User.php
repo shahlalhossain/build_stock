@@ -2,6 +2,11 @@
 
 namespace App\Models;
 
+use App\Models\Traits\Attribute\UserAttribute;
+use App\Models\Traits\Method\UserMethod;
+use App\Models\Traits\Relationship\UserRelationship;
+use App\Models\Traits\Scope\UserScope;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -10,25 +15,23 @@ use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Permission\Traits\HasPermissions;
 use Spatie\Permission\Traits\HasRoles;
-use App\Models\Traits\Attribute\UserAttribute;
-use App\Models\Traits\Method\UserMethod;
-use App\Models\Traits\Relationship\UserRelationship;
-use App\Models\Traits\Scope\UserScope;
 
 class User extends Authenticatable
 {
-    use HasPermissions,
+    use HasApiTokens,
+        HasFactory,
+        HasPermissions,
         HasRoles,
-        HasApiTokens,
+        LogsActivity,
         Notifiable,
+        SoftDeletes,
         UserAttribute,
         UserMethod,
         UserRelationship,
-        UserScope,
-        SoftDeletes,
-        LogsActivity;
+        UserScope;
 
     public const TYPE_ADMIN = 'admin';
+
     public const TYPE_USER = 'user';
 
     protected $fillable = [
@@ -53,9 +56,9 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at'     => 'datetime',
-            'mobile_verified_at'    => 'datetime',
-            'password'              => 'hashed',
+            'email_verified_at' => 'datetime',
+            'mobile_verified_at' => 'datetime',
+            'password' => 'hashed',
         ];
     }
 
@@ -66,10 +69,11 @@ class User extends Authenticatable
 
     protected static $recordEvents = ['created', 'updated', 'deleted'];
 
-    public function getActivitylogOptions() : LogOptions
+    public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()->logOnly(['*']);
     }
+
     public function passwordResetHistory()
     {
         return $this->hasMany(PasswordResetHistory::class, 'user_id', 'id');

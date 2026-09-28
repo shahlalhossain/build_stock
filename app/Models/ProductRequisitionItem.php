@@ -2,11 +2,15 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ProductRequisitionItem extends Model
 {
+    use HasFactory;
+
     protected $table = 'product_requisition_items';
 
     /**
@@ -61,5 +65,41 @@ class ProductRequisitionItem extends Model
     public function unit(): BelongsTo
     {
         return $this->belongsTo(ProductUnit::class, 'unit_id');
+    }
+
+    public function purchaseItems(): HasMany
+    {
+        return $this->hasMany(ProductPurchaseItem::class, 'requisition_item_id');
+    }
+
+    /**
+     * Quantity already Fulfilled by Approved Purchases against this Line.
+     * Pending/Rejected Purchases do NOT reserve or Consume Quantity.
+     *
+     * Uses the already Eager-Loaded 'purchaseItems.productPurchase' Relation
+     * when available to avoid N+1 Queries on Listing Pages; falls back to a
+     * fresh Query otherwise (e.g. when called on a single freshly-loaded Model).
+     */
+    public function getPurchasedQuantityAttribute(): float
+    {
+        if ($this->relationLoaded('purchaseItems')) {
+            return (float) $this->purchaseItems
+                ->filter(fn (ProductPurchaseItem $purchaseItem) => $purchaseItem->productPurchase?->status === ProductPurchase::STATUS_APPROVED)
+                ->sum('quantity');
+        }
+
+        return (float) $this->purchaseItems()
+            ->whereHas('productPurchase', function ($query) {
+                $query->where('status', ProductPurchase::STATUS_APPROVED);
+            })
+            ->sum('quantity');
+    }
+
+    /**
+     * Quantity still available to Purchase on this Line.
+     */
+    public function getRemainingQuantityAttribute(): float
+    {
+        return max(0, (float) $this->quantity - $this->purchased_quantity);
     }
 }

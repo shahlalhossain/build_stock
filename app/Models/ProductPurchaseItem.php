@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ProductPurchaseItem extends Model
 {
+    use HasFactory;
+
     protected $table = 'product_purchase_items';
 
     /**
@@ -16,6 +19,7 @@ class ProductPurchaseItem extends Model
      */
     protected $fillable = [
         'product_purchase_id',
+        'requisition_item_id',
         'product_id',
         'product_variant_id',
         'unit_id',
@@ -38,6 +42,7 @@ class ProductPurchaseItem extends Model
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
             'product_purchase_id' => 'integer',
+            'requisition_item_id' => 'integer',
             'product_id' => 'integer',
             'product_variant_id' => 'integer',
             'unit_id' => 'integer',
@@ -50,6 +55,11 @@ class ProductPurchaseItem extends Model
     public function productPurchase(): BelongsTo
     {
         return $this->belongsTo(ProductPurchase::class, 'product_purchase_id');
+    }
+
+    public function requisitionItem(): BelongsTo
+    {
+        return $this->belongsTo(ProductRequisitionItem::class, 'requisition_item_id');
     }
 
     public function product(): BelongsTo
