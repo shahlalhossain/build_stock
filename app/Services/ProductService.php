@@ -42,18 +42,19 @@ class ProductService extends BaseService
         DB::beginTransaction();
         try {
             $productData = [
-                'category_id' => $data['category_id'] ?? null,
-                'sub_category_id' => $data['sub_category_id'] ?? null,
-                'brand_id' => $data['brand_id'] ?? null,
-                'unit_id' => $data['unit_id'] ?? null,
-                'name' => $data['name'] ?? null,
-                'code' => $this->generateProductCode(),
-                'sku' => $this->generateSKU(),
-                'description' => $data['description'] ?? null,
-                'is_active' => true,
-                'created_by' => Auth::id(),
-                'updated_by' => Auth::id(),
+                'category_id'       => $data['category_id'] ?? null,
+                'sub_category_id'   => $data['sub_category_id'] ?? null,
+                'brand_id'          => $data['brand_id'] ?? null,
+                'unit_id'           => $data['unit_id'] ?? null,
+                'name'              => $data['name'] ?? null,
+                'code'              => $this->generateProductCode(),
+                'sku'               => $this->generateSKU(),
+                'description'       => $data['description'] ?? null,
+                'is_active'         => true,
+                'created_by'        => Auth::id(),
+                'updated_by'        => Auth::id(),
             ];
+
             $product = $this->model::create($productData);
 
             $this->attachAttributeValues($product, $data['attribute_value_ids'] ?? []);
@@ -145,12 +146,12 @@ class ProductService extends BaseService
             $result = $product->saveQuietly();
 
             ApprovalLog::create([
-                'model_type' => Product::class,
-                'model_id' => $product->id,
-                'action_name' => $status,
-                'actioned_by' => Auth::id(),
-                'actioned_at' => now(),
-                'remarks' => $remarks,
+                'model_type'    => Product::class,
+                'model_id'      => $product->id,
+                'action_name'   => $status,
+                'actioned_by'   => Auth::id(),
+                'actioned_at'   => now(),
+                'remarks'       => $remarks,
             ]);
 
             activity()
@@ -159,9 +160,9 @@ class ProductService extends BaseService
                 ->useLog('product')
                 ->event('statusUpdated')
                 ->withProperties([
-                    'old_status' => $oldStatus,
-                    'new_status' => $status,
-                    'remarks' => $remarks,
+                    'old_status'    => $oldStatus,
+                    'new_status'    => $status,
+                    'remarks'       => $remarks,
                 ])
                 ->log('statusUpdated');
 
@@ -180,6 +181,117 @@ class ProductService extends BaseService
         }
     }
 
+
+    /**
+     * @throws GeneralException
+     * @throws Throwable
+     */
+    public function destroyProduct($id): bool
+    {
+        DB::beginTransaction();
+
+        try {
+            $product = Product::findOrFail((int) $id);
+
+            $product->is_active = false;
+            $product->deleted_by = Auth::id();
+
+            // Prevent the Custom Fields from Generating an "updated" Activity Log
+            activity()->withoutLogs(function () use ($product) {
+                $product->save();
+            });
+
+            $result = $product->delete();
+
+            event(new ProductDestroyed($product));
+
+            DB::commit();
+
+            return $result;
+        } catch (ModelNotFoundException $exception) {
+            DB::rollBack();
+            throw $exception;
+        } catch (Throwable $exception) {
+            DB::rollBack();
+            Log::error('Product Destroy Failed in Service:'.$exception->getMessage());
+            throw new GeneralException(__('There was an issue on Destroy Product.'));
+        }
+    }
+
+    /**
+     * @throws GeneralException
+     * @throws Throwable
+     */
+    public function restoreProduct($id): bool
+    {
+        DB::beginTransaction();
+        try {
+
+            $product = Product::withTrashed()->findOrFail($id);
+
+            $product->is_active = true;
+            $product->deleted_by = null;
+
+            // Update Custom Fields without Generating an "updated" Activity Log
+            $product->saveQuietly();
+
+            // SoftDeletes Restores deleted_at and Fires "restored"
+            $result = $product->restore();
+
+            event(new ProductRestored($product));
+
+            DB::commit();
+
+            return $result;
+        } catch (ModelNotFoundException $exception) {
+            DB::rollBack();
+            throw $exception;
+        } catch (Throwable $exception) {
+            DB::rollBack();
+            Log::error('Product Restore Failed: '.$exception->getMessage());
+            throw new GeneralException(__('There was an issue on Restoring the Product.'));
+        }
+    }
+
+    /**
+     * @throws GeneralException
+     * @throws Throwable
+     */
+    public function deleteProduct($id): bool
+    {
+        DB::beginTransaction();
+        try {
+            $product = Product::withTrashed()->findOrFail($id);
+
+            // Permanently Delete without Automatic Activity Logging.
+            activity()->withoutLogs(function () use ($product) {
+                $product->attributeValues()->detach();
+                $product->forceDelete();
+            });
+
+            // Log the Permanent Deletion Explicitly.
+            activity()
+                ->useLog('product')
+                ->event('forceDeleted')
+                ->performedOn($product)
+                ->causedBy(Auth::user())
+                ->log('forceDeleted');
+
+            event(new ProductDeleted($product));
+
+            DB::commit();
+
+            return true;
+        } catch (ModelNotFoundException $exception) {
+            DB::rollBack();
+            throw $exception;
+        } catch (Throwable $exception) {
+            DB::rollBack();
+            Log::error('Product Permanent Deletion Failed in Service:'.$exception->getMessage());
+            throw new GeneralException(__('There was an issue on Deleting the Product.'));
+        }
+    }
+
     /**
      * Re-run Variant Generation for a Product whose Attribute Values are already
      * synced (i.e. no Form data to re-apply) — used by the one-off Backfill for
@@ -192,10 +304,8 @@ class ProductService extends BaseService
     public function regenerateVariants(Product $product): void
     {
         DB::beginTransaction();
-
         try {
             $this->generateVariantsFromAttributeValues($product);
-
             DB::commit();
         } catch (Exception $exception) {
             Log::alert($exception->getMessage());
@@ -221,9 +331,7 @@ class ProductService extends BaseService
 
         $attributeIdsByValueId = AttributeValue::whereIn('id', $ids)->pluck('attribute_id', 'id');
 
-        $syncData = collect($ids)
-            ->mapWithKeys(fn ($valueId) => [$valueId => ['attribute_id' => $attributeIdsByValueId[$valueId]]])
-            ->all();
+        $syncData = collect($ids)->mapWithKeys(fn ($valueId) => [$valueId => ['attribute_id' => $attributeIdsByValueId[$valueId]]])->all();
 
         $product->attributeValues()->sync($syncData);
     }
@@ -276,7 +384,7 @@ class ProductService extends BaseService
         foreach ($combinations as $attributeValueIds) {
             $productVariant = $existingByCombination->get($this->combinationKey($attributeValueIds));
 
-            if (! $productVariant) {
+            if (!$productVariant) {
                 $productVariant = new ProductVariant(['product_id' => $product->id]);
             } elseif ($productVariant->trashed()) {
                 $productVariant->deleted_at = null;
@@ -286,7 +394,7 @@ class ProductService extends BaseService
 
             $sku = $productVariant->sku;
 
-            if (! $sku) {
+            if (!$sku) {
                 $nextSkuSequence ??= $this->nextVariantSkuSequence($product);
                 $sku = $product->code.'-'.str_pad((string) $nextSkuSequence, 3, '0', STR_PAD_LEFT);
                 $nextSkuSequence++;
@@ -299,7 +407,7 @@ class ProductService extends BaseService
                 'updated_by' => Auth::id(),
             ]);
 
-            if (! $productVariant->exists) {
+            if (!$productVariant->exists) {
                 $productVariant->created_by = Auth::id();
             }
 
@@ -417,115 +525,5 @@ class ProductService extends BaseService
             ->value('max_number');
 
         return 'PRD-'.str_pad((int) $lastNumber + 1, 4, '0', STR_PAD_LEFT);
-    }
-
-    /**
-     * @throws GeneralException
-     * @throws Throwable
-     */
-    public function destroyProduct($id): bool
-    {
-        DB::beginTransaction();
-
-        try {
-            $product = Product::findOrFail((int) $id);
-
-            $product->is_active = false;
-            $product->deleted_by = Auth::id();
-
-            // Prevent the Custom Fields from Generating an "updated" Activity Log
-            activity()->withoutLogs(function () use ($product) {
-                $product->save();
-            });
-
-            $result = $product->delete();
-
-            event(new ProductDestroyed($product));
-
-            DB::commit();
-
-            return $result;
-        } catch (ModelNotFoundException $exception) {
-            DB::rollBack();
-            throw $exception;
-        } catch (Throwable $exception) {
-            DB::rollBack();
-            Log::error('Product Destroy Failed in Service:'.$exception->getMessage());
-            throw new GeneralException(__('There was an issue on Destroy Product.'));
-        }
-    }
-
-    /**
-     * @throws GeneralException
-     * @throws Throwable
-     */
-    public function restoreProduct($id): bool
-    {
-        DB::beginTransaction();
-        try {
-
-            $product = Product::withTrashed()->findOrFail($id);
-
-            $product->is_active = true;
-            $product->deleted_by = null;
-
-            // Update Custom Fields without Generating an "updated" Activity Log
-            $product->saveQuietly();
-
-            // SoftDeletes Restores deleted_at and Fires "restored"
-            $result = $product->restore();
-
-            event(new ProductRestored($product));
-
-            DB::commit();
-
-            return $result;
-        } catch (ModelNotFoundException $exception) {
-            DB::rollBack();
-            throw $exception;
-        } catch (Throwable $exception) {
-            DB::rollBack();
-            Log::error('Product Restore Failed: '.$exception->getMessage());
-            throw new GeneralException(__('There was an issue on Restoring the Product.'));
-        }
-    }
-
-    /**
-     * @throws GeneralException
-     * @throws Throwable
-     */
-    public function deleteProduct($id): bool
-    {
-        DB::beginTransaction();
-        try {
-            $product = Product::withTrashed()->findOrFail($id);
-
-            // Permanently Delete without Automatic Activity Logging.
-            activity()->withoutLogs(function () use ($product) {
-                $product->attributeValues()->detach();
-                $product->forceDelete();
-            });
-
-            // Log the Permanent Deletion Explicitly.
-            activity()
-                ->useLog('product')
-                ->event('forceDeleted')
-                ->performedOn($product)
-                ->causedBy(Auth::user())
-                ->log('forceDeleted');
-
-            event(new ProductDeleted($product));
-
-            DB::commit();
-
-            return true;
-        } catch (ModelNotFoundException $exception) {
-            DB::rollBack();
-            throw $exception;
-        } catch (Throwable $exception) {
-            DB::rollBack();
-            Log::error('Product Permanent Deletion Failed in Service:'.$exception->getMessage());
-            throw new GeneralException(__('There was an issue on Deleting the Product.'));
-        }
     }
 }
