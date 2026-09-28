@@ -29,14 +29,38 @@ class ProductRequisitionsDataTable extends DataTable
             ->addColumn('store_location', function (ProductRequisition $productRequisition) {
                 $store = $productRequisition->store;
 
-                if (!$store) {
+                if (! $store) {
                     return '';
                 }
 
                 return $store->project_id ? ucwords($store->project?->name ?? '') : 'Head Office';
             })
+            ->addColumn('store_type', function (ProductRequisition $productRequisition) {
+                return ucwords($productRequisition->store?->type ?? '');
+            })
             ->editColumn('transaction_date', function (ProductRequisition $productRequisition) {
                 return $productRequisition->transaction_date?->format('d F, Y');
+            })
+            ->addColumn('products', function (ProductRequisition $productRequisition) {
+                $lines = $productRequisition->items->map(function ($item) {
+                    $productName = $item->product?->name ?? '';
+
+                    $variantLabel = $item->productVariant
+                        ? ($item->productVariant->variant_name ?: $item->productVariant->attributeValues->pluck('value')->implode(' / '))
+                        : '';
+
+                    $label = $variantLabel !== '' ? "{$productName} ({$variantLabel})" : $productName;
+
+                    $quantity = number_format((float) $item->quantity, 2);
+                    $unit = $item->unit?->symbol ?? '';
+
+                    return e(trim("{$label} {$quantity} {$unit}"));
+                });
+
+                return $lines->implode('<br>');
+            })
+            ->addColumn('total_quantity', function (ProductRequisition $productRequisition) {
+                return $productRequisition->items_sum_quantity ?? 0;
             })
             ->addColumn('status', function (ProductRequisition $productRequisition) {
                 if ($productRequisition->status === 'pending') {
@@ -56,7 +80,7 @@ class ProductRequisitionsDataTable extends DataTable
 
                 return view('product-requisition.actions', ['productRequisition' => $productRequisition]);
             })
-            ->rawColumns(['status', 'is_active', 'actions']);
+            ->rawColumns(['products', 'status', 'is_active', 'actions']);
     }
 
     /**
@@ -64,11 +88,17 @@ class ProductRequisitionsDataTable extends DataTable
      */
     public function query(ProductRequisition $model): QueryBuilder
     {
+        $itemRelations = [
+            'items.product',
+            'items.productVariant.attributeValues',
+            'items.unit',
+        ];
+
         if ($this->showTrashed) {
-            return $model->newQuery()->with(['store.project'])->withCount('items')->onlyTrashed();
+            return $model->newQuery()->with(array_merge(['store.project'], $itemRelations))->withSum('items', 'quantity')->onlyTrashed();
         }
 
-        return $model->newQuery()->with(['store.project'])->withCount('items')->withoutTrashed();
+        return $model->newQuery()->with(array_merge(['store.project'], $itemRelations))->withSum('items', 'quantity')->withoutTrashed();
     }
 
     /**
@@ -100,7 +130,10 @@ class ProductRequisitionsDataTable extends DataTable
             Column::computed('DT_RowIndex')->title('SN')->orderable(false)->searchable(false)->addClass('text-center'),
             Column::make('store.name', 'store')->title('Store/Warehouse')->orderable(false)->searchable(false),
             Column::computed('store_location')->title('Location')->orderable(false)->searchable(false),
+            Column::computed('store_type')->title('Store Type')->orderable(false)->searchable(false),
             Column::make('transaction_date')->orderable(true)->searchable(false),
+            Column::computed('products')->title('Products')->orderable(false)->searchable(false),
+            Column::computed('total_quantity')->title('Total Quantity')->orderable(false)->searchable(false)->addClass('text-center'),
             Column::computed('status')->title('Status')->orderable(false)->searchable(false)->addClass('text-center'),
             Column::computed('actions')
                 ->orderable(false)
