@@ -23,20 +23,15 @@ class ProductRequisitionsDataTable extends DataTable
         return (new EloquentDataTable($query))
             ->setRowId('id')
             ->addIndexColumn()
-            ->editColumn('store.name', function (ProductRequisition $productRequisition) {
-                return ucwords($productRequisition->store?->name ?? '');
-            })
-            ->addColumn('store_location', function (ProductRequisition $productRequisition) {
+            ->addColumn('requisition_for', function (ProductRequisition $productRequisition) {
                 $store = $productRequisition->store;
-
-                if (! $store) {
+                if (!$store) {
                     return '';
                 }
+                $badgeClass = $store->type === 'warehouse' ? 'bg-info' : 'bg-primary';
+                $location = $store->project_id ? 'Project-Site' : 'Head-Office';
 
-                return $store->project_id ? ucwords($store->project?->name ?? '') : 'Head Office';
-            })
-            ->addColumn('store_type', function (ProductRequisition $productRequisition) {
-                return ucwords($productRequisition->store?->type ?? '');
+                return $location.' <span class="badge '.$badgeClass.'">'.ucwords($store->type).'</span>'.' - '.e(ucwords($store->name));
             })
             ->editColumn('transaction_date', function (ProductRequisition $productRequisition) {
                 return $productRequisition->transaction_date?->format('d F, Y');
@@ -44,16 +39,10 @@ class ProductRequisitionsDataTable extends DataTable
             ->addColumn('products', function (ProductRequisition $productRequisition) {
                 $lines = $productRequisition->items->map(function ($item) {
                     $productName = $item->product?->name ?? '';
-
-                    $variantLabel = $item->productVariant
-                        ? ($item->productVariant->variant_name ?: $item->productVariant->attributeValues->pluck('value')->implode(' / '))
-                        : '';
-
+                    $variantLabel = $item->productVariant ? ($item->productVariant->variant_name ?: $item->productVariant->attributeValues->pluck('value')->implode(' / ')) : '';
                     $label = $variantLabel !== '' ? "{$productName} ({$variantLabel})" : $productName;
-
                     $quantity = number_format((float) $item->quantity, 2);
                     $unit = $item->unit?->symbol ?? '';
-
                     return e(trim("{$label} {$quantity} {$unit}"));
                 });
 
@@ -80,7 +69,7 @@ class ProductRequisitionsDataTable extends DataTable
 
                 return view('product-requisition.actions', ['productRequisition' => $productRequisition]);
             })
-            ->rawColumns(['products', 'status', 'is_active', 'actions']);
+            ->rawColumns(['requisition_for', 'products', 'status', 'is_active', 'actions']);
     }
 
     /**
@@ -95,10 +84,10 @@ class ProductRequisitionsDataTable extends DataTable
         ];
 
         if ($this->showTrashed) {
-            return $model->newQuery()->with(array_merge(['store.project'], $itemRelations))->withSum('items', 'quantity')->onlyTrashed();
+            return $model->newQuery()->with(array_merge(['store'], $itemRelations))->withSum('items', 'quantity')->onlyTrashed();
         }
 
-        return $model->newQuery()->with(array_merge(['store.project'], $itemRelations))->withSum('items', 'quantity')->withoutTrashed();
+        return $model->newQuery()->with(array_merge(['store'], $itemRelations))->withSum('items', 'quantity')->withoutTrashed();
     }
 
     /**
@@ -128,9 +117,7 @@ class ProductRequisitionsDataTable extends DataTable
     {
         return [
             Column::computed('DT_RowIndex')->title('SN')->orderable(false)->searchable(false)->addClass('text-center'),
-            Column::make('store.name', 'store')->title('Store/Warehouse')->orderable(false)->searchable(false),
-            Column::computed('store_location')->title('Location')->orderable(false)->searchable(false),
-            Column::computed('store_type')->title('Store Type')->orderable(false)->searchable(false),
+            Column::computed('requisition_for')->title('Requisition For')->orderable(false)->searchable(false),
             Column::make('transaction_date')->title('Requisition Date')->orderable(true)->searchable(false),
             Column::computed('products')->title('Products')->orderable(false)->searchable(false),
             Column::computed('total_quantity')->title('Total Quantity')->orderable(false)->searchable(false)->addClass('text-center'),
