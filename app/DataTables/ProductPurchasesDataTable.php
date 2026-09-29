@@ -49,11 +49,6 @@ class ProductPurchasesDataTable extends DataTable
                     return '<span class="badge bg-secondary">'.ucwords('Unknown').'</span>';
                 }
             })
-            ->editColumn('is_active', function (ProductPurchase $productPurchase) {
-                return $productPurchase->is_active
-                    ? '<span class="badge bg-success">'.__('Yes').'</span>'
-                    : '<span class="badge bg-warning">'.__('No').'</span>';
-            })
             ->addColumn('actions', function (ProductPurchase $productPurchase) {
                 if ($this->showTrashed) {
                     return view('product-purchase.actions_trashed', ['productPurchase' => $productPurchase]);
@@ -61,7 +56,7 @@ class ProductPurchasesDataTable extends DataTable
 
                 return view('product-purchase.actions', ['productPurchase' => $productPurchase]);
             })
-            ->rawColumns(['status', 'is_active', 'actions']);
+            ->rawColumns(['status', 'actions']);
     }
 
     /**
@@ -109,7 +104,6 @@ class ProductPurchasesDataTable extends DataTable
             Column::make('transaction_date')->orderable(true)->searchable(false),
             Column::computed('net_amount')->title('Net Amount')->orderable(false)->searchable(false)->addClass('text-end'),
             Column::computed('status')->title('Status')->orderable(false)->searchable(false)->addClass('text-center'),
-            Column::computed('is_active')->title('Is Active')->orderable(false)->searchable(false)->addClass('text-center'),
             Column::computed('actions')
                 ->orderable(false)
                 ->searchable(false)
