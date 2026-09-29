@@ -33,7 +33,7 @@
                                         <tr><th class="text-end pe-2">{{ __('Sub-Category') }}</th><td class="text-start ps-2">{{ $product->subCategory?->name ?? '' }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Brand') }}</th><td class="text-start ps-2">{{ $product->brand?->name ?? '' }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Unit') }}</th><td class="text-start ps-2">{{ $product->unit ? $product->unit->name.' ('.$product->unit->symbol.')' : '' }}</td></tr>
-                                        <tr><th class="text-end pe-2">{{ __('Description') }}</th><td class="text-start ps-2">{{ $product->description ?? '' }}</td></tr>
+{{--                                        <tr><th class="text-end pe-2">{{ __('Description') }}</th><td class="text-start ps-2">{{ $product->description ?? '' }}</td></tr>--}}
                                         <tr><th class="text-end pe-2">{{ __('Is Active') }}</th>
                                             <td class="text-start ps-2">
                                                 @if($product->is_active == 1)
@@ -78,6 +78,8 @@
                                     </table>
                                 </div>
                                 <div class="col-12 col-md-5 order-2">
+
+                                    {{-- TODO: Have Preview the Product Images in Here --}}
 
                                     @php
                                         $auditLogs = [
@@ -142,6 +144,35 @@
                                 </div>
                             </div>
 
+                            <hr>
+
+                            <div class="row">
+                                <div class="col-12 col-sm-12 col-md-12 col-xl-12">
+                                    <h6 class="fw-bold fst-italic">{{ __('Specifications') }}</h6>
+                                    {{-- TODO: Have to Change this from Specifications to Product Variants --}}
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-bordered">
+                                            <thead>
+                                            <tr>
+                                                <th>{{ __('Attribute') }}</th>
+                                                <th>{{ __('Values') }}</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            @forelse($product->attributeValues->groupBy('attribute.name') as $attributeName => $values)
+                                                <tr>
+                                                    <td>{{ $attributeName }}</td>
+                                                    <td>{{ $values->pluck('value')->implode(', ') }}</td>
+                                                </tr>
+                                            @empty
+                                                <tr><td colspan="2" class="text-center">{{ __('No Specifications Added') }}</td></tr>
+                                            @endforelse
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="row">
                                 <div class="col-12 text-start mt-2 pb-2">
                                     @if($product->trashed())
@@ -152,30 +183,6 @@
                                         <button class="btn btn-sm btn-warning destroy-product" id="destroyProduct" data-product-id="{{ $product->id }}"><i class="ri-delete-bin-line"></i><span class="d-none d-sm-inline"> {{ __('Destroy') }}</span></button>
                                     @endif
                                 </div>
-                            </div>
-
-                            <hr>
-
-                            <h6 class="fw-bold fst-italic">{{ __('Specifications') }}</h6>
-                            <div class="table-responsive">
-                                <table class="table table-sm table-bordered">
-                                    <thead>
-                                    <tr>
-                                        <th>{{ __('Attribute') }}</th>
-                                        <th>{{ __('Values') }}</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    @forelse($product->attributeValues->groupBy('attribute.name') as $attributeName => $values)
-                                        <tr>
-                                            <td>{{ $attributeName }}</td>
-                                            <td>{{ $values->pluck('value')->implode(', ') }}</td>
-                                        </tr>
-                                    @empty
-                                        <tr><td colspan="2" class="text-center">{{ __('No Specifications Added') }}</td></tr>
-                                    @endforelse
-                                    </tbody>
-                                </table>
                             </div>
 
                         </div>

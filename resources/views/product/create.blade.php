@@ -151,18 +151,19 @@
                                             <label class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Product Images') }}</label>
                                             <div class="col-12 col-md-8">
                                                 {{--
-    View only for now — Dropzone stages files client-side (image
-    previews, drag & drop, remove-before-submit) with autoProcessQueue
-    disabled and no live url, so nothing is uploaded on Save yet. Wiring
-    this to storage is a separate follow-up (FileService/ImageService
-    already exist in this app and are the natural fit).
+                                                    View only for now — Dropzone stages files client-side (image
+                                                    previews, drag & drop, remove-before-submit) with autoProcessQueue
+                                                    disabled and no live url, so nothing is uploaded on Save yet. Wiring
+                                                    this to storage is a separate follow-up (FileService/ImageService
+                                                    already exist in this app and are the natural fit).
 
-    Markup/init follow Velzon's own Dropzone pattern (see
-    ecommerce-product-create.init.js): #dropzone-preview-list is a
-    hidden ROW TEMPLATE, read once at init time and removed from the DOM,
-    then re-rendered by Dropzone into the separate #dropzone-preview list
-    below the drop area for every accepted File.
---}}
+                                                    Markup/init follow Velzon's own Dropzone pattern (see
+                                                    ecommerce-product-create.init.js): #dropzone-preview-list is a
+                                                    hidden ROW TEMPLATE, read once at init time and removed from the DOM,
+                                                    then re-rendered by Dropzone into the separate #dropzone-preview list
+                                                    below the drop area for every accepted File.
+                                                    TODO: Have make it Functional - Multiple Image Upload, Edit/Update, Delete/REmove Image, Add New Image
+                                                --}}
                                                 <div action="#" class="dropzone" id="product-images-dropzone">
                                                     <div class="dz-message needsclick">
                                                         <div class="mb-2"><i class="display-6 text-muted ri-upload-cloud-2-line"></i></div>

@@ -146,10 +146,9 @@
                                         <table class="table table-sm table-bordered">
                                             <thead>
                                             <tr>
-                                                <th>{{ __('Product') }}</th>
-                                                <th>{{ __('Variant') }}</th>
-                                                <th>{{ __('Quantity') }}</th>
-                                                <th>{{ __('Remarks') }}</th>
+                                                <th class="ps-2">{{ __('Product') }}</th>
+                                                <th class="ps-2">{{ __('Quantity') }}</th>
+                                                <th class="ps-2">{{ __('Remarks') }}</th>
                                             </tr>
                                             </thead>
                                             <tbody>
@@ -157,11 +156,10 @@
                                                 <tr>
                                                     <td class="ps-2">
                                                         {{ $item->product?->name }}
-                                                        @if($item->product?->code)
-                                                            ({{ $item->product->code }})
+                                                        @if($item->productVariant?->variant_name)
+                                                            ({{ $item->productVariant?->variant_name }})
                                                         @endif
                                                     </td>
-                                                    <td class="ps-2">{{ $item->productVariant?->variant_name ?? '' }}</td>
                                                     <td class="ps-2">{{ $item->quantity }} ({{ $item->unit?->symbol }})</td>
                                                     <td class="ps-2">{{ $item->remarks }}</td>
                                                 </tr>
@@ -180,23 +178,15 @@
                                     <div class="d-md-none">
                                         @forelse($productRequisition->items as $item)
                                             <div class="border rounded mb-2 p-2">
-                                                {{-- Product --}}
-                                                <div class="mb-2">
-                                                    <div class="small text-muted">{{ __('Product') }}</div>
+                                                {{-- Product (+ Variant) --}}
+                                                <div class="row mb-2">
                                                     <div class="fw-semibold">
                                                         {{ $item->product?->name }}
-                                                        @if($item->product?->code)
-                                                            <span class="text-muted">({{ $item->product->code }})</span>
+                                                        @if($item->productVariant?->variant_name)
+                                                            <span class="text-muted">({{ $item->productVariant->variant_name }})</span>
                                                         @endif
                                                     </div>
                                                 </div>
-                                                {{-- Variant --}}
-                                                @if($item->productVariant?->variant_name)
-                                                    <div class="mb-2">
-                                                        <div class="small text-muted">{{ __('Variant') }}</div>
-                                                        <div>{{ $item->productVariant->variant_name }}</div>
-                                                    </div>
-                                                @endif
                                                 {{-- Quantity + Unit --}}
                                                 <div class="row mb-2">
                                                     <div class="col-6">
@@ -209,7 +199,7 @@
                                                 </div>
                                                 {{-- Remarks --}}
                                                 @if($item->remarks)
-                                                    <div>
+                                                    <div class="row mb-2">
                                                         <div class="small text-muted">{{ __('Remarks') }}</div>
                                                         <div>{{ $item->remarks }}</div>
                                                     </div>
