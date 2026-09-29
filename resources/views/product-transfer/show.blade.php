@@ -76,35 +76,6 @@
                                         </tr>
                                         </tbody>
                                     </table>
-
-                                    <h6 class="fw-bold fst-italic">{{ __('Transfer Items') }}</h6>
-                                    <div class="table-responsive">
-                                        <table class="table table-sm table-bordered">
-                                            <thead>
-                                            <tr>
-                                                <th>{{ __('Product') }}</th>
-                                                <th>{{ __('Variant') }}</th>
-                                                <th>{{ __('Quantity') }}</th>
-                                                <th>{{ __('Unit') }}</th>
-                                                <th>{{ __('Remarks') }}</th>
-                                            </tr>
-                                            </thead>
-                                            <tbody>
-                                            @forelse($productTransfer->items as $item)
-                                                <tr>
-                                                    <td>{{ $item->product?->name }} @if($item->product?->code) ({{ $item->product->code }}) @endif</td>
-                                                    <td>{{ $item->productVariant?->variant_name ?? '' }}</td>
-                                                    <td>{{ $item->quantity }}</td>
-                                                    <td>{{ $item->unit?->name }} @if($item->unit?->symbol) ({{ $item->unit->symbol }}) @endif</td>
-                                                    <td>{{ $item->remarks }}</td>
-                                                </tr>
-                                            @empty
-                                                <tr><td colspan="5" class="text-center">{{ __('No Line Items Found') }}</td></tr>
-                                            @endforelse
-                                            </tbody>
-                                        </table>
-                                    </div>
-
                                     @if($productTransfer->status === 'approved')
                                         <h6 class="fw-bold fst-italic">{{ __('Receives Against this Transfer') }}</h6>
                                         <div class="table-responsive">
@@ -132,19 +103,45 @@
                                     @endif
                                 </div>
                                 <div class="col-12 col-md-5 ps-5 order-2">
-                                    <table class="table table-hover table-responsive table-bordered table-sm">
-                                        <tbody>
-                                        <tr><th class="text-end pe-2">{{ __('Created By') }}</th><td class="text-start ps-2">{{ $productTransfer->creator?->name ?? '' }}</td></tr>
-                                        <tr><th class="text-end pe-2">{{ __('Created At') }}</th><td class="text-start ps-2">{{ $productTransfer->created_at->format('Y-m-d H:i:s') }}</td></tr>
-                                        <tr><th class="text-end pe-2">{{ __('Updated By') }}</th><td class="text-start ps-2">{{ $productTransfer->updater?->name ?? '' }}</td></tr>
-                                        <tr><th class="text-end pe-2">{{ __('Updated At') }}</th><td class="text-start ps-2">{{ $productTransfer->updated_at->format('Y-m-d H:i:s') }}</td></tr>
 
-                                        @if($productTransfer->trashed())
-                                            <tr><th class="text-end pe-2">{{ __('Deleted By') }}</th><td class="text-start ps-2">{{ $productTransfer->deleter?->name ?? '' }}</td></tr>
-                                            <tr><th class="text-end pe-2">{{ __('Deleted At') }}</th><td class="text-start ps-2">{{ $productTransfer->deleted_at->format('Y-m-d H:i:s') }}</td></tr>
-                                        @endif
-                                        </tbody>
-                                    </table>
+                                    @php
+                                        $auditLogs = [
+                                            [
+                                                'action'    => __('Created'),
+                                                'user'      => $productTransfer->creator?->name,
+                                                'at'        => $productTransfer->created_at,
+                                            ],
+                                            [
+                                                'action'    => __('Updated'),
+                                                'user'      => $productTransfer->updater?->name,
+                                                'at'        => $productTransfer->updated_at,
+                                            ],
+                                        ];
+
+                                        if ($productTransfer->trashed()) {
+                                            $auditLogs[] = [
+                                                'action'    => __('Deleted'),
+                                                'user'      => $productTransfer->deleter?->name,
+                                                'at'        => $productTransfer->deleted_at,
+                                            ];
+                                        }
+                                    @endphp
+
+                                    @foreach($auditLogs as $log)
+                                        <hr style="padding: 0 !important; margin: 0 !important;">
+
+                                        <div class="pb-2 pt-2">
+                                            <strong>{{ $log['action'] }}</strong>
+
+                                            @if($log['user'])
+                                                by <em>{{ $log['user'] }}</em>
+                                            @endif
+
+                                            @if($log['at'])
+                                                at {{ $log['at']->format('d F, Y h:i A') }}
+                                            @endif
+                                        </div>
+                                    @endforeach
 
                                     @if($productTransfer->approvalLogs->isNotEmpty())
                                         @foreach($productTransfer->approvalLogs as $log)
@@ -166,9 +163,41 @@
                                             </div>
                                         @endforeach
                                         <hr style="padding: 0 !important; margin: 0 !important;">
-                                    @else
-                                        <p>No Approval History Found</p>
                                     @endif
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-12">
+                                    <h6 class="fw-bold fst-italic">{{ __('Transfer Items') }}</h6>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-bordered">
+                                            <thead>
+                                            <tr>
+                                                <th>{{ __('Product') }}</th>
+                                                <th>{{ __('Quantity') }}</th>
+                                                <th>{{ __('Remarks') }}</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            @forelse($productTransfer->items as $item)
+                                                <tr>
+                                                    <td>
+                                                        {{ $item->product?->name }}
+                                                        @if($item->productVariant?->variant_name) ({{ $item->productVariant?->variant_name }}) @endif
+                                                    </td>
+                                                    <td>
+                                                        {{ $item->quantity }}
+                                                        @if($item->unit?->symbol) ({{ $item->unit->symbol }}) @endif
+                                                    </td>
+                                                    <td>{{ $item->remarks }}</td>
+                                                </tr>
+                                            @empty
+                                                <tr><td colspan="5" class="text-center">{{ __('No Transfer Items Found') }}</td></tr>
+                                            @endforelse
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
 
