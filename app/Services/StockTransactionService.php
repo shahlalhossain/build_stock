@@ -14,11 +14,9 @@ use App\Models\ProductStock;
 use App\Models\StockTransaction;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Throwable;
 
 /**
@@ -55,73 +53,17 @@ class StockTransactionService extends BaseService
      */
     public function storeTransaction(array $data = []): StockTransaction
     {
-        $uploadedAttachmentPath = null;
-
         DB::beginTransaction();
         try {
             $type = $data['type'] ?? null;
             $items = $data['items'] ?? [];
 
             $headerProductFields = $this->headerProductFields($items);
-            $purchaseFields = [];
 
-            if ($type === StockTransaction::TYPE_PURCHASE) {
-                $uploadedAttachmentPath = $this->storeInvoiceAttachment($data['invoice_attachment'] ?? null);
-                $purchaseFields = $this->purchaseFields($data, $items, $uploadedAttachmentPath);
-            }
-
-            if ($type === StockTransaction::TYPE_TRANSFER) {
-                $destinationStoreId = $data['destination_store_id'] ?? null;
-
-                if (! $destinationStoreId || (int) $destinationStoreId === (int) ($data['store_id'] ?? null)) {
-                    throw new GeneralException(__('Destination Store must be Different from the Source Store.'));
-                }
-
-                $transferOut = $this->model::create(array_merge($headerProductFields, [
-                    'code' => $this->generateCode(),
-                    'type' => StockTransaction::TYPE_TRANSFER_OUT,
-                    'store_id' => $data['store_id'] ?? null,
-                    'supplier_id' => null,
-                    'linked_transaction_id' => null,
-                    'transaction_date' => $data['transaction_date'] ?? null,
-                    'remarks' => $data['remarks'] ?? null,
-                    'is_active' => true,
-                    'created_by' => Auth::id(),
-                    'updated_by' => Auth::id(),
-                ]));
-
-                $transferIn = $this->model::create(array_merge($headerProductFields, [
-                    'code' => $this->generateCode(),
-                    'type' => StockTransaction::TYPE_TRANSFER_IN,
-                    'store_id' => $destinationStoreId,
-                    'supplier_id' => null,
-                    'linked_transaction_id' => $transferOut->id,
-                    'transaction_date' => $data['transaction_date'] ?? null,
-                    'remarks' => $data['remarks'] ?? null,
-                    'is_active' => true,
-                    'created_by' => Auth::id(),
-                    'updated_by' => Auth::id(),
-                ]));
-
-                $transferOut->update(['linked_transaction_id' => $transferIn->id]);
-
-                $this->createItems($transferOut, $items);
-                $this->createItems($transferIn, $items);
-
-                event(new StockTransactionCreated($transferOut));
-                event(new StockTransactionCreated($transferIn));
-
-                DB::commit();
-
-                return $transferOut;
-            }
-
-            $stockTransaction = $this->model::create(array_merge($headerProductFields, $purchaseFields, [
+            $stockTransaction = $this->model::create(array_merge($headerProductFields, [
                 'code' => $this->generateCode(),
                 'type' => $type,
                 'store_id' => $data['store_id'] ?? null,
-                'supplier_id' => $type === StockTransaction::TYPE_PURCHASE ? ($data['supplier_id'] ?? null) : null,
-                'linked_transaction_id' => null,
                 'transaction_date' => $data['transaction_date'] ?? null,
                 'remarks' => $data['remarks'] ?? null,
                 'is_active' => true,
@@ -138,93 +80,12 @@ class StockTransactionService extends BaseService
             return $stockTransaction;
         } catch (GeneralException $generalException) {
             DB::rollBack();
-            $this->deleteInvoiceAttachment($uploadedAttachmentPath);
             throw $generalException;
         } catch (Exception $exception) {
             Log::alert($exception->getMessage());
             DB::rollBack();
-            $this->deleteInvoiceAttachment($uploadedAttachmentPath);
             throw new GeneralException(__('There was a Problem on Creating New Stock Transaction.'));
         }
-    }
-
-    /**
-     * Store the Optional Invoice Attachment on the private "local" Disk.
-     * Runs inside the caller's DB Transaction but writes to disk immediately — the
-     * caller must clean this up via deleteInvoiceAttachment() on any Rollback.
-     */
-    protected function storeInvoiceAttachment(?UploadedFile $file): ?string
-    {
-        if (! $file) {
-            return null;
-        }
-
-        return $file->store('invoices/stock-transactions', 'local');
-    }
-
-    protected function deleteInvoiceAttachment(?string $path): void
-    {
-        if ($path) {
-            Storage::disk('local')->delete($path);
-        }
-    }
-
-    /**
-     * Compute the Purchase-only Header Fields: per-Item Line Totals feed
-     * total_amount, Discount/Tax then derive net_amount.
-     */
-    protected function purchaseFields(array $data, array $items, ?string $uploadedAttachmentPath): array
-    {
-        $totalAmount = $this->calculateItemsTotal($items);
-
-        $discountType = $data['discount_type'] ?? null;
-        $discountAmount = (float) ($data['discount_amount'] ?? 0);
-        $taxAmount = (float) ($data['tax_amount'] ?? 0);
-
-        $discountValue = $discountType === StockTransaction::DISCOUNT_TYPE_PERCENTAGE
-            ? $totalAmount * ($discountAmount / 100)
-            : $discountAmount;
-
-        $netAmount = $totalAmount - $discountValue + $taxAmount;
-
-        return [
-            'invoice_number' => $data['invoice_number'] ?? null,
-            'supplier_invoice_date' => $data['supplier_invoice_date'] ?? null,
-            'invoice_attachment_path' => $uploadedAttachmentPath,
-            'discount_type' => $discountType,
-            'discount_amount' => $discountAmount,
-            'tax_amount' => $taxAmount,
-            'total_amount' => $totalAmount,
-            'net_amount' => $netAmount,
-            'payment_status' => $data['payment_status'] ?? StockTransaction::PAYMENT_STATUS_UNPAID,
-            'paid_amount' => (float) ($data['paid_amount'] ?? 0),
-        ];
-    }
-
-    /**
-     * Sum every Line Item's Total (Quantity × Unit Cost) — Variant Rows are summed
-     * individually, matching how createItems() explodes them into separate rows.
-     */
-    protected function calculateItemsTotal(array $items): float
-    {
-        $total = 0.0;
-
-        foreach ($items as $item) {
-            $variants = $item['variants'] ?? [];
-
-            if (empty($variants)) {
-                $total += (float) ($item['quantity'] ?? 0) * (float) ($item['unit_cost'] ?? 0);
-
-                continue;
-            }
-
-            foreach ($variants as $variant) {
-                $unitCost = $variant['unit_cost'] ?? ($item['unit_cost'] ?? 0);
-                $total += (float) ($variant['quantity'] ?? 0) * (float) $unitCost;
-            }
-        }
-
-        return $total;
     }
 
     /**
@@ -312,63 +173,13 @@ class StockTransactionService extends BaseService
             $type = $data['type'] ?? null;
             $items = $data['items'] ?? [];
 
-            if ($type === StockTransaction::TYPE_TRANSFER) {
-                $destinationStoreId = $data['destination_store_id'] ?? null;
-
-                if (! $destinationStoreId || (int) $destinationStoreId === (int) ($data['store_id'] ?? null)) {
-                    throw new GeneralException(__('Destination Store must be Different from the Source Store.'));
-                }
-
-                $linkedTransaction = $stockTransaction->linkedTransaction;
-
-                if (! $linkedTransaction) {
-                    throw new GeneralException(__('Linked Transfer Transaction was not Found.'));
-                }
-
-                // Normalize: $stockTransaction may be either the transfer_out or transfer_in side.
-                $transferOut = $stockTransaction->type === StockTransaction::TYPE_TRANSFER_OUT ? $stockTransaction : $linkedTransaction;
-                $transferIn = $stockTransaction->type === StockTransaction::TYPE_TRANSFER_IN ? $stockTransaction : $linkedTransaction;
-
-                $transferOut->update([
-                    'store_id' => $data['store_id'] ?? null,
-                    'transaction_date' => $data['transaction_date'] ?? null,
-                    'remarks' => $data['remarks'] ?? null,
-                    'updated_by' => Auth::id(),
-                ]);
-
-                $transferIn->update([
-                    'store_id' => $destinationStoreId,
-                    'transaction_date' => $data['transaction_date'] ?? null,
-                    'remarks' => $data['remarks'] ?? null,
-                    'updated_by' => Auth::id(),
-                ]);
-
-                $transferOut->items()->delete();
-                $transferIn->items()->delete();
-
-                $this->createItems($transferOut, $items);
-                $this->createItems($transferIn, $items);
-
-                event(new StockTransactionUpdated($transferOut));
-                event(new StockTransactionUpdated($transferIn));
-
-                DB::commit();
-
-                return $stockTransaction->refresh();
-            }
-
-            $purchaseFields = $type === StockTransaction::TYPE_PURCHASE
-                ? $this->purchaseFields($data, $items, $stockTransaction->invoice_attachment_path)
-                : [];
-
-            $stockTransaction->update(array_merge($purchaseFields, [
+            $stockTransaction->update([
                 'type' => $type,
                 'store_id' => $data['store_id'] ?? null,
-                'supplier_id' => $type === StockTransaction::TYPE_PURCHASE ? ($data['supplier_id'] ?? null) : null,
                 'transaction_date' => $data['transaction_date'] ?? null,
                 'remarks' => $data['remarks'] ?? null,
                 'updated_by' => Auth::id(),
-            ]));
+            ]);
 
             $stockTransaction->items()->delete();
             $this->createItems($stockTransaction, $items);
@@ -408,14 +219,6 @@ class StockTransactionService extends BaseService
                 $this->approveTransaction($stockTransaction, $remarks);
             } else {
                 $this->finalizeStatus($stockTransaction, $status, $remarks);
-
-                if ($stockTransaction->isTransfer() && $stockTransaction->linked_transaction_id) {
-                    $linkedTransaction = StockTransaction::find($stockTransaction->linked_transaction_id);
-
-                    if ($linkedTransaction && $linkedTransaction->status === StockTransaction::STATUS_PENDING) {
-                        $this->finalizeStatus($linkedTransaction, $status, $remarks);
-                    }
-                }
             }
 
             DB::commit();
@@ -435,52 +238,13 @@ class StockTransactionService extends BaseService
     }
 
     /**
-     * Approve a Stock Transaction: apply its Stock Effect, and — for a Transfer pair —
-     * auto-approve the linked side too. Must run inside the caller's DB transaction.
+     * Approve a Stock Transaction: apply its Stock Effect. Must run inside the
+     * caller's DB transaction.
      *
      * @throws GeneralException
      */
     protected function approveTransaction(StockTransaction $stockTransaction, ?string $remarks): void
     {
-        if ($stockTransaction->type === StockTransaction::TYPE_TRANSFER_OUT) {
-            $linkedTransaction = $stockTransaction->linked_transaction_id
-                ? StockTransaction::findOrFail($stockTransaction->linked_transaction_id)
-                : null;
-
-            if (! $linkedTransaction) {
-                throw new GeneralException(__('Linked Transfer-In Transaction was not Found.'));
-            }
-
-            // Apply the Subtract Effect at the Source Store First (guard checked inside).
-            $this->applyStockEffect($stockTransaction);
-            $this->finalizeStatus($stockTransaction, StockTransaction::STATUS_APPROVED, $remarks);
-
-            // Auto-Approve the Linked Transfer-In: Add Effect at the Destination Store.
-            $this->applyStockEffect($linkedTransaction);
-            $this->finalizeStatus($linkedTransaction, StockTransaction::STATUS_APPROVED, $remarks);
-
-            return;
-        }
-
-        if ($stockTransaction->type === StockTransaction::TYPE_TRANSFER_IN) {
-            $linkedTransaction = $stockTransaction->linked_transaction_id
-                ? StockTransaction::findOrFail($stockTransaction->linked_transaction_id)
-                : null;
-
-            if (! $linkedTransaction) {
-                throw new GeneralException(__('Linked Transfer-Out Transaction was not Found.'));
-            }
-
-            // Apply the Subtract Effect at the Source (transfer_out) Side First (guard checked inside).
-            $this->applyStockEffect($linkedTransaction);
-            $this->finalizeStatus($linkedTransaction, StockTransaction::STATUS_APPROVED, $remarks);
-
-            $this->applyStockEffect($stockTransaction);
-            $this->finalizeStatus($stockTransaction, StockTransaction::STATUS_APPROVED, $remarks);
-
-            return;
-        }
-
         $this->applyStockEffect($stockTransaction);
         $this->finalizeStatus($stockTransaction, StockTransaction::STATUS_APPROVED, $remarks);
     }
@@ -493,7 +257,7 @@ class StockTransactionService extends BaseService
      */
     protected function applyStockEffect(StockTransaction $stockTransaction): void
     {
-        $isSubtract = in_array($stockTransaction->type, [StockTransaction::TYPE_ISSUE, StockTransaction::TYPE_TRANSFER_OUT], true);
+        $isSubtract = $stockTransaction->type === StockTransaction::TYPE_ISSUE;
 
         foreach ($stockTransaction->items as $item) {
             // Adjustment quantities may already be negative and are applied as-is;

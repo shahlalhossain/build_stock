@@ -32,9 +32,6 @@ class StockTransactionsDataTable extends DataTable
             ->editColumn('store.name', function (StockTransaction $stockTransaction) {
                 return ucwords($stockTransaction->store?->name ?? '');
             })
-            ->editColumn('supplier.name', function (StockTransaction $stockTransaction) {
-                return $stockTransaction->supplier?->name ? ucwords($stockTransaction->supplier->name) : '';
-            })
             ->editColumn('transaction_date', function (StockTransaction $stockTransaction) {
                 return $stockTransaction->transaction_date?->format('d F, Y');
             })
@@ -70,10 +67,10 @@ class StockTransactionsDataTable extends DataTable
     public function query(StockTransaction $model): QueryBuilder
     {
         if ($this->showTrashed) {
-            return $model->newQuery()->with(['store', 'supplier'])->onlyTrashed();   // Show Trashed Records
+            return $model->newQuery()->with(['store'])->onlyTrashed();   // Show Trashed Records
         }
 
-        return $model->newQuery()->with(['store', 'supplier'])->withoutTrashed();    // Show Active Records
+        return $model->newQuery()->with(['store'])->withoutTrashed();    // Show Active Records
     }
 
     /**
@@ -106,7 +103,6 @@ class StockTransactionsDataTable extends DataTable
             Column::make('code')->orderable(true)->searchable(true),
             Column::computed('type')->title('Type')->orderable(false)->searchable(false)->addClass('text-center'),
             Column::make('store.name', 'store')->title('Store')->orderable(false)->searchable(false),
-            Column::make('supplier.name', 'supplier')->title('Supplier')->orderable(false)->searchable(false),
             Column::make('transaction_date')->orderable(true)->searchable(false),
             Column::computed('status')->title('Status')->orderable(false)->searchable(false)->addClass('text-center'),
             Column::computed('is_active')->title('Is Active')->orderable(false)->searchable(false)->addClass('text-center'),

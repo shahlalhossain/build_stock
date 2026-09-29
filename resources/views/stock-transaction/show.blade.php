@@ -29,18 +29,6 @@
                                         <tr><th class="text-end pe-2">{{ __('Code') }}</th><td class="text-start ps-2">{{ $stockTransaction->code }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Type') }}</th><td class="text-start ps-2"><span class="badge bg-info">{{ ucwords(str_replace('_', ' ', $stockTransaction->type)) }}</span></td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Store') }}</th><td class="text-start ps-2">{{ $stockTransaction->store?->name }}</td></tr>
-                                        @if($stockTransaction->type === 'purchase')
-                                            <tr><th class="text-end pe-2">{{ __('Supplier') }}</th><td class="text-start ps-2">{{ $stockTransaction->supplier?->name ?? '' }}</td></tr>
-                                        @endif
-                                        @if($stockTransaction->isTransfer() && $stockTransaction->linkedTransaction)
-                                            <tr>
-                                                <th class="text-end pe-2">{{ $stockTransaction->type === 'transfer_out' ? __('Destination Store') : __('Source Store') }}</th>
-                                                <td class="text-start ps-2">
-                                                    {{ $stockTransaction->linkedTransaction->store?->name }}
-                                                    <a href="{{ route('stock-transaction.show', $stockTransaction->linkedTransaction->id) }}" class="badge bg-secondary text-decoration-none">{{ $stockTransaction->linkedTransaction->code }}</a>
-                                                </td>
-                                            </tr>
-                                        @endif
                                         <tr><th class="text-end pe-2">{{ __('Transaction Date') }}</th><td class="text-start ps-2">{{ optional($stockTransaction->transaction_date)->format('d F, Y') }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Remarks') }}</th><td class="text-start ps-2">{{ $stockTransaction->remarks }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Is Active') }}</th>

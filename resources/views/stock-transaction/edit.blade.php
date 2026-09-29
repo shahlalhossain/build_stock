@@ -30,10 +30,6 @@
                                 </div>
                             </div>
                         @else
-                            @php
-                                $isTransfer = $stockTransaction->type === 'transfer_out' || $stockTransaction->type === 'transfer_in';
-                                $sourceTransaction = $isTransfer && $stockTransaction->type === 'transfer_in' ? $stockTransaction->linkedTransaction : $stockTransaction;
-                            @endphp
                             <form action="{{ route('stock-transaction.update', $stockTransaction->id) }}" method="POST">
                                 @csrf
                                 @method('PATCH')
@@ -58,12 +54,9 @@
                                                 <label for="type" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Type') }}</label>
                                                 <div class="col-12 col-md-8">
                                                     <select id="type" name="type" class="form-select @error('type') is-invalid @enderror" required>
-                                                        @php $currentType = $isTransfer ? 'transfer' : $stockTransaction->type; @endphp
-                                                        <option value="opening_balance" @selected(old('type', $currentType) === 'opening_balance')>{{ __('Opening Balance') }}</option>
-                                                        <option value="purchase" @selected(old('type', $currentType) === 'purchase')>{{ __('Purchase') }}</option>
-                                                        <option value="issue" @selected(old('type', $currentType) === 'issue')>{{ __('Issue') }}</option>
-                                                        <option value="adjustment" @selected(old('type', $currentType) === 'adjustment')>{{ __('Adjustment') }}</option>
-                                                        <option value="transfer" @selected(old('type', $currentType) === 'transfer')>{{ __('Transfer') }}</option>
+                                                        <option value="opening_balance" @selected(old('type', $stockTransaction->type) === 'opening_balance')>{{ __('Opening Balance') }}</option>
+                                                        <option value="issue" @selected(old('type', $stockTransaction->type) === 'issue')>{{ __('Issue') }}</option>
+                                                        <option value="adjustment" @selected(old('type', $stockTransaction->type) === 'adjustment')>{{ __('Adjustment') }}</option>
                                                     </select>
                                                     @error('type')<small class="text-danger">{{ $message }}</small>@enderror
                                                 </div>
@@ -75,36 +68,10 @@
                                                     <select id="store_id" name="store_id" class="form-select @error('store_id') is-invalid @enderror" required>
                                                         <option value="">{{ __('== Select Store ==') }}</option>
                                                         @foreach($stores as $store)
-                                                            <option value="{{ $store->id }}" @selected(old('store_id', $sourceTransaction->store_id) == $store->id)>{{ ucwords($store->name) }}</option>
+                                                            <option value="{{ $store->id }}" @selected(old('store_id', $stockTransaction->store_id) == $store->id)>{{ ucwords($store->name) }}</option>
                                                         @endforeach
                                                     </select>
                                                     @error('store_id')<small class="text-danger">{{ $message }}</small>@enderror
-                                                </div>
-                                            </div>
-
-                                            <div class="row mb-2 d-none" id="destination_store_row">
-                                                <label for="destination_store_id" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Destination Store') }}</label>
-                                                <div class="col-12 col-md-8">
-                                                    <select id="destination_store_id" name="destination_store_id" class="form-select @error('destination_store_id') is-invalid @enderror">
-                                                        <option value="">{{ __('== Select Destination Store ==') }}</option>
-                                                        @foreach($stores as $store)
-                                                            <option value="{{ $store->id }}" @selected(old('destination_store_id', $isTransfer ? $stockTransaction->linkedTransaction->store_id : null) == $store->id)>{{ ucwords($store->name) }}</option>
-                                                        @endforeach
-                                                    </select>
-                                                    @error('destination_store_id')<small class="text-danger">{{ $message }}</small>@enderror
-                                                </div>
-                                            </div>
-
-                                            <div class="row mb-2 d-none" id="supplier_row">
-                                                <label for="supplier_id" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Supplier') }}</label>
-                                                <div class="col-12 col-md-8">
-                                                    <select id="supplier_id" name="supplier_id" class="form-select @error('supplier_id') is-invalid @enderror">
-                                                        <option value="">{{ __('== Select Supplier ==') }}</option>
-                                                        @foreach($suppliers as $supplier)
-                                                            <option value="{{ $supplier->id }}" @selected(old('supplier_id', $stockTransaction->supplier_id) == $supplier->id)>{{ ucwords($supplier->name) }}</option>
-                                                        @endforeach
-                                                    </select>
-                                                    @error('supplier_id')<small class="text-danger">{{ $message }}</small>@enderror
                                                 </div>
                                             </div>
                                         </div>
@@ -270,60 +237,6 @@
                 }
 
                 $(document).on('change', '.item-product', refreshProductOptions);
-
-                /*
-                |--------------------------------------------------------------------------
-                | TYPE -> SUPPLIER / DESTINATION STORE: CLIENT-SIDE SHOW/HIDE
-                |--------------------------------------------------------------------------
-                */
-                const $type = $('#type');
-                const $supplierRow = $('#supplier_row');
-                const $supplierSelect = $('#supplier_id');
-                const $destinationRow = $('#destination_store_row');
-                const $destinationSelect = $('#destination_store_id');
-                const $storeSelect = $('#store_id');
-
-                function syncTypeDependentFields() {
-                    const type = $type.val();
-
-                    if (type === 'purchase') {
-                        $supplierRow.removeClass('d-none');
-                    } else {
-                        $supplierRow.addClass('d-none');
-                    }
-
-                    if (type === 'transfer') {
-                        $destinationRow.removeClass('d-none');
-                        filterDestinationStoreOptions();
-                    } else {
-                        $destinationRow.addClass('d-none');
-                    }
-                }
-
-                function filterDestinationStoreOptions() {
-                    const sourceStoreId = $storeSelect.val();
-
-                    $destinationSelect.find('option').each(function () {
-                        if (!$(this).val()) {
-                            return;
-                        }
-
-                        const isSameStore = String($(this).val()) === String(sourceStoreId);
-                        $(this).toggle(!isSameStore);
-
-                        if (isSameStore && $(this).prop('selected')) {
-                            $destinationSelect.val('');
-                        }
-                    });
-                }
-
-                $type.on('change', syncTypeDependentFields);
-                $storeSelect.on('change', function () {
-                    if ($type.val() === 'transfer') {
-                        filterDestinationStoreOptions();
-                    }
-                });
-                syncTypeDependentFields();
 
                 /*
                 |--------------------------------------------------------------------------

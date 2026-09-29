@@ -9,7 +9,6 @@ use App\Http\Requests\StockTransaction\UpdateStockTransactionRequest;
 use App\Models\Product;
 use App\Models\StockTransaction;
 use App\Models\Store;
-use App\Models\Supplier;
 use App\Services\StockTransactionService;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -17,9 +16,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
 
 class StockTransactionsController extends Controller
@@ -66,8 +63,6 @@ class StockTransactionsController extends Controller
     {
         $data['stockTransaction'] = $stockTransaction->load([
             'store',
-            'supplier',
-            'linkedTransaction',
             'items.product',
             'items.productVariant',
             'creator',
@@ -82,7 +77,7 @@ class StockTransactionsController extends Controller
     public function edit(StockTransaction $stockTransaction): View
     {
         $data = $this->formLookups();
-        $data['stockTransaction'] = $stockTransaction->load(['items.product', 'items.productVariant', 'linkedTransaction']);
+        $data['stockTransaction'] = $stockTransaction->load(['items.product', 'items.productVariant']);
 
         return view('stock-transaction.edit', $data);
     }
@@ -151,14 +146,6 @@ class StockTransactionsController extends Controller
         }
     }
 
-    public function downloadInvoiceAttachment(StockTransaction $stockTransaction): StreamedResponse
-    {
-        abort_unless($stockTransaction->invoice_attachment_path, 404);
-        abort_unless(Storage::disk('local')->exists($stockTransaction->invoice_attachment_path), 404);
-
-        return Storage::disk('local')->download($stockTransaction->invoice_attachment_path);
-    }
-
     public function trash(StockTransactionsDataTable $stockTransactionsDataTable)
     {
         $stockTransactionsDataTable->showTrashed = true;
@@ -215,7 +202,6 @@ class StockTransactionsController extends Controller
 
         return [
             'stores' => Store::query()->where('is_active', true)->orderBy('name')->get(['id', 'name']),
-            'suppliers' => Supplier::query()->where('is_active', true)->orderBy('name')->get(['id', 'name']),
             'products' => $products,
             // Preloaded per-Product Variant list as JSON (no AJAX round-trip), matching
             // this app's existing Category/Sub-Category and Specifications client-side

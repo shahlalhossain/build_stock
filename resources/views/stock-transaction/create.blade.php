@@ -157,10 +157,8 @@
                                                 <select id="type" name="type" class="form-select @error('type') is-invalid @enderror" required>
                                                     <option value="" @selected(old('type') === null)>{{ __('Select Type') }}</option>
                                                     <option value="opening_balance" @selected(old('type') === 'opening_balance')>{{ __('Opening Balance') }}</option>
-                                                    <option value="purchase" @selected(old('type') === 'purchase')>{{ __('Purchase') }}</option>
                                                     <option value="issue" @selected(old('type') === 'issue')>{{ __('Issue') }}</option>
                                                     <option value="adjustment" @selected(old('type') === 'adjustment')>{{ __('Adjustment') }}</option>
-                                                    <option value="transfer" @selected(old('type') === 'transfer')>{{ __('Transfer') }}</option>
                                                 </select>
                                                 @error('type')<small class="text-danger">{{ $message }}</small>@enderror
                                             </div>
@@ -179,31 +177,6 @@
                                             </div>
                                         </div>
 
-                                        <div class="row mb-2 d-none" id="destination_store_row">
-                                            <label for="destination_store_id" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Destination Store') }}</label>
-                                            <div class="col-12 col-md-8">
-                                                <select id="destination_store_id" name="destination_store_id" class="form-select @error('destination_store_id') is-invalid @enderror">
-                                                    <option value="">{{ __('== Select Destination Store ==') }}</option>
-                                                    @foreach($stores as $store)
-                                                        <option value="{{ $store->id }}" @selected(old('destination_store_id') == $store->id)>{{ ucwords($store->name) }}</option>
-                                                    @endforeach
-                                                </select>
-                                                @error('destination_store_id')<small class="text-danger">{{ $message }}</small>@enderror
-                                            </div>
-                                        </div>
-
-                                        <div class="row mb-2 d-none" id="supplier_row">
-                                            <label for="supplier_id" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Supplier') }}</label>
-                                            <div class="col-12 col-md-8">
-                                                <select id="supplier_id" name="supplier_id" class="form-select @error('supplier_id') is-invalid @enderror">
-                                                    <option value="">{{ __('== Select Supplier ==') }}</option>
-                                                    @foreach($suppliers as $supplier)
-                                                        <option value="{{ $supplier->id }}" @selected(old('supplier_id') == $supplier->id)>{{ ucwords($supplier->name) }}</option>
-                                                    @endforeach
-                                                </select>
-                                                @error('supplier_id')<small class="text-danger">{{ $message }}</small>@enderror
-                                            </div>
-                                        </div>
                                     </div>
                                     <!-- End Left Column -->
 
@@ -227,105 +200,6 @@
                                     </div>
                                     <!-- End Right Column -->
                                 </div>
-
-                                <!-- ===================== PURCHASE DETAILS (Type = Purchase Only) ===================== -->
-                                <div id="purchase_details_section" class="d-none">
-                                    <hr>
-                                    <h5 class="mb-3 fst-italic">{{ __('Purchase Details') }}</h5>
-                                    <div class="row">
-                                        <!-- Start Left Column -->
-                                        <div class="col-12 col-md-6">
-                                            <div class="row mb-2">
-                                                <label for="invoice_number" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Invoice Number') }}</label>
-                                                <div class="col-12 col-md-8">
-                                                    <input type="text" class="form-control @error('invoice_number') is-invalid @enderror" id="invoice_number" name="invoice_number" value="{{ old('invoice_number') }}" placeholder="{{ __('Supplier Invoice Number') }}">
-                                                    @error('invoice_number')<small class="text-danger">{{ $message }}</small>@enderror
-                                                </div>
-                                            </div>
-
-                                            <div class="row mb-2">
-                                                <label for="supplier_invoice_date" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Invoice Date') }}</label>
-                                                <div class="col-12 col-md-8">
-                                                    <input type="date" class="form-control @error('supplier_invoice_date') is-invalid @enderror" id="supplier_invoice_date" name="supplier_invoice_date" value="{{ old('supplier_invoice_date') }}">
-                                                    @error('supplier_invoice_date')<small class="text-danger">{{ $message }}</small>@enderror
-                                                </div>
-                                            </div>
-
-                                            <div class="row mb-2">
-                                                <label for="invoice_attachment" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Invoice Attachment') }}</label>
-                                                <div class="col-12 col-md-8">
-                                                    <input type="file" class="form-control @error('invoice_attachment') is-invalid @enderror" id="invoice_attachment" name="invoice_attachment" accept=".pdf,.jpg,.jpeg,.png">
-                                                    <div class="form-text">{{ __('Optional. PDF, JPG or PNG — Max 10 MB.') }}</div>
-                                                    @error('invoice_attachment')<small class="text-danger">{{ $message }}</small>@enderror
-                                                </div>
-                                            </div>
-
-                                            <div class="row mb-2">
-                                                <label for="payment_status" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Payment Status') }}</label>
-                                                <div class="col-12 col-md-8">
-                                                    <select id="payment_status" name="payment_status" class="form-select @error('payment_status') is-invalid @enderror">
-                                                        <option value="unpaid" @selected(old('payment_status', 'unpaid') === 'unpaid')>{{ __('Unpaid') }}</option>
-                                                        <option value="partial" @selected(old('payment_status') === 'partial')>{{ __('Partial') }}</option>
-                                                        <option value="paid" @selected(old('payment_status') === 'paid')>{{ __('Paid') }}</option>
-                                                    </select>
-                                                    @error('payment_status')<small class="text-danger">{{ $message }}</small>@enderror
-                                                </div>
-                                            </div>
-
-                                            <div class="row mb-2" id="paid_amount_row">
-                                                <label for="paid_amount" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Paid Amount') }}</label>
-                                                <div class="col-12 col-md-8">
-                                                    <input type="number" step="0.01" min="0" class="form-control @error('paid_amount') is-invalid @enderror" id="paid_amount" name="paid_amount" value="{{ old('paid_amount', 0) }}">
-                                                    @error('paid_amount')<small class="text-danger">{{ $message }}</small>@enderror
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <!-- End Left Column -->
-
-                                        <!-- Start Right Column -->
-                                        <div class="col-12 col-md-6">
-                                            <div class="row mb-2">
-                                                <label class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Total Amount') }}</label>
-                                                <div class="col-12 col-md-8">
-                                                    <input type="text" class="form-control" id="purchase_total_amount_display" readonly tabindex="-1" value="0.00">
-                                                </div>
-                                            </div>
-
-                                            <div class="row mb-2">
-                                                <label for="discount_type" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Discount Type') }}</label>
-                                                <div class="col-12 col-md-4">
-                                                    <select id="discount_type" name="discount_type" class="form-select @error('discount_type') is-invalid @enderror">
-                                                        <option value="" @selected(old('discount_type') === null)>{{ __('None') }}</option>
-                                                        <option value="fixed" @selected(old('discount_type') === 'fixed')>{{ __('Fixed') }}</option>
-                                                        <option value="percentage" @selected(old('discount_type') === 'percentage')>{{ __('Percentage') }}</option>
-                                                    </select>
-                                                    @error('discount_type')<small class="text-danger">{{ $message }}</small>@enderror
-                                                </div>
-                                                <div class="col-12 col-md-4">
-                                                    <input type="number" step="0.01" min="0" class="form-control @error('discount_amount') is-invalid @enderror" id="discount_amount" name="discount_amount" value="{{ old('discount_amount', 0) }}" placeholder="{{ __('Amount') }}">
-                                                    @error('discount_amount')<small class="text-danger">{{ $message }}</small>@enderror
-                                                </div>
-                                            </div>
-
-                                            <div class="row mb-2">
-                                                <label for="tax_amount" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Tax Amount') }}</label>
-                                                <div class="col-12 col-md-8">
-                                                    <input type="number" step="0.01" min="0" class="form-control @error('tax_amount') is-invalid @enderror" id="tax_amount" name="tax_amount" value="{{ old('tax_amount', 0) }}">
-                                                    @error('tax_amount')<small class="text-danger">{{ $message }}</small>@enderror
-                                                </div>
-                                            </div>
-
-                                            <div class="row mb-2">
-                                                <label class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Net Amount') }}</label>
-                                                <div class="col-12 col-md-8">
-                                                    <input type="text" class="form-control fw-bold" id="purchase_net_amount_display" readonly tabindex="-1" value="0.00">
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <!-- End Right Column -->
-                                    </div>
-                                </div>
-                                <!-- ===================== END PURCHASE DETAILS ===================== -->
 
                                 <hr>
 
@@ -479,73 +353,6 @@
 @push('scripts')
     <script>
         $(document).ready(function () {
-            /*
-            |--------------------------------------------------------------------------
-            | TYPE -> SUPPLIER / DESTINATION STORE: CLIENT-SIDE SHOW/HIDE
-            |--------------------------------------------------------------------------
-            | Plain jQuery show/hide, matching this app's existing Category->SubCategory
-            | client-side filter convention (no AJAX).
-            */
-            const $type = $('#type');
-            const $supplierRow = $('#supplier_row');
-            const $supplierSelect = $('#supplier_id');
-            const $destinationRow = $('#destination_store_row');
-            const $destinationSelect = $('#destination_store_id');
-            const $storeSelect = $('#store_id');
-            const $purchaseDetailsSection = $('#purchase_details_section');
-
-            function syncTypeDependentFields() {
-                const type = $type.val();
-
-                if (type === 'purchase') {
-                    $supplierRow.removeClass('d-none');
-                    $purchaseDetailsSection.removeClass('d-none');
-                    syncPurchaseTotals();
-                } else {
-                    $supplierRow.addClass('d-none');
-                    $supplierSelect.val('');
-                    $purchaseDetailsSection.addClass('d-none');
-                }
-
-                if (type === 'transfer') {
-                    $destinationRow.removeClass('d-none');
-                    filterDestinationStoreOptions();
-                } else {
-                    $destinationRow.addClass('d-none');
-                    $destinationSelect.val('');
-                }
-            }
-
-            /*
-            |--------------------------------------------------------------------------
-            | DESTINATION STORE: EXCLUDE THE SELECTED SOURCE STORE
-            |--------------------------------------------------------------------------
-            */
-            function filterDestinationStoreOptions() {
-                const sourceStoreId = $storeSelect.val();
-
-                $destinationSelect.find('option').each(function () {
-                    if (!$(this).val()) {
-                        return;
-                    }
-
-                    const isSameStore = String($(this).val()) === String(sourceStoreId);
-                    $(this).toggle(!isSameStore);
-
-                    if (isSameStore && $(this).prop('selected')) {
-                        $destinationSelect.val('');
-                    }
-                });
-            }
-
-            $type.on('change', syncTypeDependentFields);
-            $storeSelect.on('change', function () {
-                if ($type.val() === 'transfer') {
-                    filterDestinationStoreOptions();
-                }
-            });
-            syncTypeDependentFields();
-
             /*
             |--------------------------------------------------------------------------
             | LINE ITEMS REPEATER
@@ -846,7 +653,6 @@
                     const averageUnitCost = totalValue / totalQuantity;
                     $activeVariantsRow.find('.item-unit-cost').val(averageUnitCost.toFixed(2));
                     syncItemTotalCost($activeVariantsRow);
-                    syncPurchaseTotals();
                 }
 
                 bootstrap.Modal.getOrCreateInstance(document.getElementById('variantsModal')).hide();
@@ -873,45 +679,7 @@
 
             $(document).on('input', '.item-quantity, .item-unit-cost', function () {
                 syncItemTotalCost($(this).closest('.repeater-row'));
-                syncPurchaseTotals();
             });
-
-            /*
-            |--------------------------------------------------------------------------
-            | PURCHASE DETAILS: TOTAL / NET AMOUNT AUTO-CALCULATE
-            |--------------------------------------------------------------------------
-            | Total Amount = Sum of every Line Item's Total Cost (Quantity x Unit Cost).
-            | Net Amount = Total - Discount (Fixed or %) + Tax. Purely a live Display —
-            | the authoritative figures are recomputed server-side on Save.
-            */
-            function syncPurchaseTotals() {
-                if ($type.val() !== 'purchase') {
-                    return;
-                }
-
-                let totalAmount = 0;
-                $('.repeater-row[data-group="items"]').each(function () {
-                    const lineTotal = parseFloat($(this).find('.item-total-cost').val());
-                    if (!isNaN(lineTotal)) {
-                        totalAmount += lineTotal;
-                    }
-                });
-
-                const discountType = $('#discount_type').val();
-                const discountAmount = parseFloat($('#discount_amount').val()) || 0;
-                const taxAmount = parseFloat($('#tax_amount').val()) || 0;
-
-                const discountValue = discountType === 'percentage'
-                    ? totalAmount * (discountAmount / 100)
-                    : discountAmount;
-
-                const netAmount = totalAmount - discountValue + taxAmount;
-
-                $('#purchase_total_amount_display').val(totalAmount.toFixed(2));
-                $('#purchase_net_amount_display').val(netAmount.toFixed(2));
-            }
-
-            $(document).on('input change', '#discount_type, #discount_amount, #tax_amount', syncPurchaseTotals);
 
             /*
             |--------------------------------------------------------------------------
@@ -945,7 +713,6 @@
                 addRow($(this).data('group'));
                 refreshProductOptions();
                 reindexItemRows();
-                syncPurchaseTotals();
             });
 
             $(document).on('click', '.remove-row', function () {
@@ -957,7 +724,6 @@
                 $(this).closest('.repeater-row').remove();
                 refreshProductOptions();
                 reindexItemRows();
-                syncPurchaseTotals();
             });
 
             /*
