@@ -36,20 +36,6 @@
                                     <!-- Start Left Column -->
                                     <div class="col-12 col-md-6">
                                         <div class="row mb-2">
-                                            <label for="requisition_id" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Requisition') }}</label>
-                                            <div class="col-12 col-md-8">
-                                                <select id="requisition_id" name="requisition_id" class="form-select @error('requisition_id') is-invalid @enderror">
-                                                    <option value="">{{ __('== None ==') }}</option>
-                                                    @foreach($requisitions as $requisition)
-                                                        <option value="{{ $requisition->id }}" @selected(old('requisition_id') == $requisition->id)>{{ $requisition->code }}</option>
-                                                    @endforeach
-                                                </select>
-                                                @error('requisition_id')<small class="text-danger">{{ $message }}</small>@enderror
-                                                <div class="form-text">{{ __('Optional. Only Approved Requisitions are Listed.') }}</div>
-                                            </div>
-                                        </div>
-
-                                        <div class="row mb-2">
                                             <label for="store_id" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Receiving Store') }}</label>
                                             <div class="col-12 col-md-8">
                                                 <select id="store_id" name="store_id" class="form-select @error('store_id') is-invalid @enderror" required>
@@ -84,18 +70,6 @@
                                         </div>
 
                                         <div class="row mb-2">
-                                            <label for="remarks" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Remarks') }}</label>
-                                            <div class="col-12 col-md-8">
-                                                <textarea class="form-control @error('remarks') is-invalid @enderror" id="remarks" name="remarks" rows="2">{{ old('remarks') }}</textarea>
-                                                @error('remarks')<small class="text-danger">{{ $message }}</small>@enderror
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <!-- End Left Column -->
-
-                                    <!-- Start Right Column -->
-                                    <div class="col-12 col-md-6">
-                                        <div class="row mb-2">
                                             <label for="invoice_number" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Invoice Number') }}</label>
                                             <div class="col-12 col-md-8">
                                                 <input type="text" class="form-control @error('invoice_number') is-invalid @enderror" id="invoice_number" name="invoice_number" value="{{ old('invoice_number') }}" placeholder="{{ __('Supplier Invoice Number') }}" required>
@@ -112,6 +86,18 @@
                                         </div>
 
                                         <div class="row mb-2">
+                                            <label for="remarks" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Remarks') }}</label>
+                                            <div class="col-12 col-md-8">
+                                                <textarea class="form-control @error('remarks') is-invalid @enderror" id="remarks" name="remarks" rows="3">{{ old('remarks') }}</textarea>
+                                                @error('remarks')<small class="text-danger">{{ $message }}</small>@enderror
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- End Left Column -->
+
+                                    <!-- Start Right Column -->
+                                    <div class="col-12 col-md-6">
+                                        <div class="row mb-2">
                                             <label for="invoice_attachment" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Invoice Attachment') }}</label>
                                             <div class="col-12 col-md-8">
                                                 <input type="file" class="form-control @error('invoice_attachment') is-invalid @enderror" id="invoice_attachment" name="invoice_attachment" accept=".pdf,.jpg,.jpeg,.png">
@@ -121,23 +107,7 @@
                                         </div>
 
                                         <div class="row mb-2">
-                                            <label for="payment_status" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Payment Status') }}</label>
-                                            <div class="col-12 col-md-8">
-                                                <select id="payment_status" name="payment_status" class="form-select @error('payment_status') is-invalid @enderror">
-                                                    <option value="unpaid" @selected(old('payment_status', 'unpaid') === 'unpaid')>{{ __('Unpaid') }}</option>
-                                                    <option value="partial" @selected(old('payment_status') === 'partial')>{{ __('Partial') }}</option>
-                                                    <option value="paid" @selected(old('payment_status') === 'paid')>{{ __('Paid') }}</option>
-                                                </select>
-                                                @error('payment_status')<small class="text-danger">{{ $message }}</small>@enderror
-                                            </div>
-                                        </div>
-
-                                        <div class="row mb-2">
-                                            <label for="paid_amount" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Paid Amount') }}</label>
-                                            <div class="col-12 col-md-8">
-                                                <input type="number" step="0.01" min="0" class="form-control @error('paid_amount') is-invalid @enderror" id="paid_amount" name="paid_amount" value="{{ old('paid_amount', 0) }}">
-                                                @error('paid_amount')<small class="text-danger">{{ $message }}</small>@enderror
-                                            </div>
+                                            {{-- TODO: Uploaded Invoice File Preview will be here (File Format could be Image or PDF) --}}
                                         </div>
                                     </div>
                                     <!-- End Right Column -->
@@ -226,7 +196,6 @@
                                             <label for="discount_type" class="col-12 col-md-5 col-form-label text-md-end text-start">{{ __('Discount') }}</label>
                                             <div class="col-6 col-md-4">
                                                 <select id="discount_type" name="discount_type" class="form-select @error('discount_type') is-invalid @enderror">
-                                                    <option value="" @selected(old('discount_type') === null)>{{ __('None') }}</option>
                                                     <option value="fixed" @selected(old('discount_type') === 'fixed')>{{ __('Fixed') }}</option>
                                                     <option value="percentage" @selected(old('discount_type') === 'percentage')>{{ __('Percentage') }}</option>
                                                 </select>
@@ -250,6 +219,26 @@
                                             <label class="col-12 col-md-5 col-form-label text-md-end text-start">{{ __('Net Amount') }}</label>
                                             <div class="col-12 col-md-7">
                                                 <input type="text" class="form-control fw-bold" id="purchase_net_amount_display" readonly tabindex="-1" value="0.00">
+                                            </div>
+                                        </div>
+
+                                        <div class="row mb-2">
+                                            <label for="payment_status" class="col-12 col-md-5 col-form-label text-md-end text-start">{{ __('Payment Status') }}</label>
+                                            <div class="col-12 col-md-7">
+                                                <select id="payment_status" name="payment_status" class="form-select @error('payment_status') is-invalid @enderror">
+                                                    <option value="unpaid" @selected(old('payment_status', 'unpaid') === 'unpaid')>{{ __('Unpaid') }}</option>
+                                                    <option value="partial" @selected(old('payment_status') === 'partial')>{{ __('Partial') }}</option>
+                                                    <option value="paid" @selected(old('payment_status') === 'paid')>{{ __('Paid') }}</option>
+                                                </select>
+                                                @error('payment_status')<small class="text-danger">{{ $message }}</small>@enderror
+                                            </div>
+                                        </div>
+
+                                        <div class="row mb-2">
+                                            <label for="paid_amount" class="col-12 col-md-5 col-form-label text-md-end text-start">{{ __('Paid Amount') }}</label>
+                                            <div class="col-12 col-md-7">
+                                                <input type="number" step="0.01" min="0" class="form-control @error('paid_amount') is-invalid @enderror" id="paid_amount" name="paid_amount" value="{{ old('paid_amount', 0) }}">
+                                                @error('paid_amount')<small class="text-danger">{{ $message }}</small>@enderror
                                             </div>
                                         </div>
                                     </div>

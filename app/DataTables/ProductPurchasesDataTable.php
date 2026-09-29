@@ -118,12 +118,12 @@ class ProductPurchasesDataTable extends DataTable
         return [
             Column::computed('DT_RowIndex')->title('SN')->orderable(false)->searchable(false)->addClass('text-center'),
             Column::computed('products')->title('Products')->orderable(false)->searchable(false),
-            Column::computed('total_quantity')->title('Total Quantity')->orderable(false)->searchable(false)->addClass('text-center'),
+            Column::computed('total_quantity')->title('Total Quantity')->orderable(false)->searchable(false),
             Column::make('store.name', 'store')->title('Store')->orderable(false)->searchable(false),
             Column::make('supplier.name', 'supplier')->title('Supplier')->orderable(false)->searchable(false),
             Column::make('transaction_date')->orderable(true)->searchable(false),
-            Column::computed('net_amount')->title('Net Amount')->orderable(false)->searchable(false)->addClass('text-end'),
-            Column::computed('status')->title('Status')->orderable(false)->searchable(false)->addClass('text-center'),
+            Column::computed('net_amount')->title('Net Amount')->orderable(false)->searchable(false),
+            Column::computed('status')->title('Status')->orderable(false)->searchable(false),
             Column::computed('actions')
                 ->orderable(false)
                 ->searchable(false)
