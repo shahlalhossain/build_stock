@@ -23,9 +23,6 @@ class ProductPurchasesDataTable extends DataTable
         return (new EloquentDataTable($query))
             ->setRowId('id')
             ->addIndexColumn()
-            ->editColumn('code', function (ProductPurchase $productPurchase) {
-                return $productPurchase->code;
-            })
             ->editColumn('store.name', function (ProductPurchase $productPurchase) {
                 return ucwords($productPurchase->store?->name ?? '');
             })
@@ -34,6 +31,22 @@ class ProductPurchasesDataTable extends DataTable
             })
             ->editColumn('transaction_date', function (ProductPurchase $productPurchase) {
                 return $productPurchase->transaction_date?->format('d F, Y');
+            })
+            ->addColumn('products', function (ProductPurchase $productPurchase) {
+                $lines = $productPurchase->items->map(function ($item) {
+                    $productName = $item->product?->name ?? '';
+                    $variantLabel = $item->productVariant ? ($item->productVariant->variant_name ?: $item->productVariant->attributeValues->pluck('value')->implode(' / ')) : '';
+                    $label = $variantLabel !== '' ? "{$productName} ({$variantLabel})" : $productName;
+                    $quantity = number_format((float) $item->quantity, 2);
+                    $unit = $item->unit?->symbol ?? '';
+
+                    return e(trim("{$label} {$quantity} {$unit}"));
+                });
+
+                return $lines->implode('<br>');
+            })
+            ->addColumn('total_quantity', function (ProductPurchase $productPurchase) {
+                return $productPurchase->items_sum_quantity ?? 0;
             })
             ->editColumn('net_amount', function (ProductPurchase $productPurchase) {
                 return $productPurchase->net_amount !== null ? number_format((float) $productPurchase->net_amount, 2) : '';
@@ -56,7 +69,7 @@ class ProductPurchasesDataTable extends DataTable
 
                 return view('product-purchase.actions', ['productPurchase' => $productPurchase]);
             })
-            ->rawColumns(['status', 'actions']);
+            ->rawColumns(['products', 'status', 'actions']);
     }
 
     /**
@@ -64,11 +77,17 @@ class ProductPurchasesDataTable extends DataTable
      */
     public function query(ProductPurchase $model): QueryBuilder
     {
+        $itemRelations = [
+            'items.product',
+            'items.productVariant.attributeValues',
+            'items.unit',
+        ];
+
         if ($this->showTrashed) {
-            return $model->newQuery()->with(['store', 'supplier'])->onlyTrashed();
+            return $model->newQuery()->with(array_merge(['store', 'supplier'], $itemRelations))->withSum('items', 'quantity')->onlyTrashed();
         }
 
-        return $model->newQuery()->with(['store', 'supplier'])->withoutTrashed();
+        return $model->newQuery()->with(array_merge(['store', 'supplier'], $itemRelations))->withSum('items', 'quantity')->withoutTrashed();
     }
 
     /**
@@ -98,7 +117,8 @@ class ProductPurchasesDataTable extends DataTable
     {
         return [
             Column::computed('DT_RowIndex')->title('SN')->orderable(false)->searchable(false)->addClass('text-center'),
-            Column::make('code')->orderable(true)->searchable(true),
+            Column::computed('products')->title('Products')->orderable(false)->searchable(false),
+            Column::computed('total_quantity')->title('Total Quantity')->orderable(false)->searchable(false)->addClass('text-center'),
             Column::make('store.name', 'store')->title('Store')->orderable(false)->searchable(false),
             Column::make('supplier.name', 'supplier')->title('Supplier')->orderable(false)->searchable(false),
             Column::make('transaction_date')->orderable(true)->searchable(false),

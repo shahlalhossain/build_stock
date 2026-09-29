@@ -73,7 +73,7 @@ class ProductRequisitionsDataTable extends DataTable
 
                 return view('product-requisition.actions', ['productRequisition' => $productRequisition]);
             })
-            ->rawColumns(['store_location', 'products', 'status', 'is_active', 'actions']);
+            ->rawColumns(['store_location', 'products', 'status', 'actions']);
     }
 
     /**
