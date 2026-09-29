@@ -142,22 +142,33 @@
 
 @endsection
 
+@php
+    // Precomputed outside @json(...) — Blade's Directive-Argument Parser tracks
+    // only Parenthesis Depth, so a multi-line Array Literal (with [...]) nested
+    // inside @json(...) can close the Directive early at the first ')' it finds
+    // inside the Expression, truncating the compiled Output (see the PHP Parse
+    // Error this caused: "Unclosed '[' does not match ')'").
+    $transferItemsByIdForJs = $productReceive->transfer->items->keyBy('id')->map(fn ($item) => [
+        'product_label' => $item->product?->name.($item->product?->code ? ' ('.$item->product->code.')' : ''),
+        'variant_label' => $item->productVariant?->variant_name ?? '',
+        'sent_quantity' => (float) $item->quantity,
+        'unit_id' => $item->unit_id,
+    ]);
+
+    $existingItemsForJs = $productReceive->items->map(fn ($item) => [
+        'transfer_item_id' => $item->transfer_item_id,
+        'unit_id' => $item->unit_id,
+        'received_quantity' => $item->received_quantity,
+        'variance_remarks' => $item->variance_remarks,
+    ]);
+@endphp
+
 @push('scripts')
     <script>
         $(document).ready(function () {
-            const transferItemsById = @json($productReceive->transfer->items->keyBy('id')->map(fn ($item) => [
-                'product_label' => $item->product?->name . ($item->product?->code ? ' (' . $item->product->code . ')' : ''),
-                'variant_label' => $item->productVariant?->variant_name ?? '',
-                'sent_quantity' => (float) $item->quantity,
-                'unit_id' => $item->unit_id,
-            ]));
+            const transferItemsById = @json($transferItemsByIdForJs ?? []);
 
-            const existingItems = @json($productReceive->items->map(fn ($item) => [
-                'transfer_item_id' => $item->transfer_item_id,
-                'unit_id' => $item->unit_id,
-                'received_quantity' => $item->received_quantity,
-                'variance_remarks' => $item->variance_remarks,
-            ]));
+            const existingItems = @json($existingItemsForJs ?? []);
 
             function addRow() {
                 const template = document.getElementById('items-row-template').innerHTML;

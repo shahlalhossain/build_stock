@@ -166,17 +166,26 @@
 
 @endsection
 
+@php
+    // Precomputed outside @json(...) — Blade's Directive-Argument Parser tracks
+    // only Parenthesis Depth, so a multi-line Array Literal (with [...]) nested
+    // inside @json(...) can close the Directive early at the first ')' it finds
+    // inside the Expression, truncating the compiled Output (see the PHP Parse
+    // Error this caused: "Unclosed '[' does not match ')'").
+    $existingItemsForJs = $productDelivery->items->map(fn ($item) => [
+        'product_id' => $item->product_id,
+        'product_variant_id' => $item->product_variant_id,
+        'unit_id' => $item->unit_id,
+        'quantity' => $item->quantity,
+        'remarks' => $item->remarks,
+    ]);
+@endphp
+
 @push('scripts')
     <script>
         $(document).ready(function () {
             const productVariants = @json($productVariants ?? []);
-            const existingItems = @json($productDelivery->items->map(fn ($item) => [
-                'product_id' => $item->product_id,
-                'product_variant_id' => $item->product_variant_id,
-                'unit_id' => $item->unit_id,
-                'quantity' => $item->quantity,
-                'remarks' => $item->remarks,
-            ]));
+            const existingItems = @json($existingItemsForJs ?? []);
 
             function addRow(group) {
                 const template = document.getElementById(group + '-row-template').innerHTML;
