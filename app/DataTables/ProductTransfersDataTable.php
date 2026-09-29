@@ -46,11 +46,6 @@ class ProductTransfersDataTable extends DataTable
                     return '<span class="badge bg-secondary">'.ucwords('Unknown').'</span>';
                 }
             })
-            ->editColumn('is_active', function (ProductTransfer $productTransfer) {
-                return $productTransfer->is_active
-                    ? '<span class="badge bg-success">'.__('Yes').'</span>'
-                    : '<span class="badge bg-warning">'.__('No').'</span>';
-            })
             ->addColumn('actions', function (ProductTransfer $productTransfer) {
                 if ($this->showTrashed) {
                     return view('product-transfer.actions_trashed', ['productTransfer' => $productTransfer]);
@@ -58,7 +53,7 @@ class ProductTransfersDataTable extends DataTable
 
                 return view('product-transfer.actions', ['productTransfer' => $productTransfer]);
             })
-            ->rawColumns(['status', 'is_active', 'actions']);
+            ->rawColumns(['status', 'actions']);
     }
 
     /**
@@ -100,12 +95,10 @@ class ProductTransfersDataTable extends DataTable
     {
         return [
             Column::computed('DT_RowIndex')->title('SN')->orderable(false)->searchable(false)->addClass('text-center'),
-            Column::make('code')->orderable(true)->searchable(true),
             Column::make('sourceStore.name', 'sourceStore')->title('Source Store')->orderable(false)->searchable(false),
             Column::make('destinationStore.name', 'destinationStore')->title('Destination Store')->orderable(false)->searchable(false),
             Column::make('transaction_date')->orderable(true)->searchable(false),
             Column::computed('status')->title('Status')->orderable(false)->searchable(false)->addClass('text-center'),
-            Column::computed('is_active')->title('Is Active')->orderable(false)->searchable(false)->addClass('text-center'),
             Column::computed('actions')
                 ->orderable(false)
                 ->searchable(false)
