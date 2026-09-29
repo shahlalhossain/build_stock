@@ -181,28 +181,26 @@
                                         <table class="table table-sm table-bordered">
                                             <thead>
                                             <tr>
-                                                <th>{{ __('Product') }}</th>
-                                                <th>{{ __('Variant') }}</th>
-                                                <th>{{ __('Quantity') }}</th>
-                                                <th>{{ __('Unit') }}</th>
-                                                <th>{{ __('Unit Cost') }}</th>
-                                                <th>{{ __('Line Total') }}</th>
-                                                <th>{{ __('Remarks') }}</th>
+                                                <th class="ps-2">{{ __('Product') }}</th>
+                                                <th class="ps-2">{{ __('Quantity') }}</th>
+                                                <th class="ps-2">{{ __('Unit') }}</th>
+                                                <th class="ps-2">{{ __('Unit Cost') }}</th>
+                                                <th class="ps-2">{{ __('Line Total') }}</th>
+                                                <th class="ps-2">{{ __('Remarks') }}</th>
                                             </tr>
                                             </thead>
                                             <tbody>
                                             @forelse($productPurchase->items as $item)
                                                 <tr>
-                                                    <td>{{ $item->product?->name }} @if($item->product?->code) ({{ $item->product->code }}) @endif</td>
-                                                    <td>{{ $item->productVariant?->variant_name ?? '' }}</td>
-                                                    <td>{{ $item->quantity }}</td>
-                                                    <td>{{ $item->unit?->name }} @if($item->unit?->symbol) ({{ $item->unit->symbol }}) @endif</td>
-                                                    <td>{{ $item->unit_cost !== null ? number_format((float) $item->unit_cost, 2) : '' }}</td>
-                                                    <td>{{ $item->line_total !== null ? number_format((float) $item->line_total, 2) : '' }}</td>
-                                                    <td>{{ $item->remarks }}</td>
+                                                    <td class="ps-2">{{ $item->product?->name }} @if($item->productVariant?->variant_name) ({{ $item->productVariant?->variant_name }}) @endif</td>
+                                                    <td class="ps-2">{{ $item->quantity }}</td>
+                                                    <td class="ps-2">{{ $item->unit?->name }} @if($item->unit?->symbol) ({{ $item->unit->symbol }}) @endif</td>
+                                                    <td class="ps-2">{{ $item->unit_cost !== null ? number_format((float) $item->unit_cost, 2) : '' }}</td>
+                                                    <td class="ps-2">{{ $item->line_total !== null ? number_format((float) $item->line_total, 2) : '' }}</td>
+                                                    <td class="ps-2">{{ $item->remarks }}</td>
                                                 </tr>
                                             @empty
-                                                <tr><td colspan="7" class="text-center">{{ __('No Line Items Found') }}</td></tr>
+                                                <tr><td colspan="7" class="text-center">{{ __('No Items Found') }}</td></tr>
                                             @endforelse
                                             </tbody>
                                         </table>
