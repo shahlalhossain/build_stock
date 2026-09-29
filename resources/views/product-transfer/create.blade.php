@@ -36,20 +36,6 @@
                                     <!-- Start Left Column -->
                                     <div class="col-12 col-md-6">
                                         <div class="row mb-2">
-                                            <label for="requisition_id" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Requisition') }}</label>
-                                            <div class="col-12 col-md-8">
-                                                <select id="requisition_id" name="requisition_id" class="form-select @error('requisition_id') is-invalid @enderror">
-                                                    <option value="">{{ __('== None ==') }}</option>
-                                                    @foreach($requisitions as $requisition)
-                                                        <option value="{{ $requisition->id }}" @selected(old('requisition_id') == $requisition->id)>{{ $requisition->code }}</option>
-                                                    @endforeach
-                                                </select>
-                                                @error('requisition_id')<small class="text-danger">{{ $message }}</small>@enderror
-                                                <div class="form-text">{{ __('Optional. Only Approved Requisitions are Listed.') }}</div>
-                                            </div>
-                                        </div>
-
-                                        <div class="row mb-2">
                                             <label for="source_store_id" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Source Store') }}</label>
                                             <div class="col-12 col-md-8">
                                                 <select id="source_store_id" name="source_store_id" class="form-select @error('source_store_id') is-invalid @enderror" required>
@@ -90,7 +76,7 @@
                                         <div class="row mb-2">
                                             <label for="remarks" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Remarks') }}</label>
                                             <div class="col-12 col-md-8">
-                                                <textarea class="form-control @error('remarks') is-invalid @enderror" id="remarks" name="remarks" rows="2">{{ old('remarks') }}</textarea>
+                                                <textarea class="form-control @error('remarks') is-invalid @enderror" id="remarks" name="remarks" rows="1">{{ old('remarks') }}</textarea>
                                                 @error('remarks')<small class="text-danger">{{ $message }}</small>@enderror
                                             </div>
                                         </div>
