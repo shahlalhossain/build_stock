@@ -76,7 +76,9 @@
                                     </table>
 
                                     <h6 class="fw-bold fst-italic">{{ __('Received Items') }}</h6>
-                                    <div class="table-responsive">
+
+                                    {{-- Desktop / Tablet View --}}
+                                    <div class="table-responsive d-none d-md-block">
                                         <table class="table table-sm table-bordered">
                                             <thead>
                                             <tr>
@@ -104,21 +106,94 @@
                                             </tbody>
                                         </table>
                                     </div>
+
+                                    {{-- Mobile View --}}
+                                    <div class="d-md-none">
+                                        @forelse($productReceive->items as $item)
+                                            <div class="border rounded mb-2 p-2">
+                                                {{-- Product (+ Variant) --}}
+                                                <div class="row mb-2">
+                                                    <div class="fw-semibold">
+                                                        {{ $item->product?->name }}
+                                                        @if($item->product?->code)
+                                                            <span class="text-muted">({{ $item->product->code }})</span>
+                                                        @endif
+                                                        @if($item->productVariant?->variant_name)
+                                                            <span class="text-muted">({{ $item->productVariant->variant_name }})</span>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                                {{-- Sent Qty + Received Qty --}}
+                                                <div class="row mb-2">
+                                                    <div class="col-6">
+                                                        <div class="small text-muted">{{ __('Sent Qty') }}</div>
+                                                        <div>
+                                                            {{ $item->transferItem?->quantity }}
+                                                            <span class="text-muted">({{ $item->unit?->symbol }})</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <div class="small text-muted">{{ __('Received Qty') }}</div>
+                                                        <div class="fw-semibold">
+                                                            {{ $item->received_quantity }}
+                                                            <span class="text-muted">({{ $item->unit?->symbol }})</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {{-- Variance Remarks --}}
+                                                @if($item->variance_remarks)
+                                                    <div class="row mb-2">
+                                                        <div class="small text-muted">{{ __('Variance Remarks') }}</div>
+                                                        <div>{{ $item->variance_remarks }}</div>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        @empty
+                                            <div class="text-center text-muted py-2">
+                                                {{ __('No Line Items Found') }}
+                                            </div>
+                                        @endforelse
+                                    </div>
                                 </div>
                                 <div class="col-12 col-md-5 ps-5 order-2">
-                                    <table class="table table-hover table-responsive table-bordered table-sm">
-                                        <tbody>
-                                        <tr><th class="text-end pe-2">{{ __('Created By') }}</th><td class="text-start ps-2">{{ $productReceive->creator?->name ?? '' }}</td></tr>
-                                        <tr><th class="text-end pe-2">{{ __('Created At') }}</th><td class="text-start ps-2">{{ $productReceive->created_at->format('Y-m-d H:i:s') }}</td></tr>
-                                        <tr><th class="text-end pe-2">{{ __('Updated By') }}</th><td class="text-start ps-2">{{ $productReceive->updater?->name ?? '' }}</td></tr>
-                                        <tr><th class="text-end pe-2">{{ __('Updated At') }}</th><td class="text-start ps-2">{{ $productReceive->updated_at->format('Y-m-d H:i:s') }}</td></tr>
+                                    @php
+                                        $auditLogs = [
+                                            [
+                                                'action' => __('Created'),
+                                                'user' => $productReceive->creator?->name,
+                                                'at' => $productReceive->created_at,
+                                            ],
+                                            [
+                                                'action' => __('Updated'),
+                                                'user' => $productReceive->updater?->name,
+                                                'at' => $productReceive->updated_at,
+                                            ],
+                                        ];
 
-                                        @if($productReceive->trashed())
-                                            <tr><th class="text-end pe-2">{{ __('Deleted By') }}</th><td class="text-start ps-2">{{ $productReceive->deleter?->name ?? '' }}</td></tr>
-                                            <tr><th class="text-end pe-2">{{ __('Deleted At') }}</th><td class="text-start ps-2">{{ $productReceive->deleted_at->format('Y-m-d H:i:s') }}</td></tr>
-                                        @endif
-                                        </tbody>
-                                    </table>
+                                        if ($productReceive->trashed()) {
+                                            $auditLogs[] = [
+                                                'action' => __('Deleted'),
+                                                'user' => $productReceive->deleter?->name,
+                                                'at' => $productReceive->deleted_at,
+                                            ];
+                                        }
+                                    @endphp
+
+                                    @foreach($auditLogs as $log)
+                                        <hr style="padding: 0 !important; margin: 0 !important;">
+
+                                        <div class="pb-2 pt-2">
+                                            <strong>{{ $log['action'] }}</strong>
+
+                                            @if($log['user'])
+                                                by <em>{{ $log['user'] }}</em>
+                                            @endif
+
+                                            @if($log['at'])
+                                                at {{ $log['at']->format('d F, Y h:i A') }}
+                                            @endif
+                                        </div>
+                                    @endforeach
 
                                     @if($productReceive->approvalLogs->isNotEmpty())
                                         @foreach($productReceive->approvalLogs as $log)
@@ -140,8 +215,6 @@
                                             </div>
                                         @endforeach
                                         <hr style="padding: 0 !important; margin: 0 !important;">
-                                    @else
-                                        <p>No Approval History Found</p>
                                     @endif
                                 </div>
                             </div>

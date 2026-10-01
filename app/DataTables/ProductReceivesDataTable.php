@@ -35,6 +35,22 @@ class ProductReceivesDataTable extends DataTable
             ->editColumn('transaction_date', function (ProductReceive $productReceive) {
                 return $productReceive->transaction_date?->format('d F, Y');
             })
+            ->addColumn('products', function (ProductReceive $productReceive) {
+                $lines = $productReceive->items->map(function ($item) {
+                    $productName = $item->product?->name ?? '';
+                    $variantLabel = $item->productVariant ? ($item->productVariant->variant_name ?: $item->productVariant->attributeValues->pluck('value')->implode(' / ')) : '';
+                    $label = $variantLabel !== '' ? "{$productName} ({$variantLabel})" : $productName;
+                    $quantity = number_format((float) $item->received_quantity, 2);
+                    $unit = $item->unit?->symbol ?? '';
+
+                    return e(trim("{$label} {$quantity} {$unit}"));
+                });
+
+                return $lines->implode('<br>');
+            })
+            ->addColumn('total_quantity', function (ProductReceive $productReceive) {
+                return $productReceive->items_sum_received_quantity ?? 0;
+            })
             ->addColumn('status', function (ProductReceive $productReceive) {
                 if ($productReceive->status === 'pending') {
                     return '<span class="badge bg-warning">'.ucwords($productReceive->status).'</span>';
@@ -58,7 +74,7 @@ class ProductReceivesDataTable extends DataTable
 
                 return view('product-receive.actions', ['productReceive' => $productReceive]);
             })
-            ->rawColumns(['status', 'is_active', 'actions']);
+            ->rawColumns(['products', 'status', 'is_active', 'actions']);
     }
 
     /**
@@ -66,11 +82,17 @@ class ProductReceivesDataTable extends DataTable
      */
     public function query(ProductReceive $model): QueryBuilder
     {
+        $itemRelations = [
+            'items.product',
+            'items.productVariant.attributeValues',
+            'items.unit',
+        ];
+
         if ($this->showTrashed) {
-            return $model->newQuery()->with(['transfer.destinationStore'])->onlyTrashed();
+            return $model->newQuery()->with(array_merge(['transfer.destinationStore'], $itemRelations))->withSum('items', 'received_quantity')->onlyTrashed();
         }
 
-        return $model->newQuery()->with(['transfer.destinationStore'])->withoutTrashed();
+        return $model->newQuery()->with(array_merge(['transfer.destinationStore'], $itemRelations))->withSum('items', 'received_quantity')->withoutTrashed();
     }
 
     /**
@@ -101,6 +123,8 @@ class ProductReceivesDataTable extends DataTable
         return [
             Column::computed('DT_RowIndex')->title('SN')->orderable(false)->searchable(false)->addClass('text-center'),
             Column::make('code')->orderable(true)->searchable(true),
+            Column::computed('products')->title('Products')->orderable(false)->searchable(false),
+            Column::computed('total_quantity')->title('Total Quantity')->orderable(false)->searchable(false)->addClass('text-center'),
             Column::make('transfer.code', 'transfer')->title('Transfer')->orderable(false)->searchable(false),
             Column::make('transfer.destinationStore.name', 'destinationStore')->title('Destination Store')->orderable(false)->searchable(false),
             Column::make('transaction_date')->orderable(true)->searchable(false),
