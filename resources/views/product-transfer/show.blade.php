@@ -102,7 +102,7 @@
                                         </div>
                                     @endif
                                 </div>
-                                <div class="col-12 col-md-5 ps-5 order-2">
+                                <div class="col-12 col-md-5 order-2">
 
                                     @php
                                         $auditLogs = [
@@ -167,10 +167,12 @@
                                 </div>
                             </div>
 
-                            <div class="row">
+                            <div class="row pt-3">
                                 <div class="col-12">
                                     <h6 class="fw-bold fst-italic">{{ __('Transfer Items') }}</h6>
-                                    <div class="table-responsive">
+
+                                    {{-- Desktop / Tablet View --}}
+                                    <div class="table-responsive d-none d-md-block">
                                         <table class="table table-sm table-bordered">
                                             <thead>
                                             <tr>
@@ -197,6 +199,43 @@
                                             @endforelse
                                             </tbody>
                                         </table>
+                                    </div>
+
+                                    {{-- Mobile View --}}
+                                    <div class="d-md-none">
+                                        @forelse($productTransfer->items as $item)
+                                            <div class="border rounded mb-2 p-2">
+                                                {{-- Product (+ Variant) --}}
+                                                <div class="row mb-2">
+                                                    <div class="fw-semibold">
+                                                        {{ $item->product?->name }}
+                                                        @if($item->productVariant?->variant_name)
+                                                            <span class="text-muted">({{ $item->productVariant->variant_name }})</span>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                                {{-- Quantity + Unit --}}
+                                                <div class="row mb-2">
+                                                    <div class="col-6">
+                                                        <div class="fw-semibold">
+                                                            {{ $item->quantity }}
+                                                            <span class="text-muted">({{ $item->unit?->symbol }})</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {{-- Remarks --}}
+                                                @if($item->remarks)
+                                                    <div class="row mb-2">
+                                                        <div class="small text-muted">{{ __('Remarks') }}</div>
+                                                        <div>{{ $item->remarks }}</div>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        @empty
+                                            <div class="text-center text-muted py-2">
+                                                {{ __('No Transfer Items Found') }}
+                                            </div>
+                                        @endforelse
                                     </div>
                                 </div>
                             </div>
