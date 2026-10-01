@@ -23,8 +23,18 @@ class ProductTransfersDataTable extends DataTable
         return (new EloquentDataTable($query))
             ->setRowId('id')
             ->addIndexColumn()
-            ->editColumn('code', function (ProductTransfer $productTransfer) {
-                return $productTransfer->code;
+            ->addColumn('products', function (ProductTransfer $productTransfer) {
+                $lines = $productTransfer->items->map(function ($item) {
+                    $productName = $item->product?->name ?? '';
+                    $variantLabel = $item->productVariant ? ($item->productVariant->variant_name ?: $item->productVariant->attributeValues->pluck('value')->implode(' / ')) : '';
+                    $label = $variantLabel !== '' ? "{$productName} ({$variantLabel})" : $productName;
+                    $quantity = number_format((float) $item->quantity, 2);
+                    $unit = $item->unit?->symbol ?? '';
+
+                    return e(trim("{$label} {$quantity} {$unit}"));
+                });
+
+                return $lines->implode('<br>');
             })
             ->editColumn('sourceStore.name', function (ProductTransfer $productTransfer) {
                 return ucwords($productTransfer->sourceStore?->name ?? '');
@@ -53,7 +63,7 @@ class ProductTransfersDataTable extends DataTable
 
                 return view('product-transfer.actions', ['productTransfer' => $productTransfer]);
             })
-            ->rawColumns(['status', 'actions']);
+            ->rawColumns(['products', 'status', 'actions']);
     }
 
     /**
@@ -61,11 +71,17 @@ class ProductTransfersDataTable extends DataTable
      */
     public function query(ProductTransfer $model): QueryBuilder
     {
+        $itemRelations = [
+            'items.product',
+            'items.productVariant.attributeValues',
+            'items.unit',
+        ];
+
         if ($this->showTrashed) {
-            return $model->newQuery()->with(['sourceStore', 'destinationStore'])->onlyTrashed();
+            return $model->newQuery()->with(array_merge(['sourceStore', 'destinationStore'], $itemRelations))->withSum('items', 'quantity')->onlyTrashed();
         }
 
-        return $model->newQuery()->with(['sourceStore', 'destinationStore'])->withoutTrashed();
+        return $model->newQuery()->with(array_merge(['sourceStore', 'destinationStore'], $itemRelations))->withSum('items', 'quantity')->withoutTrashed();
     }
 
     /**
@@ -95,6 +111,7 @@ class ProductTransfersDataTable extends DataTable
     {
         return [
             Column::computed('DT_RowIndex')->title('SN')->orderable(false)->searchable(false)->addClass('text-center'),
+            Column::computed('products')->title('Products')->orderable(false)->searchable(false),
             Column::make('sourceStore.name', 'sourceStore')->title('Source Store')->orderable(false)->searchable(false),
             Column::make('destinationStore.name', 'destinationStore')->title('Destination Store')->orderable(false)->searchable(false),
             Column::make('transaction_date')->orderable(true)->searchable(false),
