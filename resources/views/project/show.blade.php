@@ -64,25 +64,15 @@
                                                     @endif
                                                 </div>
                                                 @if(!$project->trashed())
-                                                <div class="text-end">
-                                                    <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#statusUpdateModal">
-                                                        <i class="ri-fingerprint-line"></i>
-                                                        <span class="btn-text d-none d-sm-inline">{{ __('Update Status') }}</span>
-                                                    </button>
-                                                </div>
+                                                    <div class="text-end">
+                                                        <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#statusUpdateModal">
+                                                            <i class="ri-fingerprint-line"></i>
+                                                            <span class="btn-text d-none d-sm-inline">{{ __('Update Status') }}</span>
+                                                        </button>
+                                                    </div>
                                                 @endif
                                             </td>
                                         </tr>
-
-                                        <tr><th class="text-end pe-2">{{ __('Created By') }}</th><td class="text-start ps-2">{{ $project->creator?->name ?? '' }}</td></tr>
-                                        <tr><th class="text-end pe-2">{{ __('Created At') }}</th><td class="text-start ps-2">{{ $project->created_at->format('Y-m-d H:i:s') }}</td></tr>
-                                        <tr><th class="text-end pe-2">{{ __('Updated By') }}</th><td class="text-start ps-2">{{ $project->updater?->name ?? '' }}</td></tr>
-                                        <tr><th class="text-end pe-2">{{ __('Updated At') }}</th><td class="text-start ps-2">{{ $project->updated_at->format('Y-m-d H:i:s') }}</td></tr>
-
-                                        @if($project->trashed())
-                                            <tr><th class="text-end pe-2">{{ __('Deleted By') }}</th><td class="text-start ps-2">{{ $project->deleter?->name ?? '' }}</td></tr>
-                                            <tr><th class="text-end pe-2">{{ __('Deleted At') }}</th><td class="text-start ps-2">{{ $project->deleted_at->format('Y-m-d H:i:s') }}</td></tr>
-                                        @endif
                                         </tbody>
                                     </table>
                                 </div>
@@ -117,6 +107,43 @@
                                     @else
                                         <p class="text-muted">{{ __('No Site Address Found') }}</p>
                                     @endif
+
+                                    @php
+                                        $auditLogs = [
+                                            [
+                                                'action' => __('Created'),
+                                                'user' => $project->creator?->name,
+                                                'at' => $project->created_at,
+                                            ],
+                                            [
+                                                'action' => __('Updated'),
+                                                'user' => $project->updater?->name,
+                                                'at' => $project->updated_at,
+                                            ],
+                                        ];
+
+                                        if ($project->trashed()) {
+                                            $auditLogs[] = [
+                                                'action' => __('Deleted'),
+                                                'user' => $project->deleter?->name,
+                                                'at' => $project->deleted_at,
+                                            ];
+                                        }
+                                    @endphp
+                                    @foreach($auditLogs as $log)
+                                        <hr class="my-0">
+
+                                        <div class="py-2">
+                                            <strong>{{ $log['action'] }}</strong>
+                                            @if($log['user'])
+                                                <span>by <em>{{ $log['user'] }}</em></span>
+                                            @endif
+                                            @if($log['at'])
+                                                <span class="small text-muted d-block d-md-inline ms-md-1">{{ $log['at']->format('d F, Y h:i A') }}</span>
+                                            @endif
+                                        </div>
+                                    @endforeach
+
                                     @if($project->approvalLogs->isNotEmpty())
                                         @foreach($project->approvalLogs as $log)
                                             <hr style="padding: 0 !important; margin: 0 !important;">
@@ -128,7 +155,7 @@
                                                 @endif
 
                                                 @if($log->actioned_at)
-                                                    on {{ $log->actioned_at->format('d F, Y h:i A') }}
+                                                    <span class="small text-muted d-block d-md-inline ms-md-1">{{ $log->actioned_at->format('d F, Y h:i A') }}</span>
                                                 @endif
                                                 <br>
                                                 @if($log->remarks)
@@ -137,8 +164,6 @@
                                             </div>
                                         @endforeach
                                         <hr style="padding: 0 !important; margin: 0 !important;">
-                                    @else
-                                        <p>No Approval History Found</p>
                                     @endif
                                 </div>
                             </div>
