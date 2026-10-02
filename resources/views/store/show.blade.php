@@ -113,41 +113,41 @@
                                     @endphp
 
                                     @foreach($auditLogs as $log)
-                                        <hr style="padding: 0 !important; margin: 0 !important;">
+                                        <hr class="my-0">
 
-                                        <div class="pb-2 pt-2">
+                                        <div class="py-2">
                                             <strong>{{ $log['action'] }}</strong>
-
                                             @if($log['user'])
-                                                by <em>{{ $log['user'] }}</em>
+                                                <span>by <em>{{ $log['user'] }}</em></span>
                                             @endif
-
                                             @if($log['at'])
-                                                at {{ $log['at']->format('d F, Y h:i A') }}
+                                                <span class="small text-muted d-block d-md-inline ms-md-1">{{ $log['at']->format('d F, Y h:i A') }}</span>
                                             @endif
                                         </div>
                                     @endforeach
 
                                     @if($store->approvalLogs->isNotEmpty())
                                         @foreach($store->approvalLogs as $log)
-                                            <hr style="padding: 0 !important; margin: 0 !important;">
-                                            <div class="pb-2 pt-2">
-                                                <strong>{{ ucfirst($log->action_name) }}</strong>
-
-                                                @if($log->actionedBy)
-                                                    by <em>{{ $log->actionedBy->name }}</em>
-                                                @endif
-
-                                                @if($log->actioned_at)
-                                                    on {{ $log->actioned_at->format('d F, Y h:i A') }}
-                                                @endif
-                                                <br>
+                                            <hr class="my-0">
+                                            <div class="py-2">
+                                                <div>
+                                                    <strong>{{ ucfirst($log->action_name) }}</strong>
+                                                    @if($log->actionedBy)
+                                                        <span>by <em>{{ $log->actionedBy->name }}</em></span>
+                                                    @endif
+                                                    @if($log->actioned_at)
+                                                        <span class="small text-muted d-block d-md-inline ms-md-1">{{ $log->actioned_at->format('d F, Y h:i A') }}</span>
+                                                    @endif
+                                                </div>
                                                 @if($log->remarks)
-                                                    <strong><em>Remarks: </em></strong> {{ $log->remarks }}
+                                                    <div class="mt-1">
+                                                        <strong><em>{{ __('Remarks') }}:</em></strong>
+                                                        <div class="text-break">{{ $log->remarks }}</div>
+                                                    </div>
                                                 @endif
                                             </div>
                                         @endforeach
-                                        <hr style="padding: 0 !important; margin: 0 !important;">
+                                        <hr class="my-0">
                                     @endif
 
                                 </div>
