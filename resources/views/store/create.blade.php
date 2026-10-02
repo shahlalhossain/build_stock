@@ -81,15 +81,15 @@
                                     <!-- Start Right Column -->
                                     <div class="col-12 col-md-6">
                                         <div class="row mb-2">
-                                            <label for="storekeeper_id" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Storekeeper') }}</label>
+                                            <label for="storekeeper_ids" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Storekeeper') }}</label>
                                             <div class="col-12 col-md-8">
-                                                <select id="storekeeper_id" name="storekeeper_id" class="form-select @error('storekeeper_id') is-invalid @enderror" required>
-                                                    <option value="">{{ __('== Select Storekeeper ==') }}</option>
+                                                <select id="storekeeper_ids" name="storekeeper_ids[]" class="form-select @error('storekeeper_ids') is-invalid @enderror @error('storekeeper_ids.*') is-invalid @enderror" multiple required>
                                                     @foreach($users as $user)
-                                                        <option value="{{ $user->id }}" @selected(old('storekeeper_id') == $user->id)>{{ ucwords($user->name) }}</option>
+                                                        <option value="{{ $user->id }}" @selected(in_array($user->id, old('storekeeper_ids', [])))>{{ ucwords($user->name) }}</option>
                                                     @endforeach
                                                 </select>
-                                                @error('storekeeper_id')<small class="text-danger">{{ $message }}</small>@enderror
+                                                @error('storekeeper_ids')<small class="text-danger">{{ $message }}</small>@enderror
+                                                @error('storekeeper_ids.*')<small class="text-danger">{{ $message }}</small>@enderror
                                             </div>
                                         </div>
 
@@ -110,15 +110,15 @@
                                         </div>
 
                                         <div class="row mb-2">
-                                            <label for="manager_id" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Store Manager') }}</label>
+                                            <label for="manager_ids" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Store Manager') }}</label>
                                             <div class="col-12 col-md-8">
-                                                <select id="manager_id" name="manager_id" class="form-select @error('manager_id') is-invalid @enderror">
-                                                    <option value="">{{ __('== Select Manager ==') }}</option>
+                                                <select id="manager_ids" name="manager_ids[]" class="form-select @error('manager_ids') is-invalid @enderror @error('manager_ids.*') is-invalid @enderror" multiple>
                                                     @foreach($users as $user)
-                                                        <option value="{{ $user->id }}" @selected(old('manager_id') == $user->id)>{{ ucwords($user->name) }}</option>
+                                                        <option value="{{ $user->id }}" @selected(in_array($user->id, old('manager_ids', [])))>{{ ucwords($user->name) }}</option>
                                                     @endforeach
                                                 </select>
-                                                @error('manager_id')<small class="text-danger">{{ $message }}</small>@enderror
+                                                @error('manager_ids')<small class="text-danger">{{ $message }}</small>@enderror
+                                                @error('manager_ids.*')<small class="text-danger">{{ $message }}</small>@enderror
                                             </div>
                                         </div>
                                     </div>

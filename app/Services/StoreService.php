@@ -47,13 +47,13 @@ class StoreService extends BaseService
                 'description' => $data['description'] ?? null,
                 'mobile' => $data['mobile'] ?? null,
                 'email' => $data['email'] ?? null,
-                'manager_id' => $data['manager_id'] ?? null,
-                'storekeeper_id' => $data['storekeeper_id'] ?? null,
                 'is_active' => true,
                 'created_by' => Auth::id(),
                 'updated_by' => Auth::id(),
             ];
             $store = $this->model::create($storeData);
+
+            $this->syncManagersAndStorekeepers($store, $data);
 
             event(new StoreCreated($store));
 
@@ -64,6 +64,39 @@ class StoreService extends BaseService
             Log::alert($exception->getMessage());
             DB::rollBack();
             throw new GeneralException(__('There was a Problem on Creating New Store.'));
+        }
+    }
+
+    /**
+     * Sync the store_user Pivot from the Multi-Select Form Inputs — one Row
+     * per (User, Slot) Pair. A User picked in BOTH Lists gets both Slot Rows.
+     *
+     * NOTE: BelongsToMany::sync() ignores extra wherePivot() Constraints when
+     * Detaching (it only Scopes by the Foreign Key), so syncing "managers()"
+     * then "storekeepers()" on the same Pivot Table would let the second
+     * sync() wipe out Rows the first one just wrote. Writing the Pivot Rows
+     * Directly avoids that.
+     */
+    protected function syncManagersAndStorekeepers(Store $store, array $data): void
+    {
+        $managerIds = array_values(array_unique(array_filter($data['manager_ids'] ?? [])));
+        $storekeeperIds = array_values(array_unique(array_filter($data['storekeeper_ids'] ?? [])));
+
+        DB::table('store_user')->where('store_id', $store->id)->delete();
+
+        $now = now();
+        $rows = [];
+
+        foreach ($managerIds as $userId) {
+            $rows[] = ['store_id' => $store->id, 'user_id' => $userId, 'role_type' => 'manager', 'created_at' => $now, 'updated_at' => $now];
+        }
+
+        foreach ($storekeeperIds as $userId) {
+            $rows[] = ['store_id' => $store->id, 'user_id' => $userId, 'role_type' => 'storekeeper', 'created_at' => $now, 'updated_at' => $now];
+        }
+
+        if (! empty($rows)) {
+            DB::table('store_user')->insert($rows);
         }
     }
 
@@ -99,10 +132,10 @@ class StoreService extends BaseService
                 'description' => $data['description'] ?? null,
                 'mobile' => $data['mobile'] ?? null,
                 'email' => $data['email'] ?? null,
-                'manager_id' => $data['manager_id'] ?? null,
-                'storekeeper_id' => $data['storekeeper_id'] ?? null,
                 'updated_by' => Auth::id(),
             ]);
+
+            $this->syncManagersAndStorekeepers($store, $data);
 
             event(new StoreUpdated($store));
 

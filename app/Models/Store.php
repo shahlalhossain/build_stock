@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\LogOptions;
@@ -100,6 +101,27 @@ class Store extends Model
     public function storekeeper(): BelongsTo
     {
         return $this->belongsTo(User::class, 'storekeeper_id');
+    }
+
+    /**
+     * Every User attached to this Store, regardless of Slot (see store_user
+     * Migration — this is a "which Store can this User touch" concern, not an
+     * authorization concern; capability still comes entirely from Spatie
+     * Roles/Permissions).
+     */
+    public function users(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'store_user')->withPivot('role_type')->withTimestamps();
+    }
+
+    public function managers(): BelongsToMany
+    {
+        return $this->users()->wherePivot('role_type', 'manager');
+    }
+
+    public function storekeepers(): BelongsToMany
+    {
+        return $this->users()->wherePivot('role_type', 'storekeeper');
     }
 
     public function approvalLogs()

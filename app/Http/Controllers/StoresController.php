@@ -39,6 +39,8 @@ class StoresController extends Controller
     {
         $data['projects'] = Project::query()->where('is_active', true)->orderBy('name')->get();
         $data['users'] = User::query()->orderBy('name')->get();
+        $data['selectedManagerIds'] = [];
+        $data['selectedStorekeeperIds'] = [];
 
         return view('store.create', $data);
     }
@@ -62,7 +64,7 @@ class StoresController extends Controller
 
     public function show(Store $store)
     {
-        $data['store'] = $store->load(['project', 'manager', 'storekeeper', 'creator', 'updater', 'deleter', 'approvalLogs.actionedBy']);
+        $data['store'] = $store->load(['project', 'managers', 'storekeepers', 'creator', 'updater', 'deleter', 'approvalLogs.actionedBy']);
 
         return view('store.show', $data);
     }
@@ -72,6 +74,8 @@ class StoresController extends Controller
         $data['store'] = $store;
         $data['projects'] = Project::query()->where('is_active', true)->orderBy('name')->get();
         $data['users'] = User::query()->orderBy('name')->get();
+        $data['selectedManagerIds'] = $store->managers()->pluck('users.id')->all();
+        $data['selectedStorekeeperIds'] = $store->storekeepers()->pluck('users.id')->all();
 
         return view('store.edit', $data);
     }

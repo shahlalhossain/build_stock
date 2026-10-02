@@ -32,8 +32,10 @@ class UpdateStoreRequest extends FormRequest
             'description' => ['nullable', 'string', 'max:255'],
             'mobile' => ['nullable', 'string', 'max:30'],
             'email' => ['nullable', 'email', 'max:150'],
-            'manager_id' => ['nullable', 'integer', Rule::exists('users', 'id')],
-            'storekeeper_id' => ['nullable', 'integer', Rule::exists('users', 'id')],
+            'manager_ids' => ['nullable', 'array'],
+            'manager_ids.*' => ['integer', Rule::exists('users', 'id')],
+            'storekeeper_ids' => ['required', 'array', 'min:1'],
+            'storekeeper_ids.*' => ['integer', Rule::exists('users', 'id')],
         ];
     }
 
@@ -59,8 +61,15 @@ class UpdateStoreRequest extends FormRequest
             'email.email' => __('Email must be a Valid Email Address'),
             'email.max' => __('Email may not exceed 150 Characters'),
 
-            'manager_id.exists' => __('Selected Store Manager does not Exist'),
-            'storekeeper_id.exists' => __('Selected Storekeeper does not Exist'),
+            'manager_ids.array' => __('Selected Store Managers must be a Valid List'),
+            'manager_ids.*.integer' => __('Selected Store Manager is Invalid'),
+            'manager_ids.*.exists' => __('Selected Store Manager does not Exist'),
+
+            'storekeeper_ids.required' => __('At Least One Storekeeper is Required'),
+            'storekeeper_ids.array' => __('Selected Storekeepers must be a Valid List'),
+            'storekeeper_ids.min' => __('At Least One Storekeeper is Required'),
+            'storekeeper_ids.*.integer' => __('Selected Storekeeper is Invalid'),
+            'storekeeper_ids.*.exists' => __('Selected Storekeeper does not Exist'),
         ];
     }
 }

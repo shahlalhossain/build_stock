@@ -34,8 +34,8 @@ class StoresDataTable extends DataTable
                     ? '<span class="badge bg-warning">'.__('Warehouse').'</span>'
                     : '<span class="badge bg-info">'.__('Store').'</span>';
             })
-            ->editColumn('Storekeeper', function (Store $store) {
-                return ucwords($store->storekeeper?->name);
+            ->addColumn('Storekeeper', function (Store $store) {
+                return ucwords($store->storekeepers->pluck('name')->implode(', '));
             })
             ->editColumn('mobile', function (Store $store) {
                 return $store->mobile;
@@ -67,10 +67,10 @@ class StoresDataTable extends DataTable
     public function query(Store $model): QueryBuilder
     {
         if ($this->showTrashed) {
-            return $model->newQuery()->with(['project', 'storekeeper'])->onlyTrashed();   // Show Trashed Records
+            return $model->newQuery()->with(['project', 'storekeepers'])->onlyTrashed();   // Show Trashed Records
         }
 
-        return $model->newQuery()->with(['project', 'storekeeper'])->withoutTrashed();    // Show Active Records
+        return $model->newQuery()->with(['project', 'storekeepers'])->withoutTrashed();    // Show Active Records
     }
 
     /**
@@ -104,7 +104,7 @@ class StoresDataTable extends DataTable
             Column::make('code')->orderable(true)->searchable(true),
             Column::make('Location', 'project')->orderable(false)->searchable(false),
             Column::computed('type')->title('Type')->orderable(false)->searchable(false)->addClass('text-center'),
-            Column::make('Storekeeper', 'storekeeper')->orderable(false)->searchable(false),
+            Column::computed('Storekeeper')->orderable(false)->searchable(false),
             Column::make('mobile')->orderable(true)->searchable(true),
             Column::computed('status')->title('Status')->orderable(false)->searchable(false)->addClass('text-center'),
             Column::computed('actions')

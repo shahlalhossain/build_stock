@@ -40,10 +40,10 @@
 
                                         </tr>
                                         <tr><th class="text-end pe-2">{{ __('Code') }}</th><td class="text-start ps-2">{{ $store->code }}</td></tr>
-                                        <tr><th class="text-end pe-2">{{ __('Storekeeper') }}</th><td class="text-start ps-2">{{ $store->storekeeper?->name ?? '' }}</td></tr>
+                                        <tr><th class="text-end pe-2">{{ __('Storekeeper') }}</th><td class="text-start ps-2">{{ $store->storekeepers->pluck('name')->implode(', ') }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Mobile') }}</th><td class="text-start ps-2">{{ $store->mobile }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Email') }}</th><td class="text-start ps-2">{{ $store->email }}</td></tr>
-                                        <tr><th class="text-end pe-2">{{ __('Store Manager') }}</th><td class="text-start ps-2">{{ $store->manager?->name ?? '' }}</td></tr>
+                                        <tr><th class="text-end pe-2">{{ __('Store Manager') }}</th><td class="text-start ps-2">{{ $store->managers->pluck('name')->implode(', ') }}</td></tr>
 
                                         <tr><th class="text-end pe-2">{{ __('Is Active') }}</th>
                                             <td class="text-start ps-2">
