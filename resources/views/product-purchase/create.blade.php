@@ -148,7 +148,7 @@
                                             <select class="form-select item-product" data-field="product_id">
                                                 <option value="">{{ __('== Select Product ==') }}</option>
                                                 @foreach($products as $product)
-                                                    <option value="{{ $product->id }}">{{ $product->name }} @if($product->code) ({{ $product->code }}) @endif</option>
+                                                    <option value="{{ $product->id }}" data-unit-id="{{ $product->unit_id }}">{{ $product->name }} @if($product->code) ({{ $product->code }}) @endif</option>
                                                 @endforeach
                                             </select>
                                         </td>
@@ -399,8 +399,24 @@
                 });
             }
 
+            /*
+            |--------------------------------------------------------------------------
+            | UNIT DROPDOWN: DEFAULT TO THE SELECTED PRODUCT'S OWN BASE UNIT
+            |--------------------------------------------------------------------------
+            | A Convenience Default only — the User can still Override it. Fires on
+            | every Product change, including Switching to a Product with no Unit Set
+            | (clears the field rather than leaving a stale Unit Selected).
+            */
+            function syncUnitFromProduct($row) {
+                const $productSelect = $row.find('.item-product');
+                const unitId = $productSelect.find('option:selected').data('unit-id');
+
+                $row.find('.item-unit').val(unitId ? String(unitId) : '');
+            }
+
             $(document).on('change', '.item-product', function () {
                 syncVariantOptions($(this).closest('.repeater-row'));
+                syncUnitFromProduct($(this).closest('.repeater-row'));
                 refreshProductOptions();
                 refreshVariantOptions();
             });
