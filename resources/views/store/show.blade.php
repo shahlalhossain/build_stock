@@ -23,7 +23,7 @@
                         <div class="card-body">
 
                             <div class="row">
-                                <div class="col-12 col-md-7 order-1">
+                                <div class="col-12 col-md-9 order-1">
                                     <table class="table table-hover table-responsive table-bordered table-sm">
                                         <tbody>
                                         <tr><th class="text-end pe-2">{{ $store->isHeadOffice() ? __('Location') : __('Project Office') }}</th><td class="text-start ps-2">{{ $store->isHeadOffice() ? __('Head Office') : $store->project?->name }}</td></tr>
@@ -85,30 +85,48 @@
                                                 @endif
                                             </td>
                                         </tr>
-                                        <tr><th class="text-end pe-2">{{ __('Description') }}</th><td class="text-start ps-2">{{ $store->description }}</td></tr>
 
                                         </tbody>
                                     </table>
-                                </div>
-                                <div class="col-12 col-md-5 ps-5 order-2">
-                                    @if($store->image)
-                                        <div class="text-center mb-3">
-                                            <img src="{{ asset('storage/'.$store->image) }}" class="img-thumbnail" style="width: 220px; height: 220px; object-fit: cover; border-radius: var(--vz-border-radius);" alt="{{ __('Store Image') }}">
+
+                                    @php
+                                        $auditLogs = [
+                                            [
+                                                'action' => __('Created'),
+                                                'user' => $store->creator?->name,
+                                                'at' => $store->created_at,
+                                            ],
+                                            [
+                                                'action' => __('Updated'),
+                                                'user' => $store->updater?->name,
+                                                'at' => $store->updated_at,
+                                            ],
+                                        ];
+
+                                        if ($store->trashed()) {
+                                            $auditLogs[] = [
+                                                'action' => __('Deleted'),
+                                                'user' => $store->deleter?->name,
+                                                'at' => $store->deleted_at,
+                                            ];
+                                        }
+                                    @endphp
+
+                                    @foreach($auditLogs as $log)
+                                        <hr style="padding: 0 !important; margin: 0 !important;">
+
+                                        <div class="pb-2 pt-2">
+                                            <strong>{{ $log['action'] }}</strong>
+
+                                            @if($log['user'])
+                                                by <em>{{ $log['user'] }}</em>
+                                            @endif
+
+                                            @if($log['at'])
+                                                at {{ $log['at']->format('d F, Y h:i A') }}
+                                            @endif
                                         </div>
-                                    @endif
-                                    <table class="table table-hover table-responsive table-bordered table-sm">
-                                        <tbody>
-                                        <tr><th class="text-end pe-2">{{ __('Created By') }}</th><td class="text-start ps-2">{{ $store->creator?->name ?? '' }}</td></tr>
-                                        <tr><th class="text-end pe-2">{{ __('Created At') }}</th><td class="text-start ps-2">{{ $store->created_at->format('Y-m-d H:i:s') }}</td></tr>
-                                        <tr><th class="text-end pe-2">{{ __('Updated By') }}</th><td class="text-start ps-2">{{ $store->updater?->name ?? '' }}</td></tr>
-                                        <tr><th class="text-end pe-2">{{ __('Updated At') }}</th><td class="text-start ps-2">{{ $store->updated_at->format('Y-m-d H:i:s') }}</td></tr>
-
-                                        @if($store->trashed())
-                                            <tr><th class="text-end pe-2">{{ __('Deleted By') }}</th><td class="text-start ps-2">{{ $store->deleter?->name ?? '' }}</td></tr>
-                                            <tr><th class="text-end pe-2">{{ __('Deleted At') }}</th><td class="text-start ps-2">{{ $store->deleted_at->format('Y-m-d H:i:s') }}</td></tr>
-                                        @endif
-                                        </tbody>
-                                    </table>
+                                    @endforeach
 
                                     @if($store->approvalLogs->isNotEmpty())
                                         @foreach($store->approvalLogs as $log)
@@ -130,13 +148,19 @@
                                             </div>
                                         @endforeach
                                         <hr style="padding: 0 !important; margin: 0 !important;">
-                                    @else
-                                        <p>No Approval History Found</p>
+                                    @endif
+
+                                </div>
+                                <div class="col-12 col-md-3 order-2">
+                                    @if($store->image)
+                                        <div class="text-center pt-md-2 pt-2">
+                                            <img src="{{ asset('storage/'.$store->image) }}" class="img-thumbnail" style="width: 320px; height: 220px; object-fit: cover; border-radius: var(--vz-border-radius);" alt="{{ __('Store Image') }}">
+                                        </div>
                                     @endif
                                 </div>
                             </div>
 
-                            <div class="row">
+                            <div class="row pt-md-2 pt-2">
                                 <div class="col-12 text-start mt-2 pb-2">
                                     @if($store->trashed())
                                         <button class="btn btn-sm btn-soft-success restore-store" id="restoreStore" data-store-id="{{ $store->id }}"><i class="ri-recycle-line"></i><span class="d-none d-sm-inline"> {{ __('Restore') }}</span></button>

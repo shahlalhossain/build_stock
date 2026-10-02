@@ -104,7 +104,7 @@
 
                                 <div class="row">
                                     <!-- Start Left Column -->
-                                    <div class="col-12 col-md-6">
+                                    <div class="col-12 col-md-8">
                                         <div class="row mb-2">
                                             <label for="project_id" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Location') }}</label>
                                             <div class="col-12 col-md-8">
@@ -191,7 +191,7 @@
                                     <!-- End Left Column -->
 
                                     <!-- Start Right Column -->
-                                    <div class="col-12 col-md-6 text-center">
+                                    <div class="col-12 col-md-4 text-center">
                                         <div class="store-image-wrapper">
                                             <img id="storeImagePreview" class="store-image-preview img-thumbnail d-none" alt="{{ __('Store Image') }}">
                                             <div id="storeImagePlaceholder" class="store-image-placeholder">
