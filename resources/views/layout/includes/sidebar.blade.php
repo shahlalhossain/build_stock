@@ -107,47 +107,59 @@
                 </li>
                 <div class="divider"></div>
 
-                <li class="nav-item {{ request()->routeIs('product-requisition.*') ? 'active-menu' : '' }}">
-                    <a class="nav-link" href="{{ route('product-requisition.index') }}">
-                        <i class="ri-apps-2-line"></i><span>{{ __('Product Requisition') }}</span>
-                    </a>
-                </li>
-                <div class="divider"></div>
+                @can('product-requisition.index')
+                    <li class="nav-item {{ request()->routeIs('product-requisition.*') ? 'active-menu' : '' }}">
+                        <a class="nav-link" href="{{ route('product-requisition.index') }}">
+                            <i class="ri-apps-2-line"></i><span>{{ __('Product Requisition') }}</span>
+                        </a>
+                    </li>
+                    <div class="divider"></div>
+                @endcan
 
-                <li class="nav-item {{ request()->routeIs('product-purchase.*') ? 'active-menu' : '' }}">
-                    <a class="nav-link" href="{{ route('product-purchase.index') }}">
-                        <i class="ri-apps-2-line"></i><span>{{ __('Product Purchase') }}</span>
-                    </a>
-                </li>
-                <div class="divider"></div>
+                @can('product-purchase.index')
+                    <li class="nav-item {{ request()->routeIs('product-purchase.*') ? 'active-menu' : '' }}">
+                        <a class="nav-link" href="{{ route('product-purchase.index') }}">
+                            <i class="ri-apps-2-line"></i><span>{{ __('Product Purchase') }}</span>
+                        </a>
+                    </li>
+                    <div class="divider"></div>
+                @endcan
 
-                <li class="nav-item {{ request()->routeIs('product-transfer.*') ? 'active-menu' : '' }}">
-                    <a class="nav-link" href="{{ route('product-transfer.index') }}">
-                        <i class="ri-apps-2-line"></i><span>{{ __('Product Transfer') }}</span>
-                    </a>
-                </li>
-                <div class="divider"></div>
+                @can('product-transfer.index')
+                    <li class="nav-item {{ request()->routeIs('product-transfer.*') ? 'active-menu' : '' }}">
+                        <a class="nav-link" href="{{ route('product-transfer.index') }}">
+                            <i class="ri-apps-2-line"></i><span>{{ __('Product Transfer') }}</span>
+                        </a>
+                    </li>
+                    <div class="divider"></div>
+                @endcan
 
-                <li class="nav-item {{ request()->routeIs('product-receive.*') ? 'active-menu' : '' }}">
-                    <a class="nav-link" href="{{ route('product-receive.index') }}">
-                        <i class="ri-apps-2-line"></i><span>{{ __('Product Receive') }}</span>
-                    </a>
-                </li>
-                <div class="divider"></div>
+                @can('product-receive.index')
+                    <li class="nav-item {{ request()->routeIs('product-receive.*') ? 'active-menu' : '' }}">
+                        <a class="nav-link" href="{{ route('product-receive.index') }}">
+                            <i class="ri-apps-2-line"></i><span>{{ __('Product Receive') }}</span>
+                        </a>
+                    </li>
+                    <div class="divider"></div>
+                @endcan
 
-                <li class="nav-item {{ request()->routeIs('product-delivery.*') ? 'active-menu' : '' }}">
-                    <a class="nav-link" href="{{ route('product-delivery.index') }}">
-                        <i class="ri-apps-2-line"></i><span>{{ __('Product Delivery') }}</span>
-                    </a>
-                </li>
-                <div class="divider"></div>
+                @can('product-delivery.index')
+                    <li class="nav-item {{ request()->routeIs('product-delivery.*') ? 'active-menu' : '' }}">
+                        <a class="nav-link" href="{{ route('product-delivery.index') }}">
+                            <i class="ri-apps-2-line"></i><span>{{ __('Product Delivery') }}</span>
+                        </a>
+                    </li>
+                    <div class="divider"></div>
+                @endcan
 
-                <li class="nav-item {{ request()->routeIs('stock-transaction.*') ? 'active-menu' : '' }}">
-                    <a class="nav-link" href="{{ route('stock-transaction.index') }}">
-                        <i class="ri-apps-2-line"></i><span>{{ __('Stock Transaction') }}</span>
-                    </a>
-                </li>
-                <div class="divider"></div>
+                @can('stock-transaction.index')
+                    <li class="nav-item {{ request()->routeIs('stock-transaction.*') ? 'active-menu' : '' }}">
+                        <a class="nav-link" href="{{ route('stock-transaction.index') }}">
+                            <i class="ri-apps-2-line"></i><span>{{ __('Stock Transaction') }}</span>
+                        </a>
+                    </li>
+                    <div class="divider"></div>
+                @endcan
 
                 <li class="nav-item {{ request()->routeIs('supplier.*') ? 'active-menu' : '' }}">
                     <a class="nav-link" href="{{ route('supplier.index') }}">
