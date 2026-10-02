@@ -11,3 +11,38 @@
         margin-right: 0;
     }
 }
+
+/* Choices.js (data-choices) Multi-Select: choices.min.css loads after
+   app.min.css and overwrites Velzon's own theme rules (height/padding) with
+   the raw, unthemed library defaults. Restoring them here, since this file
+   loads last. */
+.choices__inner {
+    min-height: 37.5px;
+    padding: 0.25rem 0.5rem 0.1rem 0.75rem;
+    border-radius: var(--vz-border-radius) !important;
+}
+.choices[data-type*="select-multiple"] .choices__inner,
+.choices[data-type*="text"] .choices__inner {
+    padding-left: 0.75rem;
+}
+.choices__list--multiple .choices__item {
+    border-radius: 7px;
+    padding: 2px 7px;
+    font-size: 11px;
+    margin-bottom: 3.75px;
+    margin-top: 2px;
+    background-color: var(--vz-primary);
+    border: 1px solid var(--vz-primary);
+    color: #fff;
+}
+
+/* Dropdown Option List: Velzon's own app.css pulls the list out with
+   `margin: 0 -16px -16px` (so row hover backgrounds reach the dropdown's
+   edges) but the dropdown container itself only has 10px of padding to
+   retreat into, and keeps `overflow: hidden` — so the list (and the first
+   few characters of every left-aligned option) get clipped by 6px. Matching
+   the dropdown's padding to the list's negative margin fixes the clipping
+   without touching the hover-background behavior. */
+.choices__list--dropdown {
+    padding: 16px 16px 20px 16px;
+}

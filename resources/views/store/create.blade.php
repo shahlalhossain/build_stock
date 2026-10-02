@@ -83,7 +83,7 @@
                                         <div class="row mb-2">
                                             <label for="storekeeper_ids" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Storekeeper') }}</label>
                                             <div class="col-12 col-md-8">
-                                                <select id="storekeeper_ids" name="storekeeper_ids[]" class="form-select @error('storekeeper_ids') is-invalid @enderror @error('storekeeper_ids.*') is-invalid @enderror" multiple required>
+                                                <select id="storekeeper_ids" name="storekeeper_ids[]" class="form-select @error('storekeeper_ids') is-invalid @enderror @error('storekeeper_ids.*') is-invalid @enderror" data-choices data-choices-removeItem multiple required>
                                                     @foreach($users as $user)
                                                         <option value="{{ $user->id }}" @selected(in_array($user->id, old('storekeeper_ids', [])))>{{ ucwords($user->name) }}</option>
                                                     @endforeach
@@ -112,7 +112,7 @@
                                         <div class="row mb-2">
                                             <label for="manager_ids" class="col-12 col-md-4 col-form-label text-md-end text-start">{{ __('Store Manager') }}</label>
                                             <div class="col-12 col-md-8">
-                                                <select id="manager_ids" name="manager_ids[]" class="form-select @error('manager_ids') is-invalid @enderror @error('manager_ids.*') is-invalid @enderror" multiple>
+                                                <select id="manager_ids" name="manager_ids[]" class="form-select @error('manager_ids') is-invalid @enderror @error('manager_ids.*') is-invalid @enderror" data-choices data-choices-removeItem multiple>
                                                     @foreach($users as $user)
                                                         <option value="{{ $user->id }}" @selected(in_array($user->id, old('manager_ids', [])))>{{ ucwords($user->name) }}</option>
                                                     @endforeach
@@ -144,3 +144,14 @@
     </div>
 
 @endsection
+
+@push('scripts')
+    <script>
+        document.querySelectorAll('[data-choices]').forEach(function (element) {
+            new Choices(element, {
+                removeItemButton: element.hasAttribute('data-choices-removeItem'),
+                shouldSort: false,
+            });
+        });
+    </script>
+@endpush
