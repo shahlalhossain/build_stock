@@ -48,7 +48,13 @@ class StoresController extends Controller
     public function store(StoreStoreRequest $storeRequest)
     {
         try {
-            $this->storeService->storeStore($storeRequest->validated());
+            $data = $storeRequest->validated();
+
+            if ($storeRequest->hasFile('image')) {
+                $data['image'] = $storeRequest->file('image');
+            }
+
+            $this->storeService->storeStore($data);
 
             return redirect()->route('store.index')->with('success', 'New Store Created Successfully.');
         } catch (GeneralException $generalException) {
@@ -83,7 +89,15 @@ class StoresController extends Controller
     public function update(UpdateStoreRequest $storeRequest, Store $store): RedirectResponse
     {
         try {
-            $this->storeService->updateStore($store, $storeRequest->validated());
+            $data = $storeRequest->validated();
+
+            if ($storeRequest->hasFile('image')) {
+                $data['image'] = $storeRequest->file('image');
+            }
+
+            $data['remove_image'] = $storeRequest->boolean('remove_image');
+
+            $this->storeService->updateStore($store, $data);
 
             return redirect()->route('store.index')->with('success', 'Store Updated Successfully.');
         } catch (GeneralException $generalException) {

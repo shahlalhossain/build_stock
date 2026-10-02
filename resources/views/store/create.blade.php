@@ -2,6 +2,62 @@
 
 @section('title', __('Store'))
 
+@push('styles')
+    <style>
+        .store-image-wrapper {
+            position: relative;
+            width: 320px;
+            height: 320px;
+            margin: 0 auto;
+        }
+        .store-image-preview {
+            width: 320px;
+            height: 320px;
+            object-fit: cover;
+            border-radius: var(--vz-border-radius);
+        }
+        .store-image-placeholder {
+            width: 320px;
+            height: 320px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            background-color: var(--vz-light);
+            border-radius: var(--vz-border-radius);
+            color: var(--vz-secondary-color);
+        }
+        .store-image-placeholder i {
+            font-size: 3rem;
+        }
+        .store-image-action-btn {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            cursor: pointer;
+            background-color: var(--vz-light);
+            color: var(--vz-body-color);
+            transition: all 0.2s ease;
+        }
+        .store-image-action-btn:hover {
+            transform: scale(1.1);
+            filter: brightness(0.95);
+        }
+        .store-image-action-btn i {
+            pointer-events: none;
+        }
+    </style>
+@endpush
+
 @section('content')
     <!-- Start Page Content -->
     <div class="page-content">
@@ -17,7 +73,7 @@
                                 <a href="{{ route('store.index') }}" class="btn btn-sm btn-primary"><i class="ri-list-check-2"></i><span class="d-none d-sm-inline"> {{ __('Back to List') }}</span></a>
                             </div>
                         </div>
-                        <form action="{{ route('store.store') }}" method="POST">
+                        <form action="{{ route('store.store') }}" method="POST" enctype="multipart/form-data">
                             @csrf
                             <div class="card-body">
 
@@ -75,11 +131,7 @@
                                                 @error('description')<small class="text-danger">{{ $message }}</small>@enderror
                                             </div>
                                         </div>
-                                    </div>
-                                    <!-- End Left Column -->
 
-                                    <!-- Start Right Column -->
-                                    <div class="col-12 col-md-6">
                                         <div class="row mb-2">
                                             <label for="storekeeper_ids" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Storekeeper') }}</label>
                                             <div class="col-12 col-md-8">
@@ -122,6 +174,22 @@
                                             </div>
                                         </div>
                                     </div>
+                                    <!-- End Left Column -->
+
+                                    <!-- Start Right Column -->
+                                    <div class="col-12 col-md-6 text-center">
+                                        <label class="form-label d-block">{{ __('Store Image') }} <small class="text-muted">({{ __('Optional') }})</small></label>
+                                        <div class="store-image-wrapper">
+                                            <img id="storeImagePreview" class="store-image-preview img-thumbnail d-none" alt="{{ __('Store Image') }}">
+                                            <div id="storeImagePlaceholder" class="store-image-placeholder">
+                                                <i class="ri-store-2-line"></i>
+                                                <span>{{ __('No Image Selected') }}</span>
+                                            </div>
+                                            <label for="image" class="store-image-action-btn" title="{{ __('Upload Image') }}"><i class="ri-camera-fill"></i></label>
+                                        </div>
+                                        <input type="file" id="image" name="image" class="d-none @error('image') is-invalid @enderror" accept="image/*">
+                                        @error('image')<small class="text-danger d-block mt-1">{{ $message }}</small>@enderror
+                                    </div>
                                     <!-- End Right Column -->
                                 </div>
                             </div>
@@ -151,6 +219,24 @@
             new Choices(element, {
                 removeItemButton: element.hasAttribute('data-choices-removeItem'),
                 shouldSort: false,
+            });
+        });
+
+        $(function () {
+            const $fileInput = $('#image');
+            const $preview = $('#storeImagePreview');
+            const $placeholder = $('#storeImagePlaceholder');
+
+            $fileInput.on('change', function () {
+                const file = this.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        $preview.attr('src', e.target.result).removeClass('d-none');
+                        $placeholder.addClass('d-none');
+                    };
+                    reader.readAsDataURL(file);
+                }
             });
         });
     </script>

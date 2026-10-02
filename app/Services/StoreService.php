@@ -13,9 +13,11 @@ use App\Models\ApprovalLog;
 use App\Models\Store;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Throwable;
 
 /**
@@ -23,12 +25,15 @@ use Throwable;
  */
 class StoreService extends BaseService
 {
+    protected ImageService $imageService;
+
     /**
      * StoreService Constructor.
      */
-    public function __construct(Store $store)
+    public function __construct(Store $store, ImageService $imageService)
     {
         $this->model = $store;
+        $this->imageService = $imageService;
     }
 
     /**
@@ -51,6 +56,11 @@ class StoreService extends BaseService
                 'created_by' => Auth::id(),
                 'updated_by' => Auth::id(),
             ];
+
+            if (isset($data['image']) && $data['image'] instanceof UploadedFile) {
+                $storeData['image'] = $this->imageService->uploadImage($data['image'], 'store.image');
+            }
+
             $store = $this->model::create($storeData);
 
             $this->syncManagersAndStorekeepers($store, $data);
@@ -125,7 +135,7 @@ class StoreService extends BaseService
         DB::beginTransaction();
 
         try {
-            $store->update([
+            $storeData = [
                 'project_id' => $data['project_id'] ?? null,
                 'name' => $data['name'] ?? null,
                 'type' => $data['type'] ?? null,
@@ -133,7 +143,27 @@ class StoreService extends BaseService
                 'mobile' => $data['mobile'] ?? null,
                 'email' => $data['email'] ?? null,
                 'updated_by' => Auth::id(),
-            ]);
+            ];
+
+            // Remove Image (UI Checkbox) — Skipped Entirely if a New Image is also
+            // Uploaded in the same Request, since the New-Image Branch below already
+            // Deletes the Old File before Storing the Replacement.
+            if (! empty($data['remove_image']) && empty($data['image']) && $store->image) {
+                if (Storage::disk('public')->exists($store->image)) {
+                    Storage::disk('public')->delete($store->image);
+                }
+                $storeData['image'] = null;
+            }
+
+            // Replace Image
+            if (isset($data['image']) && $data['image'] instanceof UploadedFile) {
+                if ($store->image && Storage::disk('public')->exists($store->image)) {
+                    Storage::disk('public')->delete($store->image);
+                }
+                $storeData['image'] = $this->imageService->uploadImage($data['image'], 'store.image');
+            }
+
+            $store->update($storeData);
 
             $this->syncManagersAndStorekeepers($store, $data);
 

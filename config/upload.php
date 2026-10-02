@@ -5,6 +5,8 @@ return [
 
         'user.photo'                => 'images/user/photo',
 
+        'store.image'               => 'images/store/image',
+
         'team.photo'                => 'images/team/photo',
 
         'employee.photo'            => 'images/employee/photo',

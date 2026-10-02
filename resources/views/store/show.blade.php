@@ -91,6 +91,11 @@
                                     </table>
                                 </div>
                                 <div class="col-12 col-md-5 ps-5 order-2">
+                                    @if($store->image)
+                                        <div class="text-center mb-3">
+                                            <img src="{{ asset('storage/'.$store->image) }}" class="img-thumbnail" style="width: 220px; height: 220px; object-fit: cover; border-radius: var(--vz-border-radius);" alt="{{ __('Store Image') }}">
+                                        </div>
+                                    @endif
                                     <table class="table table-hover table-responsive table-bordered table-sm">
                                         <tbody>
                                         <tr><th class="text-end pe-2">{{ __('Created By') }}</th><td class="text-start ps-2">{{ $store->creator?->name ?? '' }}</td></tr>

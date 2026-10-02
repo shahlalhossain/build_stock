@@ -15,15 +15,35 @@
 /* Choices.js (data-choices) Multi-Select: choices.min.css loads after
    app.min.css and overwrites Velzon's own theme rules (height/padding) with
    the raw, unthemed library defaults. Restoring them here, since this file
-   loads last. */
+   loads last. Height/padding/border match Bootstrap's own .form-control /
+   .form-select formula exactly (see bootstrap.min.css) rather than a fixed
+   px guess, so a multi-select sits flush with the other inputs on the row
+   regardless of box-sizing or border-width theme variables. */
 .choices__inner {
-    min-height: 37.5px;
-    padding: 0.25rem 0.5rem 0.1rem 0.75rem;
+    box-sizing: border-box;
+    font-size: var(--vz-font-base);
+    min-height: calc(1.5em + 1rem + calc(var(--vz-border-width) * 2));
+    padding: 0.5rem 0.9rem;
+    border: var(--vz-border-width) solid var(--vz-input-border-custom);
     border-radius: var(--vz-border-radius) !important;
 }
 .choices[data-type*="select-multiple"] .choices__inner,
 .choices[data-type*="text"] .choices__inner {
-    padding-left: 0.75rem;
+    padding-left: 0.9rem;
+}
+/* The cloned search <input> Choices.js injects inside .choices__inner also
+   gets clobbered by the same choices.min.css load-order issue — its taller
+   raw margin/padding (margin-bottom: 5px, padding: 4px) adds real layout
+   height on top of .choices__inner's own min-height, since min-height is a
+   floor, not a ceiling. Restoring Velzon's compact values fixes it. */
+.choices__input {
+    font-size: var(--vz-font-base);
+    line-height: 1.5;
+    margin: 0;
+    padding: 0;
+}
+.choices[data-type*="select-multiple"] .choices__input {
+    padding-top: 0;
 }
 .choices__list--multiple .choices__item {
     border-radius: 7px;

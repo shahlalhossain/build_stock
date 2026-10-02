@@ -28,6 +28,7 @@ class Store extends Model
         'code',
         'type',
         'description',
+        'image',
         'mobile',
         'email',
         'manager_id',

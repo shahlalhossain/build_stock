@@ -30,6 +30,7 @@ class StoreStoreRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'type' => ['required', 'string', Rule::in(Store::TYPES)],
             'description' => ['nullable', 'string', 'max:255'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:10240'],
             'mobile' => ['nullable', 'string', 'max:30'],
             'email' => ['nullable', 'email', 'max:150'],
             'manager_ids' => ['nullable', 'array'],
@@ -54,6 +55,10 @@ class StoreStoreRequest extends FormRequest
 
             'description.string' => __('Description must be a Valid String'),
             'description.max' => __('Description may not exceed 255 Characters'),
+
+            'image.image' => __('Store Image must be a Valid Image file (jpg, png, jpeg)'),
+            'image.mimes' => __('Store Image must be a Valid Image file (jpg, png, jpeg)'),
+            'image.max' => __('Store Image must not Exceed 10MB in Size'),
 
             'mobile.string' => __('Mobile must be a Valid String'),
             'mobile.max' => __('Mobile may not exceed 30 Characters'),
