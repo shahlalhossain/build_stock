@@ -14,9 +14,13 @@
                         <div class="card-header align-items-center d-flex">
                             <h4 class="card-title mb-0 flex-grow-1">{{ __('Manage Purchases') }}</h4>
                             <div class="flex-shrink-0">
-                                <a href="{{ route('product-purchase.create') }}" class="btn btn-sm btn-success"><i class="ri-add-line"></i><span class="d-none d-sm-inline"> {{ __('Direct Purchase') }}</span></a>
-                                <a href="{{ route('product-purchase.requisition-list') }}" class="btn btn-sm btn-info"><i class="ri-file-list-3-line"></i><span class="d-none d-sm-inline"> {{ __('Requisition Purchase') }}</span></a>
-                                <a href="{{ route('product-purchase.trash') }}" class="btn btn-sm btn-dark"><i class="ri-delete-bin-2-line"></i><span class="d-none d-sm-inline"> {{ __('Trash Box') }}</span></a>
+                                @can('product-purchase.create')
+                                    <a href="{{ route('product-purchase.create') }}" class="btn btn-sm btn-success"><i class="ri-add-line"></i><span class="d-none d-sm-inline"> {{ __('Direct Purchase') }}</span></a>
+                                    <a href="{{ route('product-purchase.requisition-list') }}" class="btn btn-sm btn-info"><i class="ri-file-list-3-line"></i><span class="d-none d-sm-inline"> {{ __('Requisition Purchase') }}</span></a>
+                                @endcan
+                                @can('product-purchase.trash')
+                                    <a href="{{ route('product-purchase.trash') }}" class="btn btn-sm btn-dark"><i class="ri-delete-bin-2-line"></i><span class="d-none d-sm-inline"> {{ __('Trash Box') }}</span></a>
+                                @endcan
                             </div>
                         </div>
 

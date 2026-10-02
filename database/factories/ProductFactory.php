@@ -23,6 +23,7 @@ class ProductFactory extends Factory
         return [
             'unit_id' => ProductUnit::factory(),
             'name' => fake()->unique()->words(3, true),
+            'code' => fake()->unique()->bothify('PRD-####'),
             'sku' => fake()->unique()->bothify('SKU-####??'),
             'has_variants' => false,
             'is_active' => true,

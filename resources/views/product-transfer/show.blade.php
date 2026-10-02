@@ -14,9 +14,15 @@
                         <div class="card-header align-items-center d-flex">
                             <h4 class="card-title mb-0 flex-grow-1">{{ __('Transfer Details') }}</h4>
                             <div class="flex-shrink-0">
-                                <a href="{{ route('product-transfer.create') }}" class="btn btn-sm btn-success"><i class="ri-add-line"></i><span class="d-none d-sm-inline"> {{ __('Add New') }}</span></a>
-                                <a href="{{ route('product-transfer.index') }}" class="btn btn-sm btn-primary"><i class="ri-list-check-2"></i><span class="d-none d-sm-inline"> {{ __('Go to List') }}</span></a>
-                                <a href="{{ route('product-transfer.trash') }}" class="btn btn-sm btn-dark"><i class="ri-delete-bin-2-line"></i><span class="d-none d-sm-inline"> {{ __('Go to Trash') }}</span></a>
+                                @can('product-transfer.create')
+                                    <a href="{{ route('product-transfer.create') }}" class="btn btn-sm btn-success"><i class="ri-add-line"></i><span class="d-none d-sm-inline"> {{ __('Add New') }}</span></a>
+                                @endcan
+                                @can('product-transfer.index')
+                                    <a href="{{ route('product-transfer.index') }}" class="btn btn-sm btn-primary"><i class="ri-list-check-2"></i><span class="d-none d-sm-inline"> {{ __('Go to List') }}</span></a>
+                                @endcan
+                                @can('product-transfer.trash')
+                                    <a href="{{ route('product-transfer.trash') }}" class="btn btn-sm btn-dark"><i class="ri-delete-bin-2-line"></i><span class="d-none d-sm-inline"> {{ __('Go to Trash') }}</span></a>
+                                @endcan
                             </div>
                         </div>
 
@@ -64,14 +70,16 @@
                                                         {{ '--' }}
                                                     @endif
                                                 </div>
-                                                @if(!$productTransfer->trashed())
-                                                <div class="text-end">
-                                                    <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#statusUpdateModal">
-                                                        <i class="ri-fingerprint-line"></i>
-                                                        <span class="btn-text d-none d-sm-inline">{{ __('Update Status') }}</span>
-                                                    </button>
-                                                </div>
-                                                @endif
+                                                @can('product-transfer.update-status')
+                                                    @if(!$productTransfer->trashed())
+                                                    <div class="text-end">
+                                                        <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#statusUpdateModal">
+                                                            <i class="ri-fingerprint-line"></i>
+                                                            <span class="btn-text d-none d-sm-inline">{{ __('Update Status') }}</span>
+                                                        </button>
+                                                    </div>
+                                                    @endif
+                                                @endcan
                                             </td>
                                         </tr>
                                         </tbody>

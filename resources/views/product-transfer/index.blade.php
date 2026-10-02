@@ -14,8 +14,12 @@
                         <div class="card-header align-items-center d-flex">
                             <h4 class="card-title mb-0 flex-grow-1">{{ __('Manage Transfers') }}</h4>
                             <div class="flex-shrink-0">
-                                <a href="{{ route('product-transfer.create') }}" class="btn btn-sm btn-success"><i class="ri-add-line"></i><span class="d-none d-sm-inline"> {{ __('Add New') }}</span></a>
-                                <a href="{{ route('product-transfer.trash') }}" class="btn btn-sm btn-dark"><i class="ri-delete-bin-2-line"></i><span class="d-none d-sm-inline"> {{ __('Trash Box') }}</span></a>
+                                @can('product-transfer.create')
+                                    <a href="{{ route('product-transfer.create') }}" class="btn btn-sm btn-success"><i class="ri-add-line"></i><span class="d-none d-sm-inline"> {{ __('Add New') }}</span></a>
+                                @endcan
+                                @can('product-transfer.trash')
+                                    <a href="{{ route('product-transfer.trash') }}" class="btn btn-sm btn-dark"><i class="ri-delete-bin-2-line"></i><span class="d-none d-sm-inline"> {{ __('Trash Box') }}</span></a>
+                                @endcan
                             </div>
                         </div>
 

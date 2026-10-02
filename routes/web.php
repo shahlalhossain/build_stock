@@ -262,101 +262,101 @@ Route::middleware('auth:web')->group(function () {
     });
 
     Route::group(['prefix' => 'product-requisition', 'as' => 'product-requisition.'], function () {
-        Route::get('/', [ProductRequisitionsController::class, 'index'])->name('index');
-        Route::get('create', [ProductRequisitionsController::class, 'create'])->name('create');
-        Route::post('/', [ProductRequisitionsController::class, 'store'])->name('store');
-        Route::get('/trash', [ProductRequisitionsController::class, 'trash'])->name('trash');
+        Route::get('/', [ProductRequisitionsController::class, 'index'])->name('index')->middleware('permission:product-requisition.index');
+        Route::get('create', [ProductRequisitionsController::class, 'create'])->name('create')->middleware('permission:product-requisition.create');
+        Route::post('/', [ProductRequisitionsController::class, 'store'])->name('store')->middleware('permission:product-requisition.create');
+        Route::get('/trash', [ProductRequisitionsController::class, 'trash'])->name('trash')->middleware('permission:product-requisition.trash');
         Route::group(['prefix' => '{product_requisition}'], function () {
-            Route::get('/', [ProductRequisitionsController::class, 'show'])->name('show')->withTrashed();
-            Route::get('edit', [ProductRequisitionsController::class, 'edit'])->name('edit');
-            Route::patch('/', [ProductRequisitionsController::class, 'update'])->name('update');
-            Route::post('update-status', [ProductRequisitionsController::class, 'updateStatus'])->name('update-status');
-            Route::delete('/', [ProductRequisitionsController::class, 'destroy'])->name('destroy');
-            Route::post('restore', [ProductRequisitionsController::class, 'restore'])->name('restore');
-            Route::delete('force-delete', [ProductRequisitionsController::class, 'delete'])->name('delete');
+            Route::get('/', [ProductRequisitionsController::class, 'show'])->name('show')->withTrashed()->middleware('permission:product-requisition.show');
+            Route::get('edit', [ProductRequisitionsController::class, 'edit'])->name('edit')->middleware('permission:product-requisition.edit');
+            Route::patch('/', [ProductRequisitionsController::class, 'update'])->name('update')->middleware('permission:product-requisition.edit');
+            Route::post('update-status', [ProductRequisitionsController::class, 'updateStatus'])->name('update-status')->middleware('permission:product-requisition.update-status');
+            Route::delete('/', [ProductRequisitionsController::class, 'destroy'])->name('destroy')->middleware('permission:product-requisition.destroy');
+            Route::post('restore', [ProductRequisitionsController::class, 'restore'])->name('restore')->middleware('permission:product-requisition.restore');
+            Route::delete('force-delete', [ProductRequisitionsController::class, 'delete'])->name('delete')->middleware('permission:product-requisition.delete');
         });
     });
 
     Route::group(['prefix' => 'product-purchase', 'as' => 'product-purchase.'], function () {
-        Route::get('/', [ProductPurchasesController::class, 'index'])->name('index');
-        Route::get('create', [ProductPurchasesController::class, 'create'])->name('create');
-        Route::post('/', [ProductPurchasesController::class, 'store'])->name('store');
-        Route::get('/trash', [ProductPurchasesController::class, 'trash'])->name('trash');
-        Route::get('requisition-purchase', [ProductPurchasesController::class, 'requisitionList'])->name('requisition-list');
-        Route::get('requisition-purchase/{product_requisition}', [ProductPurchasesController::class, 'createFromRequisition'])->name('create-from-requisition');
-        Route::post('requisition-purchase', [ProductPurchasesController::class, 'storeFromRequisition'])->name('store-from-requisition');
+        Route::get('/', [ProductPurchasesController::class, 'index'])->name('index')->middleware('permission:product-purchase.index');
+        Route::get('create', [ProductPurchasesController::class, 'create'])->name('create')->middleware('permission:product-purchase.create');
+        Route::post('/', [ProductPurchasesController::class, 'store'])->name('store')->middleware('permission:product-purchase.create');
+        Route::get('/trash', [ProductPurchasesController::class, 'trash'])->name('trash')->middleware('permission:product-purchase.trash');
+        Route::get('requisition-purchase', [ProductPurchasesController::class, 'requisitionList'])->name('requisition-list')->middleware('permission:product-purchase.create');
+        Route::get('requisition-purchase/{product_requisition}', [ProductPurchasesController::class, 'createFromRequisition'])->name('create-from-requisition')->middleware('permission:product-purchase.create');
+        Route::post('requisition-purchase', [ProductPurchasesController::class, 'storeFromRequisition'])->name('store-from-requisition')->middleware('permission:product-purchase.create');
         Route::group(['prefix' => '{product_purchase}'], function () {
-            Route::get('/', [ProductPurchasesController::class, 'show'])->name('show')->withTrashed();
-            Route::get('edit', [ProductPurchasesController::class, 'edit'])->name('edit');
-            Route::patch('/', [ProductPurchasesController::class, 'update'])->name('update');
-            Route::post('update-status', [ProductPurchasesController::class, 'updateStatus'])->name('update-status');
-            Route::delete('/', [ProductPurchasesController::class, 'destroy'])->name('destroy');
-            Route::post('restore', [ProductPurchasesController::class, 'restore'])->name('restore');
-            Route::delete('force-delete', [ProductPurchasesController::class, 'delete'])->name('delete');
+            Route::get('/', [ProductPurchasesController::class, 'show'])->name('show')->withTrashed()->middleware('permission:product-purchase.show');
+            Route::get('edit', [ProductPurchasesController::class, 'edit'])->name('edit')->middleware('permission:product-purchase.edit');
+            Route::patch('/', [ProductPurchasesController::class, 'update'])->name('update')->middleware('permission:product-purchase.edit');
+            Route::post('update-status', [ProductPurchasesController::class, 'updateStatus'])->name('update-status')->middleware('permission:product-purchase.update-status');
+            Route::delete('/', [ProductPurchasesController::class, 'destroy'])->name('destroy')->middleware('permission:product-purchase.destroy');
+            Route::post('restore', [ProductPurchasesController::class, 'restore'])->name('restore')->middleware('permission:product-purchase.restore');
+            Route::delete('force-delete', [ProductPurchasesController::class, 'delete'])->name('delete')->middleware('permission:product-purchase.delete');
         });
     });
 
     Route::group(['prefix' => 'product-transfer', 'as' => 'product-transfer.'], function () {
-        Route::get('/', [ProductTransfersController::class, 'index'])->name('index');
-        Route::get('create', [ProductTransfersController::class, 'create'])->name('create');
-        Route::post('/', [ProductTransfersController::class, 'store'])->name('store');
-        Route::get('/trash', [ProductTransfersController::class, 'trash'])->name('trash');
+        Route::get('/', [ProductTransfersController::class, 'index'])->name('index')->middleware('permission:product-transfer.index');
+        Route::get('create', [ProductTransfersController::class, 'create'])->name('create')->middleware('permission:product-transfer.create');
+        Route::post('/', [ProductTransfersController::class, 'store'])->name('store')->middleware('permission:product-transfer.create');
+        Route::get('/trash', [ProductTransfersController::class, 'trash'])->name('trash')->middleware('permission:product-transfer.trash');
         Route::group(['prefix' => '{product_transfer}'], function () {
-            Route::get('/', [ProductTransfersController::class, 'show'])->name('show')->withTrashed();
-            Route::get('edit', [ProductTransfersController::class, 'edit'])->name('edit');
-            Route::patch('/', [ProductTransfersController::class, 'update'])->name('update');
-            Route::post('update-status', [ProductTransfersController::class, 'updateStatus'])->name('update-status');
-            Route::delete('/', [ProductTransfersController::class, 'destroy'])->name('destroy');
-            Route::post('restore', [ProductTransfersController::class, 'restore'])->name('restore');
-            Route::delete('force-delete', [ProductTransfersController::class, 'delete'])->name('delete');
+            Route::get('/', [ProductTransfersController::class, 'show'])->name('show')->withTrashed()->middleware('permission:product-transfer.show');
+            Route::get('edit', [ProductTransfersController::class, 'edit'])->name('edit')->middleware('permission:product-transfer.edit');
+            Route::patch('/', [ProductTransfersController::class, 'update'])->name('update')->middleware('permission:product-transfer.edit');
+            Route::post('update-status', [ProductTransfersController::class, 'updateStatus'])->name('update-status')->middleware('permission:product-transfer.update-status');
+            Route::delete('/', [ProductTransfersController::class, 'destroy'])->name('destroy')->middleware('permission:product-transfer.destroy');
+            Route::post('restore', [ProductTransfersController::class, 'restore'])->name('restore')->middleware('permission:product-transfer.restore');
+            Route::delete('force-delete', [ProductTransfersController::class, 'delete'])->name('delete')->middleware('permission:product-transfer.delete');
         });
     });
 
     Route::group(['prefix' => 'product-receive', 'as' => 'product-receive.'], function () {
-        Route::get('/', [ProductReceivesController::class, 'index'])->name('index');
-        Route::get('create', [ProductReceivesController::class, 'create'])->name('create');
-        Route::post('/', [ProductReceivesController::class, 'store'])->name('store');
-        Route::get('/trash', [ProductReceivesController::class, 'trash'])->name('trash');
+        Route::get('/', [ProductReceivesController::class, 'index'])->name('index')->middleware('permission:product-receive.index');
+        Route::get('create', [ProductReceivesController::class, 'create'])->name('create')->middleware('permission:product-receive.create');
+        Route::post('/', [ProductReceivesController::class, 'store'])->name('store')->middleware('permission:product-receive.create');
+        Route::get('/trash', [ProductReceivesController::class, 'trash'])->name('trash')->middleware('permission:product-receive.trash');
         Route::group(['prefix' => '{product_receive}'], function () {
-            Route::get('/', [ProductReceivesController::class, 'show'])->name('show')->withTrashed();
-            Route::get('edit', [ProductReceivesController::class, 'edit'])->name('edit');
-            Route::patch('/', [ProductReceivesController::class, 'update'])->name('update');
-            Route::post('update-status', [ProductReceivesController::class, 'updateStatus'])->name('update-status');
-            Route::delete('/', [ProductReceivesController::class, 'destroy'])->name('destroy');
-            Route::post('restore', [ProductReceivesController::class, 'restore'])->name('restore');
-            Route::delete('force-delete', [ProductReceivesController::class, 'delete'])->name('delete');
+            Route::get('/', [ProductReceivesController::class, 'show'])->name('show')->withTrashed()->middleware('permission:product-receive.show');
+            Route::get('edit', [ProductReceivesController::class, 'edit'])->name('edit')->middleware('permission:product-receive.edit');
+            Route::patch('/', [ProductReceivesController::class, 'update'])->name('update')->middleware('permission:product-receive.edit');
+            Route::post('update-status', [ProductReceivesController::class, 'updateStatus'])->name('update-status')->middleware('permission:product-receive.update-status');
+            Route::delete('/', [ProductReceivesController::class, 'destroy'])->name('destroy')->middleware('permission:product-receive.destroy');
+            Route::post('restore', [ProductReceivesController::class, 'restore'])->name('restore')->middleware('permission:product-receive.restore');
+            Route::delete('force-delete', [ProductReceivesController::class, 'delete'])->name('delete')->middleware('permission:product-receive.delete');
         });
     });
 
     Route::group(['prefix' => 'product-delivery', 'as' => 'product-delivery.'], function () {
-        Route::get('/', [ProductDeliveriesController::class, 'index'])->name('index');
-        Route::get('create', [ProductDeliveriesController::class, 'create'])->name('create');
-        Route::post('/', [ProductDeliveriesController::class, 'store'])->name('store');
-        Route::get('/trash', [ProductDeliveriesController::class, 'trash'])->name('trash');
+        Route::get('/', [ProductDeliveriesController::class, 'index'])->name('index')->middleware('permission:product-delivery.index');
+        Route::get('create', [ProductDeliveriesController::class, 'create'])->name('create')->middleware('permission:product-delivery.create');
+        Route::post('/', [ProductDeliveriesController::class, 'store'])->name('store')->middleware('permission:product-delivery.create');
+        Route::get('/trash', [ProductDeliveriesController::class, 'trash'])->name('trash')->middleware('permission:product-delivery.trash');
         Route::group(['prefix' => '{product_delivery}'], function () {
-            Route::get('/', [ProductDeliveriesController::class, 'show'])->name('show')->withTrashed();
-            Route::get('edit', [ProductDeliveriesController::class, 'edit'])->name('edit');
-            Route::patch('/', [ProductDeliveriesController::class, 'update'])->name('update');
-            Route::post('update-status', [ProductDeliveriesController::class, 'updateStatus'])->name('update-status');
-            Route::delete('/', [ProductDeliveriesController::class, 'destroy'])->name('destroy');
-            Route::post('restore', [ProductDeliveriesController::class, 'restore'])->name('restore');
-            Route::delete('force-delete', [ProductDeliveriesController::class, 'delete'])->name('delete');
+            Route::get('/', [ProductDeliveriesController::class, 'show'])->name('show')->withTrashed()->middleware('permission:product-delivery.show');
+            Route::get('edit', [ProductDeliveriesController::class, 'edit'])->name('edit')->middleware('permission:product-delivery.edit');
+            Route::patch('/', [ProductDeliveriesController::class, 'update'])->name('update')->middleware('permission:product-delivery.edit');
+            Route::post('update-status', [ProductDeliveriesController::class, 'updateStatus'])->name('update-status')->middleware('permission:product-delivery.update-status');
+            Route::delete('/', [ProductDeliveriesController::class, 'destroy'])->name('destroy')->middleware('permission:product-delivery.destroy');
+            Route::post('restore', [ProductDeliveriesController::class, 'restore'])->name('restore')->middleware('permission:product-delivery.restore');
+            Route::delete('force-delete', [ProductDeliveriesController::class, 'delete'])->name('delete')->middleware('permission:product-delivery.delete');
         });
     });
 
     Route::group(['prefix' => 'stock-transaction', 'as' => 'stock-transaction.'], function () {
-        Route::get('/', [StockTransactionsController::class, 'index'])->name('index');
-        Route::get('create', [StockTransactionsController::class, 'create'])->name('create');
-        Route::post('/', [StockTransactionsController::class, 'store'])->name('store');
-        Route::get('/trash', [StockTransactionsController::class, 'trash'])->name('trash');
+        Route::get('/', [StockTransactionsController::class, 'index'])->name('index')->middleware('permission:stock-transaction.index');
+        Route::get('create', [StockTransactionsController::class, 'create'])->name('create')->middleware('permission:stock-transaction.create');
+        Route::post('/', [StockTransactionsController::class, 'store'])->name('store')->middleware('permission:stock-transaction.create');
+        Route::get('/trash', [StockTransactionsController::class, 'trash'])->name('trash')->middleware('permission:stock-transaction.trash');
         Route::group(['prefix' => '{stock_transaction}'], function () {
-            Route::get('/', [StockTransactionsController::class, 'show'])->name('show')->withTrashed();
-            Route::get('edit', [StockTransactionsController::class, 'edit'])->name('edit');
-            Route::patch('/', [StockTransactionsController::class, 'update'])->name('update');
-            Route::post('update-status', [StockTransactionsController::class, 'updateStatus'])->name('update-status');
-            Route::delete('/', [StockTransactionsController::class, 'destroy'])->name('destroy');
-            Route::post('restore', [StockTransactionsController::class, 'restore'])->name('restore');
-            Route::delete('force-delete', [StockTransactionsController::class, 'delete'])->name('delete');
+            Route::get('/', [StockTransactionsController::class, 'show'])->name('show')->withTrashed()->middleware('permission:stock-transaction.show');
+            Route::get('edit', [StockTransactionsController::class, 'edit'])->name('edit')->middleware('permission:stock-transaction.edit');
+            Route::patch('/', [StockTransactionsController::class, 'update'])->name('update')->middleware('permission:stock-transaction.edit');
+            Route::post('update-status', [StockTransactionsController::class, 'updateStatus'])->name('update-status')->middleware('permission:stock-transaction.update-status');
+            Route::delete('/', [StockTransactionsController::class, 'destroy'])->name('destroy')->middleware('permission:stock-transaction.destroy');
+            Route::post('restore', [StockTransactionsController::class, 'restore'])->name('restore')->middleware('permission:stock-transaction.restore');
+            Route::delete('force-delete', [StockTransactionsController::class, 'delete'])->name('delete')->middleware('permission:stock-transaction.delete');
         });
     });
 
