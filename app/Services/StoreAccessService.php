@@ -111,4 +111,48 @@ class StoreAccessService
             ->orderBy('name')
             ->get(['id', 'name']);
     }
+
+    /**
+     * Every active Store, Unrestricted — for Fields like Product Transfer's
+     * Destination, which the User may deliberately send Stock to a Store they
+     * are not themselves Attached to.
+     *
+     * @return Collection<int, Store>
+     */
+    public function allActiveStores()
+    {
+        return Store::query()
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name']);
+    }
+
+    /**
+     * Scope a Query through a belongsTo Relation (e.g. Product Receive, which
+     * has no Store column of its own and is only reachable via its Transfer's
+     * Source/Destination Store) — a No-Op for Super Admin. Pass more than one
+     * Column for Dual References; the Constraint becomes "Column A OR Column B"
+     * within the related Model.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<*>  $query
+     * @param  array<string>  $storeColumns
+     * @return \Illuminate\Database\Eloquent\Builder<*>
+     */
+    public function scopeQueryToVisibleStoresViaRelation($query, User $user, string $relation, array $storeColumns = ['store_id'])
+    {
+        $visibleStoreIds = $this->visibleStoreIds($user);
+
+        if ($visibleStoreIds === null) {
+            return $query;
+        }
+
+        return $query->whereHas($relation, function ($builder) use ($storeColumns, $visibleStoreIds) {
+            $builder->where(function ($inner) use ($storeColumns, $visibleStoreIds) {
+                foreach ($storeColumns as $index => $column) {
+                    $method = $index === 0 ? 'whereIn' : 'orWhereIn';
+                    $inner->{$method}($column, $visibleStoreIds);
+                }
+            });
+        });
+    }
 }

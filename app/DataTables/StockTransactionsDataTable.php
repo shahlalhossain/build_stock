@@ -4,7 +4,9 @@ namespace App\DataTables;
 
 use AllowDynamicProperties;
 use App\Models\StockTransaction;
+use App\Services\StoreAccessService;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
+use Illuminate\Support\Facades\Auth;
 use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
 use Yajra\DataTables\Html\Column;
@@ -66,11 +68,11 @@ class StockTransactionsDataTable extends DataTable
      */
     public function query(StockTransaction $model): QueryBuilder
     {
-        if ($this->showTrashed) {
-            return $model->newQuery()->with(['store'])->onlyTrashed();   // Show Trashed Records
-        }
+        $query = $this->showTrashed
+            ? $model->newQuery()->with(['store'])->onlyTrashed()   // Show Trashed Records
+            : $model->newQuery()->with(['store'])->withoutTrashed();    // Show Active Records
 
-        return $model->newQuery()->with(['store'])->withoutTrashed();    // Show Active Records
+        return app(StoreAccessService::class)->scopeQueryToVisibleStores($query, Auth::user());
     }
 
     /**

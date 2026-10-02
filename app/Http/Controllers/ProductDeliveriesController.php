@@ -9,13 +9,14 @@ use App\Http\Requests\ProductDelivery\UpdateProductDeliveryRequest;
 use App\Models\Product;
 use App\Models\ProductDelivery;
 use App\Models\ProductUnit;
-use App\Models\Store;
 use App\Services\ProductDeliveryService;
+use App\Services\StoreAccessService;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 use Throwable;
@@ -24,9 +25,12 @@ class ProductDeliveriesController extends Controller
 {
     protected ProductDeliveryService $productDeliveryService;
 
-    public function __construct(ProductDeliveryService $productDeliveryService)
+    protected StoreAccessService $storeAccessService;
+
+    public function __construct(ProductDeliveryService $productDeliveryService, StoreAccessService $storeAccessService)
     {
         $this->productDeliveryService = $productDeliveryService;
+        $this->storeAccessService = $storeAccessService;
     }
 
     public function index(ProductDeliveriesDataTable $productDeliveriesDataTable)
@@ -62,6 +66,8 @@ class ProductDeliveriesController extends Controller
 
     public function show(ProductDelivery $productDelivery)
     {
+        abort_unless($this->storeAccessService->canAccessStore(Auth::user(), $productDelivery->store_id), 403);
+
         $data['productDelivery'] = $productDelivery->load([
             'store',
             'items.product',
@@ -78,6 +84,8 @@ class ProductDeliveriesController extends Controller
 
     public function edit(ProductDelivery $productDelivery): View
     {
+        abort_unless($this->storeAccessService->canAccessStore(Auth::user(), $productDelivery->store_id), 403);
+
         $data = $this->formLookups();
         $data['productDelivery'] = $productDelivery->load(['items.product', 'items.productVariant', 'items.unit']);
 
@@ -86,6 +94,8 @@ class ProductDeliveriesController extends Controller
 
     public function update(UpdateProductDeliveryRequest $productDeliveryRequest, ProductDelivery $productDelivery): RedirectResponse
     {
+        abort_unless($this->storeAccessService->canAccessStore(Auth::user(), $productDelivery->store_id), 403);
+
         try {
             $this->productDeliveryService->updateDelivery($productDelivery, $productDeliveryRequest->validated());
 
@@ -103,6 +113,9 @@ class ProductDeliveriesController extends Controller
 
     public function updateStatus(Request $request, $id): JsonResponse
     {
+        $productDelivery = ProductDelivery::findOrFail($id);
+        abort_unless($this->storeAccessService->canAccessStore(Auth::user(), $productDelivery->store_id), 403);
+
         $validated = $request->validate([
             'status' => ['required', 'in:pending,approved,rejected'],
             'remarks' => ['nullable', 'string'],
@@ -129,6 +142,9 @@ class ProductDeliveriesController extends Controller
 
     public function destroy($id): JsonResponse
     {
+        $productDelivery = ProductDelivery::findOrFail($id);
+        abort_unless($this->storeAccessService->canAccessStore(Auth::user(), $productDelivery->store_id), 403);
+
         try {
             $this->productDeliveryService->destroyDelivery($id);
 
@@ -157,6 +173,9 @@ class ProductDeliveriesController extends Controller
 
     public function restore($id): JsonResponse
     {
+        $productDelivery = ProductDelivery::withTrashed()->findOrFail($id);
+        abort_unless($this->storeAccessService->canAccessStore(Auth::user(), $productDelivery->store_id), 403);
+
         try {
             $this->productDeliveryService->restoreDelivery($id);
 
@@ -178,6 +197,9 @@ class ProductDeliveriesController extends Controller
 
     public function delete($id): JsonResponse
     {
+        $productDelivery = ProductDelivery::withTrashed()->findOrFail($id);
+        abort_unless($this->storeAccessService->canAccessStore(Auth::user(), $productDelivery->store_id), 403);
+
         try {
             $this->productDeliveryService->deleteDelivery($id);
 
@@ -203,7 +225,8 @@ class ProductDeliveriesController extends Controller
             ->get(['id', 'name', 'code', 'unit_id']);
 
         return [
-            'stores' => Store::query()->where('is_active', true)->orderBy('name')->get(['id', 'name']),
+            'stores' => $this->storeAccessService->selectableStores(Auth::user()),
+            'defaultStoreId' => $this->storeAccessService->defaultStoreIdForCreate(Auth::user()),
             'products' => $products,
             'units' => ProductUnit::where('is_active', true)->orderBy('group')->orderBy('name')->get(['id', 'group', 'name', 'symbol']),
             'productVariants' => $products->mapWithKeys(function (Product $product) {

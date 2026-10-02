@@ -8,13 +8,14 @@ use App\Http\Requests\StockTransaction\StoreStockTransactionRequest;
 use App\Http\Requests\StockTransaction\UpdateStockTransactionRequest;
 use App\Models\Product;
 use App\Models\StockTransaction;
-use App\Models\Store;
 use App\Services\StockTransactionService;
+use App\Services\StoreAccessService;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 use Throwable;
@@ -23,9 +24,12 @@ class StockTransactionsController extends Controller
 {
     protected StockTransactionService $stockTransactionService;
 
-    public function __construct(StockTransactionService $stockTransactionService)
+    protected StoreAccessService $storeAccessService;
+
+    public function __construct(StockTransactionService $stockTransactionService, StoreAccessService $storeAccessService)
     {
         $this->stockTransactionService = $stockTransactionService;
+        $this->storeAccessService = $storeAccessService;
     }
 
     public function index(StockTransactionsDataTable $stockTransactionsDataTable)
@@ -61,6 +65,8 @@ class StockTransactionsController extends Controller
 
     public function show(StockTransaction $stockTransaction)
     {
+        abort_unless($this->storeAccessService->canAccessStore(Auth::user(), $stockTransaction->store_id), 403);
+
         $data['stockTransaction'] = $stockTransaction->load([
             'store',
             'items.product',
@@ -76,6 +82,8 @@ class StockTransactionsController extends Controller
 
     public function edit(StockTransaction $stockTransaction): View
     {
+        abort_unless($this->storeAccessService->canAccessStore(Auth::user(), $stockTransaction->store_id), 403);
+
         $data = $this->formLookups();
         $data['stockTransaction'] = $stockTransaction->load(['items.product', 'items.productVariant']);
 
@@ -84,6 +92,8 @@ class StockTransactionsController extends Controller
 
     public function update(UpdateStockTransactionRequest $stockTransactionRequest, StockTransaction $stockTransaction): RedirectResponse
     {
+        abort_unless($this->storeAccessService->canAccessStore(Auth::user(), $stockTransaction->store_id), 403);
+
         try {
             $this->stockTransactionService->updateTransaction($stockTransaction, $stockTransactionRequest->validated());
 
@@ -101,6 +111,9 @@ class StockTransactionsController extends Controller
 
     public function updateStatus(Request $request, $id): JsonResponse
     {
+        $stockTransaction = StockTransaction::findOrFail($id);
+        abort_unless($this->storeAccessService->canAccessStore(Auth::user(), $stockTransaction->store_id), 403);
+
         $validated = $request->validate([
             'status' => ['required', 'in:pending,approved,rejected'],
             'remarks' => ['nullable', 'string'],
@@ -127,6 +140,9 @@ class StockTransactionsController extends Controller
 
     public function destroy($id): JsonResponse
     {
+        $stockTransaction = StockTransaction::findOrFail($id);
+        abort_unless($this->storeAccessService->canAccessStore(Auth::user(), $stockTransaction->store_id), 403);
+
         try {
             $this->stockTransactionService->destroyTransaction($id);
 
@@ -155,6 +171,9 @@ class StockTransactionsController extends Controller
 
     public function restore($id): JsonResponse
     {
+        $stockTransaction = StockTransaction::withTrashed()->findOrFail($id);
+        abort_unless($this->storeAccessService->canAccessStore(Auth::user(), $stockTransaction->store_id), 403);
+
         try {
             $this->stockTransactionService->restoreTransaction($id);
 
@@ -176,6 +195,9 @@ class StockTransactionsController extends Controller
 
     public function delete($id): JsonResponse
     {
+        $stockTransaction = StockTransaction::withTrashed()->findOrFail($id);
+        abort_unless($this->storeAccessService->canAccessStore(Auth::user(), $stockTransaction->store_id), 403);
+
         try {
             $this->stockTransactionService->deleteTransaction($id);
 
@@ -201,7 +223,8 @@ class StockTransactionsController extends Controller
             ->get(['id', 'name', 'code']);
 
         return [
-            'stores' => Store::query()->where('is_active', true)->orderBy('name')->get(['id', 'name']),
+            'stores' => $this->storeAccessService->selectableStores(Auth::user()),
+            'defaultStoreId' => $this->storeAccessService->defaultStoreIdForCreate(Auth::user()),
             'products' => $products,
             // Preloaded per-Product Variant list as JSON (no AJAX round-trip), matching
             // this app's existing Category/Sub-Category and Specifications client-side

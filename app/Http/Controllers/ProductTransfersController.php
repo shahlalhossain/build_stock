@@ -10,13 +10,14 @@ use App\Models\Product;
 use App\Models\ProductRequisition;
 use App\Models\ProductTransfer;
 use App\Models\ProductUnit;
-use App\Models\Store;
 use App\Services\ProductTransferService;
+use App\Services\StoreAccessService;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 use Throwable;
@@ -25,9 +26,24 @@ class ProductTransfersController extends Controller
 {
     protected ProductTransferService $productTransferService;
 
-    public function __construct(ProductTransferService $productTransferService)
+    protected StoreAccessService $storeAccessService;
+
+    public function __construct(ProductTransferService $productTransferService, StoreAccessService $storeAccessService)
     {
         $this->productTransferService = $productTransferService;
+        $this->storeAccessService = $storeAccessService;
+    }
+
+    /**
+     * A Transfer is Visible if EITHER its Source or Destination Store is in
+     * the User's Visible Set — Staff on either End track the Movement, even
+     * though only the Source-Side Attachment lets them Create one (see
+     * formLookups()'s sourceStores vs destinationStores split).
+     */
+    protected function canAccessTransfer(ProductTransfer $productTransfer): bool
+    {
+        return $this->storeAccessService->canAccessStore(Auth::user(), $productTransfer->source_store_id)
+            || $this->storeAccessService->canAccessStore(Auth::user(), $productTransfer->destination_store_id);
     }
 
     public function index(ProductTransfersDataTable $productTransfersDataTable)
@@ -63,6 +79,8 @@ class ProductTransfersController extends Controller
 
     public function show(ProductTransfer $productTransfer)
     {
+        abort_unless($this->canAccessTransfer($productTransfer), 403);
+
         $data['productTransfer'] = $productTransfer->load([
             'requisition',
             'sourceStore',
@@ -82,6 +100,8 @@ class ProductTransfersController extends Controller
 
     public function edit(ProductTransfer $productTransfer): View
     {
+        abort_unless($this->canAccessTransfer($productTransfer), 403);
+
         $data = $this->formLookups();
         $data['productTransfer'] = $productTransfer->load(['items.product', 'items.productVariant', 'items.unit']);
 
@@ -90,6 +110,8 @@ class ProductTransfersController extends Controller
 
     public function update(UpdateProductTransferRequest $productTransferRequest, ProductTransfer $productTransfer): RedirectResponse
     {
+        abort_unless($this->canAccessTransfer($productTransfer), 403);
+
         try {
             $this->productTransferService->updateTransfer($productTransfer, $productTransferRequest->validated());
 
@@ -107,6 +129,9 @@ class ProductTransfersController extends Controller
 
     public function updateStatus(Request $request, $id): JsonResponse
     {
+        $productTransfer = ProductTransfer::findOrFail($id);
+        abort_unless($this->canAccessTransfer($productTransfer), 403);
+
         $validated = $request->validate([
             'status' => ['required', 'in:pending,approved,rejected'],
             'remarks' => ['nullable', 'string'],
@@ -133,6 +158,9 @@ class ProductTransfersController extends Controller
 
     public function destroy($id): JsonResponse
     {
+        $productTransfer = ProductTransfer::findOrFail($id);
+        abort_unless($this->canAccessTransfer($productTransfer), 403);
+
         try {
             $this->productTransferService->destroyTransfer($id);
 
@@ -161,6 +189,9 @@ class ProductTransfersController extends Controller
 
     public function restore($id): JsonResponse
     {
+        $productTransfer = ProductTransfer::withTrashed()->findOrFail($id);
+        abort_unless($this->canAccessTransfer($productTransfer), 403);
+
         try {
             $this->productTransferService->restoreTransfer($id);
 
@@ -182,6 +213,9 @@ class ProductTransfersController extends Controller
 
     public function delete($id): JsonResponse
     {
+        $productTransfer = ProductTransfer::withTrashed()->findOrFail($id);
+        abort_unless($this->canAccessTransfer($productTransfer), 403);
+
         try {
             $this->productTransferService->deleteTransfer($id);
 
@@ -206,9 +240,13 @@ class ProductTransfersController extends Controller
             }])
             ->get(['id', 'name', 'code', 'unit_id']);
 
+        $requisitionsQuery = ProductRequisition::query()->where('status', ProductRequisition::STATUS_APPROVED)->orderBy('code');
+
         return [
-            'stores' => Store::query()->where('is_active', true)->orderBy('name')->get(['id', 'name']),
-            'requisitions' => ProductRequisition::query()->where('status', ProductRequisition::STATUS_APPROVED)->orderBy('code')->get(['id', 'code']),
+            'sourceStores' => $this->storeAccessService->selectableStores(Auth::user()),
+            'destinationStores' => $this->storeAccessService->allActiveStores(),
+            'defaultStoreId' => $this->storeAccessService->defaultStoreIdForCreate(Auth::user()),
+            'requisitions' => $this->storeAccessService->scopeQueryToVisibleStores($requisitionsQuery, Auth::user())->get(['id', 'code']),
             'products' => $products,
             'units' => ProductUnit::where('is_active', true)->orderBy('group')->orderBy('name')->get(['id', 'group', 'name', 'symbol']),
             'productVariants' => $products->mapWithKeys(function (Product $product) {

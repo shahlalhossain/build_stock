@@ -4,7 +4,9 @@ namespace App\DataTables;
 
 use AllowDynamicProperties;
 use App\Models\ProductReceive;
+use App\Services\StoreAccessService;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
+use Illuminate\Support\Facades\Auth;
 use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
 use Yajra\DataTables\Html\Column;
@@ -88,11 +90,11 @@ class ProductReceivesDataTable extends DataTable
             'items.unit',
         ];
 
-        if ($this->showTrashed) {
-            return $model->newQuery()->with(array_merge(['transfer.destinationStore'], $itemRelations))->withSum('items', 'received_quantity')->onlyTrashed();
-        }
+        $query = $this->showTrashed
+            ? $model->newQuery()->with(array_merge(['transfer.destinationStore'], $itemRelations))->withSum('items', 'received_quantity')->onlyTrashed()
+            : $model->newQuery()->with(array_merge(['transfer.destinationStore'], $itemRelations))->withSum('items', 'received_quantity')->withoutTrashed();
 
-        return $model->newQuery()->with(array_merge(['transfer.destinationStore'], $itemRelations))->withSum('items', 'received_quantity')->withoutTrashed();
+        return app(StoreAccessService::class)->scopeQueryToVisibleStoresViaRelation($query, Auth::user(), 'transfer', ['source_store_id', 'destination_store_id']);
     }
 
     /**

@@ -4,7 +4,9 @@ namespace App\DataTables;
 
 use AllowDynamicProperties;
 use App\Models\ProductRequisition;
+use App\Services\StoreAccessService;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
+use Illuminate\Support\Facades\Auth;
 use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
 use Yajra\DataTables\Html\Column;
@@ -87,11 +89,11 @@ class ProductRequisitionsDataTable extends DataTable
             'items.unit',
         ];
 
-        if ($this->showTrashed) {
-            return $model->newQuery()->with(array_merge(['store'], $itemRelations))->withSum('items', 'quantity')->onlyTrashed();
-        }
+        $query = $this->showTrashed
+            ? $model->newQuery()->with(array_merge(['store'], $itemRelations))->withSum('items', 'quantity')->onlyTrashed()
+            : $model->newQuery()->with(array_merge(['store'], $itemRelations))->withSum('items', 'quantity')->withoutTrashed();
 
-        return $model->newQuery()->with(array_merge(['store'], $itemRelations))->withSum('items', 'quantity')->withoutTrashed();
+        return app(StoreAccessService::class)->scopeQueryToVisibleStores($query, Auth::user());
     }
 
     /**

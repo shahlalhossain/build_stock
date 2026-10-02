@@ -9,13 +9,14 @@ use App\Http\Requests\ProductRequisition\UpdateProductRequisitionRequest;
 use App\Models\Product;
 use App\Models\ProductRequisition;
 use App\Models\ProductUnit;
-use App\Models\Store;
 use App\Services\ProductRequisitionService;
+use App\Services\StoreAccessService;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 use Throwable;
@@ -24,9 +25,12 @@ class ProductRequisitionsController extends Controller
 {
     protected ProductRequisitionService $productRequisitionService;
 
-    public function __construct(ProductRequisitionService $productRequisitionService)
+    protected StoreAccessService $storeAccessService;
+
+    public function __construct(ProductRequisitionService $productRequisitionService, StoreAccessService $storeAccessService)
     {
         $this->productRequisitionService = $productRequisitionService;
+        $this->storeAccessService = $storeAccessService;
     }
 
     public function index(ProductRequisitionsDataTable $productRequisitionsDataTable)
@@ -62,6 +66,8 @@ class ProductRequisitionsController extends Controller
 
     public function show(ProductRequisition $productRequisition)
     {
+        abort_unless($this->storeAccessService->canAccessStore(Auth::user(), $productRequisition->store_id), 403);
+
         $data['productRequisition'] = $productRequisition->load([
             'store',
             'items.product',
@@ -78,6 +84,8 @@ class ProductRequisitionsController extends Controller
 
     public function edit(ProductRequisition $productRequisition): View
     {
+        abort_unless($this->storeAccessService->canAccessStore(Auth::user(), $productRequisition->store_id), 403);
+
         $data = $this->formLookups();
         $data['productRequisition'] = $productRequisition->load(['items.product', 'items.productVariant', 'items.unit']);
 
@@ -86,6 +94,8 @@ class ProductRequisitionsController extends Controller
 
     public function update(UpdateProductRequisitionRequest $productRequisitionRequest, ProductRequisition $productRequisition): RedirectResponse
     {
+        abort_unless($this->storeAccessService->canAccessStore(Auth::user(), $productRequisition->store_id), 403);
+
         try {
             $this->productRequisitionService->updateRequisition($productRequisition, $productRequisitionRequest->validated());
 
@@ -103,6 +113,9 @@ class ProductRequisitionsController extends Controller
 
     public function updateStatus(Request $request, $id): JsonResponse
     {
+        $productRequisition = ProductRequisition::findOrFail($id);
+        abort_unless($this->storeAccessService->canAccessStore(Auth::user(), $productRequisition->store_id), 403);
+
         $validated = $request->validate([
             'status' => ['required', 'in:pending,approved,rejected'],
             'remarks' => ['nullable', 'string'],
@@ -129,6 +142,9 @@ class ProductRequisitionsController extends Controller
 
     public function destroy($id): JsonResponse
     {
+        $productRequisition = ProductRequisition::findOrFail($id);
+        abort_unless($this->storeAccessService->canAccessStore(Auth::user(), $productRequisition->store_id), 403);
+
         try {
             $this->productRequisitionService->destroyRequisition($id);
 
@@ -157,6 +173,9 @@ class ProductRequisitionsController extends Controller
 
     public function restore($id): JsonResponse
     {
+        $productRequisition = ProductRequisition::withTrashed()->findOrFail($id);
+        abort_unless($this->storeAccessService->canAccessStore(Auth::user(), $productRequisition->store_id), 403);
+
         try {
             $this->productRequisitionService->restoreRequisition($id);
 
@@ -178,6 +197,9 @@ class ProductRequisitionsController extends Controller
 
     public function delete($id): JsonResponse
     {
+        $productRequisition = ProductRequisition::withTrashed()->findOrFail($id);
+        abort_unless($this->storeAccessService->canAccessStore(Auth::user(), $productRequisition->store_id), 403);
+
         try {
             $this->productRequisitionService->deleteRequisition($id);
 
@@ -203,7 +225,8 @@ class ProductRequisitionsController extends Controller
             ->get(['id', 'name', 'code', 'unit_id']);
 
         return [
-            'stores' => Store::query()->where('is_active', true)->orderBy('name')->get(['id', 'name']),
+            'stores' => $this->storeAccessService->selectableStores(Auth::user()),
+            'defaultStoreId' => $this->storeAccessService->defaultStoreIdForCreate(Auth::user()),
             'products' => $products,
             'units' => ProductUnit::where('is_active', true)->orderBy('group')->orderBy('name')->get(['id', 'group', 'name', 'symbol']),
             'productVariants' => $products->mapWithKeys(function (Product $product) {

@@ -4,7 +4,9 @@ namespace App\DataTables;
 
 use AllowDynamicProperties;
 use App\Models\ProductDelivery;
+use App\Services\StoreAccessService;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
+use Illuminate\Support\Facades\Auth;
 use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
 use Yajra\DataTables\Html\Column;
@@ -66,11 +68,11 @@ class ProductDeliveriesDataTable extends DataTable
      */
     public function query(ProductDelivery $model): QueryBuilder
     {
-        if ($this->showTrashed) {
-            return $model->newQuery()->with(['store'])->onlyTrashed();
-        }
+        $query = $this->showTrashed
+            ? $model->newQuery()->with(['store'])->onlyTrashed()
+            : $model->newQuery()->with(['store'])->withoutTrashed();
 
-        return $model->newQuery()->with(['store'])->withoutTrashed();
+        return app(StoreAccessService::class)->scopeQueryToVisibleStores($query, Auth::user());
     }
 
     /**

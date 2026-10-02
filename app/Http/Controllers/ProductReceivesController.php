@@ -10,11 +10,13 @@ use App\Models\ProductReceive;
 use App\Models\ProductTransfer;
 use App\Models\ProductUnit;
 use App\Services\ProductReceiveService;
+use App\Services\StoreAccessService;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 use Throwable;
@@ -23,9 +25,30 @@ class ProductReceivesController extends Controller
 {
     protected ProductReceiveService $productReceiveService;
 
-    public function __construct(ProductReceiveService $productReceiveService)
+    protected StoreAccessService $storeAccessService;
+
+    public function __construct(ProductReceiveService $productReceiveService, StoreAccessService $storeAccessService)
     {
         $this->productReceiveService = $productReceiveService;
+        $this->storeAccessService = $storeAccessService;
+    }
+
+    /**
+     * A Receive is Visible if EITHER its Transfer's Source or Destination
+     * Store is in the User's Visible Set (see the "either Store" Decision for
+     * Receive Visibility — distinct from Transfer's Create-Form Rule).
+     */
+    protected function canAccessReceive(ProductReceive $productReceive): bool
+    {
+        $productReceive->loadMissing('transfer');
+        $transfer = $productReceive->transfer;
+
+        if (! $transfer) {
+            return false;
+        }
+
+        return $this->storeAccessService->canAccessStore(Auth::user(), $transfer->source_store_id)
+            || $this->storeAccessService->canAccessStore(Auth::user(), $transfer->destination_store_id);
     }
 
     public function index(ProductReceivesDataTable $productReceivesDataTable)
@@ -61,6 +84,8 @@ class ProductReceivesController extends Controller
 
     public function show(ProductReceive $productReceive)
     {
+        abort_unless($this->canAccessReceive($productReceive), 403);
+
         $data['productReceive'] = $productReceive->load([
             'transfer.sourceStore',
             'transfer.destinationStore',
@@ -79,6 +104,8 @@ class ProductReceivesController extends Controller
 
     public function edit(ProductReceive $productReceive): View
     {
+        abort_unless($this->canAccessReceive($productReceive), 403);
+
         $data = $this->formLookups();
         $data['productReceive'] = $productReceive->load(['items.product', 'items.productVariant', 'items.unit', 'transfer.items']);
 
@@ -87,6 +114,8 @@ class ProductReceivesController extends Controller
 
     public function update(UpdateProductReceiveRequest $productReceiveRequest, ProductReceive $productReceive): RedirectResponse
     {
+        abort_unless($this->canAccessReceive($productReceive), 403);
+
         try {
             $this->productReceiveService->updateReceive($productReceive, $productReceiveRequest->validated());
 
@@ -104,6 +133,9 @@ class ProductReceivesController extends Controller
 
     public function updateStatus(Request $request, $id): JsonResponse
     {
+        $productReceive = ProductReceive::findOrFail($id);
+        abort_unless($this->canAccessReceive($productReceive), 403);
+
         $validated = $request->validate([
             'status' => ['required', 'in:pending,approved,rejected'],
             'remarks' => ['nullable', 'string'],
@@ -130,6 +162,9 @@ class ProductReceivesController extends Controller
 
     public function destroy($id): JsonResponse
     {
+        $productReceive = ProductReceive::findOrFail($id);
+        abort_unless($this->canAccessReceive($productReceive), 403);
+
         try {
             $this->productReceiveService->destroyReceive($id);
 
@@ -158,6 +193,9 @@ class ProductReceivesController extends Controller
 
     public function restore($id): JsonResponse
     {
+        $productReceive = ProductReceive::withTrashed()->findOrFail($id);
+        abort_unless($this->canAccessReceive($productReceive), 403);
+
         try {
             $this->productReceiveService->restoreReceive($id);
 
@@ -179,6 +217,9 @@ class ProductReceivesController extends Controller
 
     public function delete($id): JsonResponse
     {
+        $productReceive = ProductReceive::withTrashed()->findOrFail($id);
+        abort_unless($this->canAccessReceive($productReceive), 403);
+
         try {
             $this->productReceiveService->deleteReceive($id);
 
@@ -198,10 +239,16 @@ class ProductReceivesController extends Controller
      */
     protected function formLookups(): array
     {
-        $transfers = ProductTransfer::query()
+        $transfersQuery = ProductTransfer::query()
             ->where('status', ProductTransfer::STATUS_APPROVED)
             ->with(['items.product', 'items.productVariant', 'items.unit', 'sourceStore', 'destinationStore'])
-            ->orderBy('code')
+            ->orderBy('code');
+
+        // Creating a Receive is Destination-Store-Only (you can only physically
+        // Receive at a Store you work at) — distinct from canAccessReceive()'s
+        // "either Store" Rule, which governs Viewing an already-created Receive.
+        $transfers = $this->storeAccessService
+            ->scopeQueryToVisibleStores($transfersQuery, Auth::user(), ['destination_store_id'])
             ->get();
 
         $transfersData = $transfers->map(function (ProductTransfer $transfer) {

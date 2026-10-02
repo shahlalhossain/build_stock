@@ -4,7 +4,9 @@ namespace App\DataTables;
 
 use AllowDynamicProperties;
 use App\Models\ProductRequisition;
+use App\Services\StoreAccessService;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
+use Illuminate\Support\Facades\Auth;
 use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
 use Yajra\DataTables\Html\Column;
@@ -61,9 +63,11 @@ class RequisitionsAvailableForPurchaseDataTable extends DataTable
      */
     public function query(ProductRequisition $model): QueryBuilder
     {
-        return $model->newQuery()
+        $query = $model->newQuery()
             ->availableForPurchase()
             ->with(['store', 'items.product', 'items.productVariant.attributeValues', 'items.unit', 'items.purchaseItems.productPurchase']);
+
+        return app(StoreAccessService::class)->scopeQueryToVisibleStores($query, Auth::user());
     }
 
     /**

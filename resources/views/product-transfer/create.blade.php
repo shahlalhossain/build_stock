@@ -40,8 +40,8 @@
                                             <div class="col-12 col-md-8">
                                                 <select id="source_store_id" name="source_store_id" class="form-select @error('source_store_id') is-invalid @enderror" required>
                                                     <option value="">{{ __('== Select Store ==') }}</option>
-                                                    @foreach($stores as $store)
-                                                        <option value="{{ $store->id }}" @selected(old('source_store_id') == $store->id)>{{ ucwords($store->name) }}</option>
+                                                    @foreach($sourceStores as $store)
+                                                        <option value="{{ $store->id }}" @selected(old('source_store_id', $defaultStoreId) == $store->id)>{{ ucwords($store->name) }}</option>
                                                     @endforeach
                                                 </select>
                                                 @error('source_store_id')<small class="text-danger">{{ $message }}</small>@enderror
@@ -53,7 +53,7 @@
                                             <div class="col-12 col-md-8">
                                                 <select id="destination_store_id" name="destination_store_id" class="form-select @error('destination_store_id') is-invalid @enderror" required>
                                                     <option value="">{{ __('== Select Destination Store ==') }}</option>
-                                                    @foreach($stores as $store)
+                                                    @foreach($destinationStores as $store)
                                                         <option value="{{ $store->id }}" @selected(old('destination_store_id') == $store->id)>{{ ucwords($store->name) }}</option>
                                                     @endforeach
                                                 </select>

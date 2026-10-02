@@ -11,14 +11,15 @@ use App\Models\Product;
 use App\Models\ProductPurchase;
 use App\Models\ProductRequisition;
 use App\Models\ProductUnit;
-use App\Models\Store;
 use App\Models\Supplier;
 use App\Services\ProductPurchaseService;
+use App\Services\StoreAccessService;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 use Throwable;
@@ -27,9 +28,12 @@ class ProductPurchasesController extends Controller
 {
     protected ProductPurchaseService $productPurchaseService;
 
-    public function __construct(ProductPurchaseService $productPurchaseService)
+    protected StoreAccessService $storeAccessService;
+
+    public function __construct(ProductPurchaseService $productPurchaseService, StoreAccessService $storeAccessService)
     {
         $this->productPurchaseService = $productPurchaseService;
+        $this->storeAccessService = $storeAccessService;
     }
 
     public function index(ProductPurchasesDataTable $productPurchasesDataTable)
@@ -77,6 +81,8 @@ class ProductPurchasesController extends Controller
      */
     public function createFromRequisition(ProductRequisition $productRequisition)
     {
+        abort_unless($this->storeAccessService->canAccessStore(Auth::user(), $productRequisition->store_id), 403);
+
         try {
             $requisition = $this->productPurchaseService->getRequisitionForPurchase($productRequisition->id);
         } catch (GeneralException $generalException) {
@@ -108,6 +114,8 @@ class ProductPurchasesController extends Controller
 
     public function show(ProductPurchase $productPurchase)
     {
+        abort_unless($this->storeAccessService->canAccessStore(Auth::user(), $productPurchase->store_id), 403);
+
         $data['productPurchase'] = $productPurchase->load([
             'requisition',
             'store',
@@ -126,6 +134,8 @@ class ProductPurchasesController extends Controller
 
     public function edit(ProductPurchase $productPurchase): View
     {
+        abort_unless($this->storeAccessService->canAccessStore(Auth::user(), $productPurchase->store_id), 403);
+
         $data = $this->formLookups();
         $data['productPurchase'] = $productPurchase->load(['items.product', 'items.productVariant', 'items.unit']);
 
@@ -134,6 +144,8 @@ class ProductPurchasesController extends Controller
 
     public function update(UpdateProductPurchaseRequest $productPurchaseRequest, ProductPurchase $productPurchase): RedirectResponse
     {
+        abort_unless($this->storeAccessService->canAccessStore(Auth::user(), $productPurchase->store_id), 403);
+
         try {
             $this->productPurchaseService->updatePurchase($productPurchase, $productPurchaseRequest->validated());
 
@@ -151,6 +163,9 @@ class ProductPurchasesController extends Controller
 
     public function updateStatus(Request $request, $id): JsonResponse
     {
+        $productPurchase = ProductPurchase::findOrFail($id);
+        abort_unless($this->storeAccessService->canAccessStore(Auth::user(), $productPurchase->store_id), 403);
+
         $validated = $request->validate([
             'status' => ['required', 'in:pending,approved,rejected'],
             'remarks' => ['nullable', 'string'],
@@ -177,6 +192,9 @@ class ProductPurchasesController extends Controller
 
     public function destroy($id): JsonResponse
     {
+        $productPurchase = ProductPurchase::findOrFail($id);
+        abort_unless($this->storeAccessService->canAccessStore(Auth::user(), $productPurchase->store_id), 403);
+
         try {
             $this->productPurchaseService->destroyPurchase($id);
 
@@ -205,6 +223,9 @@ class ProductPurchasesController extends Controller
 
     public function restore($id): JsonResponse
     {
+        $productPurchase = ProductPurchase::withTrashed()->findOrFail($id);
+        abort_unless($this->storeAccessService->canAccessStore(Auth::user(), $productPurchase->store_id), 403);
+
         try {
             $this->productPurchaseService->restorePurchase($id);
 
@@ -226,6 +247,9 @@ class ProductPurchasesController extends Controller
 
     public function delete($id): JsonResponse
     {
+        $productPurchase = ProductPurchase::withTrashed()->findOrFail($id);
+        abort_unless($this->storeAccessService->canAccessStore(Auth::user(), $productPurchase->store_id), 403);
+
         try {
             $this->productPurchaseService->deletePurchase($id);
 
@@ -250,10 +274,13 @@ class ProductPurchasesController extends Controller
             }])
             ->get(['id', 'name', 'code', 'unit_id']);
 
+        $requisitionsQuery = ProductRequisition::query()->where('status', ProductRequisition::STATUS_APPROVED)->orderBy('code');
+
         return [
-            'stores' => Store::query()->where('is_active', true)->orderBy('name')->get(['id', 'name']),
+            'stores' => $this->storeAccessService->selectableStores(Auth::user()),
+            'defaultStoreId' => $this->storeAccessService->defaultStoreIdForCreate(Auth::user()),
             'suppliers' => Supplier::query()->where('is_active', true)->orderBy('name')->get(['id', 'name']),
-            'requisitions' => ProductRequisition::query()->where('status', ProductRequisition::STATUS_APPROVED)->orderBy('code')->get(['id', 'code']),
+            'requisitions' => $this->storeAccessService->scopeQueryToVisibleStores($requisitionsQuery, Auth::user())->get(['id', 'code']),
             'products' => $products,
             'units' => ProductUnit::where('is_active', true)->orderBy('group')->orderBy('name')->get(['id', 'group', 'name', 'symbol']),
             'productVariants' => $products->mapWithKeys(function (Product $product) {

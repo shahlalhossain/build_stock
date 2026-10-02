@@ -41,7 +41,7 @@
                                                 <select id="store_id" name="store_id" class="form-select @error('store_id') is-invalid @enderror" required>
                                                     <option value="">{{ __('== Select Store ==') }}</option>
                                                     @foreach($stores as $store)
-                                                        <option value="{{ $store->id }}" @selected(old('store_id') == $store->id)>{{ ucwords($store->name) }}</option>
+                                                        <option value="{{ $store->id }}" @selected(old('store_id', $defaultStoreId) == $store->id)>{{ ucwords($store->name) }}</option>
                                                     @endforeach
                                                 </select>
                                                 @error('store_id')<small class="text-danger">{{ $message }}</small>@enderror
