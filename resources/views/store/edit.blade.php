@@ -33,16 +33,20 @@
         }
         .store-image-action-btn,
         .store-image-remove-btn {
+            box-sizing: border-box;
             position: absolute;
             bottom: 10px;
             width: 38px;
             height: 38px;
+            margin: 0;
+            padding: 0;
             border-radius: 50%;
             border: none;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 18px;
+            line-height: 1;
             cursor: pointer;
             transition: all 0.2s ease;
         }
@@ -52,7 +56,7 @@
             color: var(--vz-body-color);
         }
         .store-image-remove-btn {
-            right: 58px;
+            left: 10px;
             background-color: var(--vz-danger);
             color: #fff;
         }
@@ -196,18 +200,16 @@
 
                                     <!-- Start Right Column -->
                                     <div class="col-12 col-md-6 text-center">
-                                        <label class="form-label d-block">{{ __('Store Image') }} <small class="text-muted">({{ __('Optional') }})</small></label>
                                         <div class="store-image-wrapper">
                                             <img id="storeImagePreview" src="{{ $store->image ? asset('storage/'.$store->image) : '' }}" class="store-image-preview img-thumbnail @if(! $store->image) d-none @endif" alt="{{ __('Store Image') }}">
                                             <div id="storeImagePlaceholder" class="store-image-placeholder @if($store->image) d-none @endif">
                                                 <i class="ri-store-2-line"></i>
-                                                <span>{{ __('No Image Selected') }}</span>
+                                                <span>{{ __('No Store/Warehouse Image Selected') }}</span>
                                             </div>
+                                            <button type="button" id="removeStoreImageBtn" class="store-image-remove-btn @if(! $store->image) d-none @endif" title="{{ __('Remove Image') }}"><i class="ri-delete-bin-5-line"></i></button>
                                             <label for="image" class="store-image-action-btn" title="{{ __('Upload Image') }}"><i class="ri-camera-fill"></i></label>
-                                            @if($store->image)
-                                                <button type="button" id="removeStoreImageBtn" class="store-image-remove-btn" title="{{ __('Remove Image') }}"><i class="ri-delete-bin-5-line"></i></button>
-                                            @endif
                                         </div>
+                                        <label class="form-label d-block">{{ __('Store/Warehouese Photo') }}</label>
                                         <input type="file" id="image" name="image" class="d-none @error('image') is-invalid @enderror" accept="image/*">
                                         <input type="hidden" id="remove_image" name="remove_image" value="0">
                                         @error('image')<small class="text-danger d-block mt-1">{{ $message }}</small>@enderror
@@ -265,7 +267,7 @@
                     reader.readAsDataURL(file);
                     // Upload Overrides Delete
                     $removeFlag.val(0);
-                    $removeBtn.show();
+                    $removeBtn.removeClass('d-none');
                 }
             });
 
@@ -275,7 +277,7 @@
                 $placeholder.removeClass('d-none');
                 $fileInput.val('');
                 $removeFlag.val(1);
-                $(this).hide();
+                $(this).addClass('d-none');
             });
         });
     </script>

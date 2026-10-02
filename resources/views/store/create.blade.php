@@ -31,28 +31,42 @@
         .store-image-placeholder i {
             font-size: 3rem;
         }
-        .store-image-action-btn {
+        .store-image-action-btn,
+        .store-image-remove-btn {
+            box-sizing: border-box;
             position: absolute;
             bottom: 10px;
-            right: 10px;
             width: 38px;
             height: 38px;
+            margin: 0;
+            padding: 0;
             border-radius: 50%;
             border: none;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 18px;
+            line-height: 1;
             cursor: pointer;
-            background-color: var(--vz-light);
-            color: var(--vz-body-color);
             transition: all 0.2s ease;
         }
-        .store-image-action-btn:hover {
+        .store-image-action-btn {
+            right: 10px;
+            background-color: var(--vz-light);
+            color: var(--vz-body-color);
+        }
+        .store-image-remove-btn {
+            left: 10px;
+            background-color: var(--vz-danger);
+            color: #fff;
+        }
+        .store-image-action-btn:hover,
+        .store-image-remove-btn:hover {
             transform: scale(1.1);
             filter: brightness(0.95);
         }
-        .store-image-action-btn i {
+        .store-image-action-btn i,
+        .store-image-remove-btn i {
             pointer-events: none;
         }
     </style>
@@ -178,15 +192,16 @@
 
                                     <!-- Start Right Column -->
                                     <div class="col-12 col-md-6 text-center">
-                                        <label class="form-label d-block">{{ __('Store Image') }} <small class="text-muted">({{ __('Optional') }})</small></label>
                                         <div class="store-image-wrapper">
                                             <img id="storeImagePreview" class="store-image-preview img-thumbnail d-none" alt="{{ __('Store Image') }}">
                                             <div id="storeImagePlaceholder" class="store-image-placeholder">
                                                 <i class="ri-store-2-line"></i>
-                                                <span>{{ __('No Image Selected') }}</span>
+                                                <span>{{ __('No Store/Warehouse Image Selected') }}</span>
                                             </div>
+                                            <button type="button" id="removeStoreImageBtn" class="store-image-remove-btn d-none" title="{{ __('Remove Image') }}"><i class="ri-delete-bin-5-line"></i></button>
                                             <label for="image" class="store-image-action-btn" title="{{ __('Upload Image') }}"><i class="ri-camera-fill"></i></label>
                                         </div>
+                                        <label class="form-label d-block">{{ __('Store/Warehouese Photo') }}</label>
                                         <input type="file" id="image" name="image" class="d-none @error('image') is-invalid @enderror" accept="image/*">
                                         @error('image')<small class="text-danger d-block mt-1">{{ $message }}</small>@enderror
                                     </div>
@@ -226,6 +241,7 @@
             const $fileInput = $('#image');
             const $preview = $('#storeImagePreview');
             const $placeholder = $('#storeImagePlaceholder');
+            const $removeBtn = $('#removeStoreImageBtn');
 
             $fileInput.on('change', function () {
                 const file = this.files[0];
@@ -234,9 +250,19 @@
                     reader.onload = function (e) {
                         $preview.attr('src', e.target.result).removeClass('d-none');
                         $placeholder.addClass('d-none');
+                        $removeBtn.removeClass('d-none');
                     };
                     reader.readAsDataURL(file);
                 }
+            });
+
+            // Clear the Selected Image before Submitting (nothing Uploaded Yet to
+            // Delete Server-Side — Create has no Existing Image, unlike Edit).
+            $removeBtn.on('click', function () {
+                $fileInput.val('');
+                $preview.addClass('d-none').attr('src', '');
+                $placeholder.removeClass('d-none');
+                $(this).addClass('d-none');
             });
         });
     </script>
