@@ -8,6 +8,7 @@ use App\Http\Requests\Project\StoreProjectRequest;
 use App\Http\Requests\Project\UpdateProjectRequest;
 use App\Models\GeoDivision;
 use App\Models\Project;
+use App\Models\User;
 use App\Services\ProjectService;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -37,6 +38,7 @@ class ProjectsController extends Controller
     public function create()
     {
         $data['divisions'] = GeoDivision::orderBy('name_en')->get(['id', 'name_en', 'name_bn']);
+        $data['users'] = User::query()->where('is_active', true)->orderBy('name')->get(['id', 'name']);
 
         return view('project.create', $data);
     }
@@ -69,6 +71,17 @@ class ProjectsController extends Controller
     {
         $data['project'] = $project->load('address');
         $data['divisions'] = GeoDivision::orderBy('name_en')->get(['id', 'name_en', 'name_bn']);
+
+        // Active Users, plus the Currently-Assigned Manager even if since Deactivated —
+        // otherwise Re-Saving the Form without Touching this Field would silently Clear
+        // a still-valid Assignment just because the Dropdown no longer lists them.
+        $data['users'] = User::query()
+            ->where(function ($query) use ($project) {
+                $query->where('is_active', true)
+                    ->orWhere('id', $project->project_manager_id);
+            })
+            ->orderBy('name')
+            ->get(['id', 'name', 'is_active']);
 
         return view('project.edit', $data);
     }

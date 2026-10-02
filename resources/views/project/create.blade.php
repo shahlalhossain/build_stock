@@ -54,8 +54,12 @@
                                         <div class="row mb-2">
                                             <label for="project_manager_id" class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory">{{ __('Project Manager') }}</label>
                                             <div class="col-12 col-md-8">
-                                                {{-- TODO: Populate from a searchable user select once a dedicated user-picker component exists in this app. --}}
-                                                <input type="number" class="form-control @error('project_manager_id') is-invalid @enderror" id="project_manager_id" name="project_manager_id" value="{{ old('project_manager_id') }}" placeholder="{{ __('User ID') }}">
+                                                <select id="project_manager_id" name="project_manager_id" class="form-select @error('project_manager_id') is-invalid @enderror">
+                                                    <option value="">{{ __('== Select Project Manager ==') }}</option>
+                                                    @foreach($users as $user)
+                                                        <option value="{{ $user->id }}" @selected(old('project_manager_id') == $user->id)>{{ ucwords($user->name) }}</option>
+                                                    @endforeach
+                                                </select>
                                                 @error('project_manager_id')<small class="text-danger">{{ $message }}</small>@enderror
                                             </div>
                                         </div>
