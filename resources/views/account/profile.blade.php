@@ -2,6 +2,19 @@
 
 @section('title', __('Profile'))
 
+@push('styles')
+    <style>
+        /* avatar-xl is Velzon's shared 120x120 avatar size, used elsewhere in
+           the theme — sized up just for this profile photo instead of
+           changing the shared utility. */
+        .profile-photo-lg {
+            width: 280px;
+            height: 280px;
+            object-fit: cover;
+        }
+    </style>
+@endpush
+
 @section('content')
 
     <!-- Start Page Content -->
@@ -184,15 +197,7 @@
                             <div class="text-center">
                                 <div class="profile-user position-relative d-inline-block mx-auto mb-4">
                                     {{-- TODO: Profile Photo/Image Size will be Square/Passport Size rather then Circle View. And Camera Icon should not be there, we will set the Camera Icon on Edit-Profile Mode. Task 2 --}}
-                                    <img src="assets/images/users/avatar-1.jpg" class="rounded-circle avatar-xl img-thumbnail user-profile-image material-shadow" alt="user-profile-image">
-                                    <div class="avatar-xs p-0 rounded-circle profile-photo-edit">
-                                        <input id="profile-img-file-input" type="file" class="profile-img-file-input">
-                                        <label for="profile-img-file-input" class="profile-photo-edit avatar-xs">
-                                            <span class="avatar-title rounded-circle bg-light text-body material-shadow">
-                                                <i class="ri-camera-fill"></i>
-                                            </span>
-                                        </label>
-                                    </div>
+                                    <img src="assets/images/users/avatar-1.jpg" class="profile-photo-lg img-thumbnail user-profile-image material-shadow" alt="user-profile-image">
                                 </div>
                                 <h5 class="fs-16 mb-1">{{ auth()->user()->name }}</h5>
                                 <p class="text-muted mb-0">
