@@ -55,7 +55,7 @@
                                         <tr><th class="text-end pe-2">{{ __('Description') }}</th><td class="text-start ps-2">{{ $supplier->description }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Remarks') }}</th><td class="text-start ps-2">{{ $supplier->remarks }}</td></tr>
                                         <tr>
-                                            <th class="text-end pe-2 justify-content-between">{{ __('Status') }}</th>
+                                            <th class="text-end pe-2 align-middle">{{ __('Status') }}</th>
                                             <td class="text-start d-flex justify-content-between align-items-center">
                                                 <div class="text-start">
                                                     @php
