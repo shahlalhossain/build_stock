@@ -192,7 +192,9 @@
                             <div class="row">
                                 <div class="col-12 col-md-12">
                                     <h6 class="fw-bold fst-italic">{{ __('Contacts') }}</h6>
-                                    <div class="table-responsive mb-3">
+
+                                    {{-- Desktop / Tablet View --}}
+                                    <div class="table-responsive mb-3 d-none d-md-block">
                                         <table class="table table-sm table-bordered">
                                             <thead>
                                             <tr>
@@ -216,6 +218,35 @@
                                             </tbody>
                                         </table>
                                     </div>
+
+                                    {{-- Mobile View --}}
+                                    <div class="d-md-none mb-3">
+                                        @forelse($supplier->contacts as $contact)
+                                            <div class="border rounded mb-2 p-2">
+                                                <div class="row mb-2">
+                                                    <div class="fw-semibold">
+                                                        {{ $contact->name }}
+                                                        @if($contact->is_primary)
+                                                            <span class="badge bg-info">{{ __('Primary') }}</span>
+                                                        @endif
+                                                    </div>
+                                                    @if($contact->designation)
+                                                        <div class="small text-muted">{{ $contact->designation }}</div>
+                                                    @endif
+                                                </div>
+                                                @if($contact->mobile)
+                                                    <div class="row mb-2">
+                                                        <div class="small text-muted">{{ __('Mobile') }}</div>
+                                                        <div>{{ $contact->mobile }}</div>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        @empty
+                                            <div class="text-center text-muted py-2">
+                                                {{ __('No Contacts Found') }}
+                                            </div>
+                                        @endforelse
+                                    </div>
                                 </div>
                             </div>
 
@@ -224,7 +255,9 @@
                             <div class="row">
                                 <div class="col-12 col-md-12">
                                     <h6 class="fw-bold fst-italic">{{ __('Payment Accounts') }}</h6>
-                                    <div class="table-responsive mb-3">
+
+                                    {{-- Desktop / Tablet View --}}
+                                    <div class="table-responsive mb-3 d-none d-md-block">
                                         <table class="table table-sm table-bordered">
                                             <thead>
                                             <tr>
@@ -248,6 +281,34 @@
                                             </tbody>
                                         </table>
                                     </div>
+
+                                    {{-- Mobile View --}}
+                                    <div class="d-md-none mb-3">
+                                        @forelse($supplier->paymentAccounts as $paymentAccount)
+                                            <div class="border rounded mb-2 p-2">
+                                                <div class="row mb-2">
+                                                    <div class="fw-semibold">{{ $paymentAccount->account_name }}</div>
+                                                    @if($paymentAccount->account_number)
+                                                        <div class="small text-muted">{{ $paymentAccount->account_number }}</div>
+                                                    @endif
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-6">
+                                                        <div class="small text-muted">{{ __('Bank') }}</div>
+                                                        <div>{{ $paymentAccount->bank_name }}</div>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <div class="small text-muted">{{ __('Branch') }}</div>
+                                                        <div>{{ $paymentAccount->branch_name }}</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @empty
+                                            <div class="text-center text-muted py-2">
+                                                {{ __('No Payment Accounts Found') }}
+                                            </div>
+                                        @endforelse
+                                    </div>
                                 </div>
                             </div>
 
@@ -256,7 +317,9 @@
                             <div class="row">
                                 <div class="col-12 col-md-12">
                                     <h6 class="fw-bold fst-italic">{{ __('MFS Accounts') }}</h6>
-                                    <div class="table-responsive">
+
+                                    {{-- Desktop / Tablet View --}}
+                                    <div class="table-responsive d-none d-md-block">
                                         <table class="table table-sm table-bordered">
                                             <thead>
                                             <tr>
@@ -279,6 +342,29 @@
                                             @endforelse
                                             </tbody>
                                         </table>
+                                    </div>
+
+                                    {{-- Mobile View --}}
+                                    <div class="d-md-none">
+                                        @forelse($supplier->mfsAccounts as $mfsAccount)
+                                            <div class="border rounded mb-2 p-2">
+                                                <div class="row">
+                                                    <div class="col-6 text-start fw-semibold">
+                                                        {{ $mfsAccount->mfs_operator_name }}
+                                                        @if($mfsAccount->mfs_account_type == 'merchant')
+                                                            <span class="badge rounded-pill border border-info text-info">{{ ucwords($mfsAccount->mfs_account_type) }}</span>
+                                                        @elseif ($mfsAccount->mfs_account_type == 'personal')
+                                                            <span class="badge rounded-pill border border-success text-success">{{ ucwords($mfsAccount->mfs_account_type) }}</span>
+                                                        @endif
+                                                    </div>
+                                                    <div class="col-6 text-end">{{ $mfsAccount->mfs_account_number }}</div>
+                                                </div>
+                                            </div>
+                                        @empty
+                                            <div class="text-center text-muted py-2">
+                                                {{ __('No MFS Accounts Found') }}
+                                            </div>
+                                        @endforelse
                                     </div>
                                 </div>
                             </div>
