@@ -83,9 +83,7 @@
                                                 <select class="form-select @error('type') is-invalid @enderror" id="type" name="type" required>
                                                     <option value="">{{ __('=== Select User Type ===') }}</option>
                                                     <option value="admin" selected>{{ __('Admin') }}</option>
-                                                    <option value="employee">{{ __('Employee') }}</option>
                                                     <option value="user">{{ __('User') }}</option>
-                                                    <option value="member">{{ __('Member') }}</option>
                                                 </select>
                                                 @error('type')<span class="invalid-feedback" role="alert"><strong>{{ $message }}</strong></span>@enderror
                                             </div>
@@ -96,6 +94,14 @@
                                             <div class="col-12 col-md-6">
                                                 <input type="text" id="name" name="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name') }}" placeholder="Name" required oninvalid="this.setCustomValidity('Name is Required')" oninput="this.setCustomValidity('')">
                                                 @error('name')<small class="text-danger">{{ $message }}</small>@enderror
+                                            </div>
+                                        </div>
+
+                                        <div class="row mb-2">
+                                            <label for="designation" class="col-12 col-md-2 col-form-label text-md-end text-start form-mandatory">{{ __('Designation') }}</label>
+                                            <div class="col-12 col-md-6">
+                                                <input type="text" id="designation" name="designation" class="form-control @error('designation') is-invalid @enderror" value="{{ old('designation') }}" placeholder="Designation" required oninvalid="this.setCustomValidity('Designation is Required')" oninput="this.setCustomValidity('')">
+                                                @error('designation')<small class="text-danger">{{ $message }}</small>@enderror
                                             </div>
                                         </div>
 
