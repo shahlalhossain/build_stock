@@ -97,20 +97,71 @@
                                         @endif
                                     </div>
                                 </div>
-                                <div class="col-12 col-md-5 ps-5 order-2">
-                                    <table class="table table-hover table-responsive table-bordered table-sm">
-                                        <tbody>
-                                        <tr><th class="text-end pe-2">{{ __('Created By') }}</th><td class="text-start ps-2">{{ $supplier->creator?->name ?? '' }}</td></tr>
-                                        <tr><th class="text-end pe-2">{{ __('Created At') }}</th><td class="text-start ps-2">{{ $supplier->created_at->format('Y-m-d H:i:s') }}</td></tr>
-                                        <tr><th class="text-end pe-2">{{ __('Updated By') }}</th><td class="text-start ps-2">{{ $supplier->updater?->name ?? '' }}</td></tr>
-                                        <tr><th class="text-end pe-2">{{ __('Updated At') }}</th><td class="text-start ps-2">{{ $supplier->updated_at->format('Y-m-d H:i:s') }}</td></tr>
+                                <div class="col-12 col-md-5 order-2">
+                                    @foreach($supplier->addresses as $address)
+                                        <table class="table table-responsive table-bordered table-sm">
+                                            <tbody>
+                                            <tr>
+                                                <td class="text-start ps-2">
+                                                    <div class="project-address">
+                                                        <div class="mb-2">
+                                                            <span class="fw-semibold">{{ $address->addressType?->name . ':  ' }} </span>
+                                                            <span>{{ $address->address }}</span>
+                                                        </div>
+                                                        <div class="mb-2">
+                                                            <span>
+                                                                {{ $address->thana_name }},
+                                                                {{ $address->district_name }},
+                                                                {{ $address->division_name }}
+                                                            </span>
+                                                        </div>
+                                                        @if($address->landmark)
+                                                            <div>
+                                                                <span>({{ $address->landmark }})</span>
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    @endforeach
 
-                                        @if($supplier->trashed())
-                                            <tr><th class="text-end pe-2">{{ __('Deleted By') }}</th><td class="text-start ps-2">{{ $supplier->deleter?->name ?? '' }}</td></tr>
-                                            <tr><th class="text-end pe-2">{{ __('Deleted At') }}</th><td class="text-start ps-2">{{ $supplier->deleted_at->format('Y-m-d H:i:s') }}</td></tr>
-                                        @endif
-                                        </tbody>
-                                    </table>
+                                    @php
+                                        $auditLogs = [
+                                            [
+                                                'action' => __('Created'),
+                                                'user' => $supplier->creator?->name,
+                                                'at' => $supplier->created_at,
+                                            ],
+                                            [
+                                                'action' => __('Updated'),
+                                                'user' => $supplier->updater?->name,
+                                                'at' => $supplier->updated_at,
+                                            ],
+                                        ];
+
+                                        if ($supplier->trashed()) {
+                                            $auditLogs[] = [
+                                                'action' => __('Deleted'),
+                                                'user' => $supplier->deleter?->name,
+                                                'at' => $supplier->deleted_at,
+                                            ];
+                                        }
+                                    @endphp
+                                    @foreach($auditLogs as $log)
+                                        <hr class="my-0">
+
+                                        <div class="py-2">
+                                            <strong>{{ $log['action'] }}</strong>
+                                            @if($log['user'])
+                                                <span>by <em>{{ $log['user'] }}</em></span>
+                                            @endif
+                                            @if($log['at'])
+                                                <span class="small text-muted d-block d-md-inline ms-md-1">{{ $log['at']->format('d F, Y h:i A') }}</span>
+                                            @endif
+                                        </div>
+                                    @endforeach
 
                                     @if($supplier->approvalLogs->isNotEmpty())
                                         @foreach($supplier->approvalLogs as $log)
@@ -123,7 +174,7 @@
                                                 @endif
 
                                                 @if($log->actioned_at)
-                                                    on {{ $log->actioned_at->format('d F, Y h:i A') }}
+                                                    <span class="small text-muted d-block d-md-inline ms-md-1">{{ $log->actioned_at->format('d F, Y h:i A') }}</span>
                                                 @endif
                                                 <br>
                                                 @if($log->remarks)
@@ -132,8 +183,6 @@
                                             </div>
                                         @endforeach
                                         <hr style="padding: 0 !important; margin: 0 !important;">
-                                    @else
-                                        <p>No Approval History Found</p>
                                     @endif
                                 </div>
                             </div>
@@ -141,7 +190,7 @@
                             <hr>
 
                             <div class="row">
-                                <div class="col-12 col-md-6">
+                                <div class="col-12 col-md-12">
                                     <h6 class="fw-bold fst-italic">{{ __('Contacts') }}</h6>
                                     <div class="table-responsive mb-3">
                                         <table class="table table-sm table-bordered">
@@ -168,37 +217,10 @@
                                         </table>
                                     </div>
                                 </div>
-                                <div class="col-12 col-md-6">
-                                    <h6 class="fw-bold fst-italic">{{ __('Addresses') }}</h6>
-                                    <div class="table-responsive mb-3">
-                                        <table class="table table-sm table-bordered">
-                                            <thead>
-                                            <tr>
-                                                <th>{{ __('Type') }}</th>
-                                                <th>{{ __('Address') }}</th>
-                                                <th>{{ __('Division') }}</th>
-                                                <th>{{ __('District') }}</th>
-                                                <th>{{ __('Thana') }}</th>
-                                            </tr>
-                                            </thead>
-                                            <tbody>
-                                            @forelse($supplier->addresses as $address)
-                                                <tr>
-                                                    <td>{{ $address->addressType?->name }}</td>
-                                                    <td>{{ $address->address }}</td>
-                                                    <td>{{ $address->division_name }}</td>
-                                                    <td>{{ $address->district_name }}</td>
-                                                    <td>{{ $address->thana_name }}</td>
-                                                </tr>
-                                            @empty
-                                                <tr><td colspan="5" class="text-center">{{ __('No Addresses Found') }}</td></tr>
-                                            @endforelse
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
                             </div>
+
                             <hr>
+
                             <div class="row">
                                 <div class="col-12 col-md-6">
                                     <h6 class="fw-bold fst-italic">{{ __('Payment Accounts') }}</h6>
@@ -306,6 +328,7 @@
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
     <!-- End Page Content -->
