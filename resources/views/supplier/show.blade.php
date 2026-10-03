@@ -222,7 +222,7 @@
                             <hr>
 
                             <div class="row">
-                                <div class="col-12 col-md-6">
+                                <div class="col-12 col-md-12">
                                     <h6 class="fw-bold fst-italic">{{ __('Payment Accounts') }}</h6>
                                     <div class="table-responsive mb-3">
                                         <table class="table table-sm table-bordered">
@@ -249,13 +249,19 @@
                                         </table>
                                     </div>
                                 </div>
-                                <div class="col-12 col-md-6">
+                            </div>
+
+                            <hr>
+
+                            <div class="row">
+                                <div class="col-12 col-md-12">
                                     <h6 class="fw-bold fst-italic">{{ __('MFS Accounts') }}</h6>
                                     <div class="table-responsive">
                                         <table class="table table-sm table-bordered">
                                             <thead>
                                             <tr>
                                                 <th>{{ __('Operator') }}</th>
+                                                <th>{{ __('Account Type') }}</th>
                                                 <th>{{ __('Account Number') }}</th>
                                                 <th>{{ __('Primary') }}</th>
                                             </tr>
@@ -264,6 +270,7 @@
                                             @forelse($supplier->mfsAccounts as $mfsAccount)
                                                 <tr>
                                                     <td>{{ $mfsAccount->mfs_operator_name }}</td>
+                                                    <td>{{ $mfsAccount->mfs_account_type }}</td>
                                                     <td>{{ $mfsAccount->mfs_account_number }}</td>
                                                     <td>{{ $mfsAccount->is_primary ? __('Yes') : __('No') }}</td>
                                                 </tr>
@@ -275,7 +282,6 @@
                                     </div>
                                 </div>
                             </div>
-
                         </div>
                     </div>
                 </div>
