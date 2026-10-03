@@ -39,7 +39,6 @@
                                             </td>
 
                                         </tr>
-                                        <tr><th class="text-end pe-2">{{ __('Code') }}</th><td class="text-start ps-2">{{ $store->code }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Storekeeper') }}</th><td class="text-start ps-2">{{ $store->storekeepers->pluck('name')->implode(', ') }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Mobile') }}</th><td class="text-start ps-2">{{ $store->mobile }}</td></tr>
                                         <tr><th class="text-end pe-2">{{ __('Email') }}</th><td class="text-start ps-2">{{ $store->email }}</td></tr>
@@ -57,7 +56,7 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <th class="text-end pe-2 justify-content-between">{{ __('Status') }}</th>
+                                            <th class="text-end pe-2 align-middle">{{ __('Status') }}</th>
                                             <td class="text-start d-flex justify-content-between align-items-center">
                                                 <div class="text-start">
                                                     @php
@@ -92,22 +91,22 @@
                                     @php
                                         $auditLogs = [
                                             [
-                                                'action' => __('Created'),
-                                                'user' => $store->creator?->name,
-                                                'at' => $store->created_at,
+                                                'action'    => __('Created'),
+                                                'user'      => $store->creator?->name,
+                                                'at'        => $store->created_at,
                                             ],
                                             [
-                                                'action' => __('Updated'),
-                                                'user' => $store->updater?->name,
-                                                'at' => $store->updated_at,
+                                                'action'    => __('Updated'),
+                                                'user'      => $store->updater?->name,
+                                                'at'        => $store->updated_at,
                                             ],
                                         ];
 
                                         if ($store->trashed()) {
                                             $auditLogs[] = [
-                                                'action' => __('Deleted'),
-                                                'user' => $store->deleter?->name,
-                                                'at' => $store->deleted_at,
+                                                'action'    => __('Deleted'),
+                                                'user'      => $store->deleter?->name,
+                                                'at'        => $store->deleted_at,
                                             ];
                                         }
                                     @endphp

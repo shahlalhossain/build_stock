@@ -45,7 +45,7 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <th class="text-end pe-2 justify-content-between">{{ __('Status') }}</th>
+                                            <th class="text-end pe-2 align-middle">{{ __('Status') }}</th>
                                             <td class="text-start d-flex justify-content-between align-items-center">
                                                 <div class="text-start">
                                                     @php
