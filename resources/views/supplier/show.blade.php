@@ -196,19 +196,19 @@
                                         <table class="table table-sm table-bordered">
                                             <thead>
                                             <tr>
-                                                <th>{{ __('Name') }}</th>
-                                                <th>{{ __('Designation') }}</th>
-                                                <th>{{ __('Mobile') }}</th>
-                                                <th>{{ __('Primary') }}</th>
+                                                <th class="w-25">{{ __('Name') }}</th>
+                                                <th class="w-25">{{ __('Designation') }}</th>
+                                                <th class="w-25">{{ __('Mobile') }}</th>
+                                                <th class="w-25">{{ __('Primary') }}</th>
                                             </tr>
                                             </thead>
                                             <tbody>
                                             @forelse($supplier->contacts as $contact)
                                                 <tr>
-                                                    <td>{{ $contact->name }}</td>
-                                                    <td>{{ $contact->designation }}</td>
-                                                    <td>{{ $contact->mobile }}</td>
-                                                    <td>{{ $contact->is_primary ? __('Yes') : __('No') }}</td>
+                                                    <td class="w-25">{{ $contact->name }}</td>
+                                                    <td class="w-25">{{ $contact->designation }}</td>
+                                                    <td class="w-25">{{ $contact->mobile }}</td>
+                                                    <td class="w-25">{{ $contact->is_primary ? __('Yes') : __('No') }}</td>
                                                 </tr>
                                             @empty
                                                 <tr><td colspan="6" class="text-center">{{ __('No Contacts Found') }}</td></tr>
@@ -228,19 +228,19 @@
                                         <table class="table table-sm table-bordered">
                                             <thead>
                                             <tr>
-                                                <th>{{ __('Account Name') }}</th>
-                                                <th>{{ __('Account Number') }}</th>
-                                                <th>{{ __('Bank') }}</th>
-                                                <th>{{ __('Branch') }}</th>
+                                                <th class="w-25">{{ __('A/C Name') }}</th>
+                                                <th class="w-25">{{ __('A/C Number') }}</th>
+                                                <th class="w-25">{{ __('Branch') }}</th>
+                                                <th class="w-25">{{ __('Bank') }}</th>
                                             </tr>
                                             </thead>
                                             <tbody>
                                             @forelse($supplier->paymentAccounts as $paymentAccount)
                                                 <tr>
-                                                    <td>{{ $paymentAccount->account_name }}</td>
-                                                    <td>{{ $paymentAccount->account_number }}</td>
-                                                    <td>{{ $paymentAccount->bank_name }}</td>
-                                                    <td>{{ $paymentAccount->branch_name }}</td>
+                                                    <td class="w-25">{{ $paymentAccount->account_name }}</td>
+                                                    <td class="w-25">{{ $paymentAccount->account_number }}</td>
+                                                    <td class="w-25">{{ $paymentAccount->branch_name }}</td>
+                                                    <td class="w-25">{{ $paymentAccount->bank_name }}</td>
                                                 </tr>
                                             @empty
                                                 <tr><td colspan="6" class="text-center">{{ __('No Payment Accounts Found') }}</td></tr>
@@ -260,22 +260,22 @@
                                         <table class="table table-sm table-bordered">
                                             <thead>
                                             <tr>
-                                                <th>{{ __('Operator') }}</th>
-                                                <th>{{ __('Account Type') }}</th>
-                                                <th>{{ __('Account Number') }}</th>
-                                                <th>{{ __('Primary') }}</th>
+                                                <th class="w-25">{{ __('Operator') }}</th>
+                                                <th class="w-25">{{ __('A/C Type') }}</th>
+                                                <th class="w-25">{{ __('A/C Number') }}</th>
+                                                <th class="w-25">{{ __('Primary') }}</th>
                                             </tr>
                                             </thead>
                                             <tbody>
                                             @forelse($supplier->mfsAccounts as $mfsAccount)
                                                 <tr>
-                                                    <td>{{ $mfsAccount->mfs_operator_name }}</td>
-                                                    <td>{{ $mfsAccount->mfs_account_type }}</td>
-                                                    <td>{{ $mfsAccount->mfs_account_number }}</td>
-                                                    <td>{{ $mfsAccount->is_primary ? __('Yes') : __('No') }}</td>
+                                                    <td class="w-25">{{ $mfsAccount->mfs_operator_name }}</td>
+                                                    <td class="w-25">{{ $mfsAccount->mfs_account_type ? ucwords($mfsAccount->mfs_account_type) : '' }}</td>
+                                                    <td class="w-25">{{ $mfsAccount->mfs_account_number }}</td>
+                                                    <td class="w-25">{{ $mfsAccount->is_primary ? __('Yes') : __('No') }}</td>
                                                 </tr>
                                             @empty
-                                                <tr><td colspan="3" class="text-center">{{ __('No MFS Accounts Found') }}</td></tr>
+                                                <tr><td colspan="4" class="text-center">{{ __('No MFS Accounts Found') }}</td></tr>
                                             @endforelse
                                             </tbody>
                                         </table>

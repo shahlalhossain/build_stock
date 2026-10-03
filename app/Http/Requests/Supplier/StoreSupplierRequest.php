@@ -66,6 +66,7 @@ class StoreSupplierRequest extends FormRequest
 
             'mfs_accounts' => ['nullable', 'array'],
             'mfs_accounts.*.mfs_operator_name' => ['required_with:mfs_accounts.*.mfs_account_number', 'nullable', 'string', 'max:50'],
+            'mfs_accounts.*.mfs_account_type' => ['required_with:mfs_accounts.*.mfs_account_number', 'nullable', Rule::in(['merchant', 'personal'])],
             'mfs_accounts.*.mfs_account_number' => ['nullable', 'string', 'max:30'],
             'mfs_accounts.*.remarks' => ['nullable', 'string'],
             'mfs_accounts.*.is_primary' => ['nullable', 'boolean'],
@@ -105,6 +106,8 @@ class StoreSupplierRequest extends FormRequest
             'payment_accounts.*.branch_name.required_with' => __('Branch Name is Required when an Account Number is given'),
 
             'mfs_accounts.*.mfs_operator_name.required_with' => __('MFS Operator is Required when an Account Number is given'),
+            'mfs_accounts.*.mfs_account_type.required_with' => __('Account Type is Required when an Account Number is given'),
+            'mfs_accounts.*.mfs_account_type.in' => __('Selected Account Type is Invalid'),
         ];
     }
 

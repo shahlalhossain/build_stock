@@ -24,6 +24,7 @@ class SupplierMfsAccountService
 
             $supplier->mfsAccounts()->create([
                 'mfs_operator_name' => $row['mfs_operator_name'] ?? null,
+                'mfs_account_type' => $row['mfs_account_type'] ?? null,
                 'mfs_account_number' => $row['mfs_account_number'] ?? null,
                 'remarks' => $row['remarks'] ?? null,
                 'is_primary' => filter_var($row['is_primary'] ?? false, FILTER_VALIDATE_BOOLEAN),

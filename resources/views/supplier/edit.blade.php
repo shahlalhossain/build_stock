@@ -322,6 +322,13 @@
                                             </select>
                                         </div>
                                         <div class="col-12 col-sm-12 col-md-2 pt-2">
+                                            <select class="form-select" name="mfs_accounts[__INDEX__][mfs_account_type]">
+                                                <option value="">{{ __('== Account Type ==') }}</option>
+                                                <option value="merchant">{{ __('Merchant') }}</option>
+                                                <option value="personal">{{ __('Personal') }}</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-12 col-sm-12 col-md-2 pt-2">
                                             <input type="text" class="form-control" name="mfs_accounts[__INDEX__][mfs_account_number]" placeholder="{{ __('Mobile Banking Number') }}">
                                         </div>
                                         <div class="col-8 col-sm-6 col-md-1 primary-field" style="padding-top: 13px;">

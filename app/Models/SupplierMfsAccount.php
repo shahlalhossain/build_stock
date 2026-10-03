@@ -20,6 +20,7 @@ class SupplierMfsAccount extends Model
     protected $fillable = [
         'supplier_id',
         'mfs_operator_name',
+        'mfs_account_type',
         'mfs_account_number',
         'is_primary',
         'is_active',
