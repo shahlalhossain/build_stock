@@ -2,6 +2,40 @@
 
 @section('title', __('Store'))
 
+@push('styles')
+    <style>
+        /* Activity Feed: Velzon's own .activity-feed/.feed-item draws its
+           connector spine on the RIGHT (border-right + a dot at right:-6px) —
+           built for a right-anchored layout. Flipped to the left here so the
+           spine leads the eye in natural LTR reading order, left of the text. */
+        .activity-feed {
+            padding-left: 6px;
+        }
+        .activity-feed .feed-item {
+            border-right: 0;
+            border-left: 2px solid var(--vz-border-color);
+            padding-right: 0;
+            padding-left: 16px;
+        }
+        .activity-feed .feed-item:after {
+            right: auto;
+            left: -6px;
+        }
+
+        .store-detail-image {
+            width: 100%;
+            max-width: 220px;
+            height: 220px;
+            object-fit: cover;
+            border-radius: var(--vz-border-radius);
+        }
+
+        .store-detail-list .list-group-item:nth-child(odd) {
+            background-color: var(--vz-light);
+        }
+    </style>
+@endpush
+
 @section('content')
     <!-- Start Page Content -->
     <div class="page-content">
@@ -23,30 +57,46 @@
                         <div class="card-body">
 
                             <div class="row">
-                                <div class="col-12 col-md-9 order-1">
-                                    <table class="table table-hover table-responsive table-bordered table-sm">
-                                        <tbody>
-                                        <tr><th class="text-end pe-2">{{ $store->isHeadOffice() ? __('Location') : __('Project Office') }}</th><td class="text-start ps-2">{{ $store->isHeadOffice() ? __('Head Office') : $store->project?->name }}</td></tr>
-                                        <tr>
-                                            <th class="text-end pe-2">{{ $store->isWarehouse() ? __('Warehouse Name') : __('Store Name') }}</th>
-                                            <td class="text-start ps-2">
+                                <div class="col-12 col-md-9 order-2 order-md-1">
+                                    <ul class="list-group list-group-flush store-detail-list">
+                                        <li class="list-group-item d-flex flex-wrap justify-content-between align-items-center gap-2 px-0">
+                                            <span class="fw-medium text-muted">{{ $store->isHeadOffice() ? __('Location') : __('Project Office') }}</span>
+                                            <span class="text-end">{{ $store->isHeadOffice() ? __('Head Office') : $store->project?->name }}</span>
+                                        </li>
+                                        <li class="list-group-item d-flex flex-wrap justify-content-between align-items-center gap-2 px-0">
+                                            <span class="fw-medium text-muted">{{ $store->isWarehouse() ? __('Warehouse Name') : __('Store Name') }}</span>
+                                            <span class="text-end">
                                                 {{ $store->name }}
                                                 @if($store->isWarehouse())
                                                     <span class="badge bg-warning">{{ __('Warehouse') }}</span>
                                                 @else
                                                     <span class="badge bg-info">{{ __('Store') }}</span>
                                                 @endif
-                                            </td>
-
-                                        </tr>
-                                        <tr><th class="text-end pe-2">{{ __('Code') }}</th><td class="text-start ps-2">{{ $store->code }}</td></tr>
-                                        <tr><th class="text-end pe-2">{{ __('Storekeeper') }}</th><td class="text-start ps-2">{{ $store->storekeepers->pluck('name')->implode(', ') }}</td></tr>
-                                        <tr><th class="text-end pe-2">{{ __('Mobile') }}</th><td class="text-start ps-2">{{ $store->mobile }}</td></tr>
-                                        <tr><th class="text-end pe-2">{{ __('Email') }}</th><td class="text-start ps-2">{{ $store->email }}</td></tr>
-                                        <tr><th class="text-end pe-2">{{ __('Store Manager') }}</th><td class="text-start ps-2">{{ $store->managers->pluck('name')->implode(', ') }}</td></tr>
-
-                                        <tr><th class="text-end pe-2">{{ __('Is Active') }}</th>
-                                            <td class="text-start ps-2">
+                                            </span>
+                                        </li>
+                                        <li class="list-group-item d-flex flex-wrap justify-content-between align-items-center gap-2 px-0">
+                                            <span class="fw-medium text-muted">{{ __('Code') }}</span>
+                                            <span class="text-end">{{ $store->code }}</span>
+                                        </li>
+                                        <li class="list-group-item d-flex flex-wrap justify-content-between align-items-center gap-2 px-0">
+                                            <span class="fw-medium text-muted">{{ __('Storekeeper') }}</span>
+                                            <span class="text-end">{{ $store->storekeepers->pluck('name')->implode(', ') }}</span>
+                                        </li>
+                                        <li class="list-group-item d-flex flex-wrap justify-content-between align-items-center gap-2 px-0">
+                                            <span class="fw-medium text-muted">{{ __('Mobile') }}</span>
+                                            <span class="text-end">{{ $store->mobile }}</span>
+                                        </li>
+                                        <li class="list-group-item d-flex flex-wrap justify-content-between align-items-center gap-2 px-0">
+                                            <span class="fw-medium text-muted">{{ __('Email') }}</span>
+                                            <span class="text-end">{{ $store->email }}</span>
+                                        </li>
+                                        <li class="list-group-item d-flex flex-wrap justify-content-between align-items-center gap-2 px-0">
+                                            <span class="fw-medium text-muted">{{ __('Store Manager') }}</span>
+                                            <span class="text-end">{{ $store->managers->pluck('name')->implode(', ') }}</span>
+                                        </li>
+                                        <li class="list-group-item d-flex flex-wrap justify-content-between align-items-center gap-2 px-0">
+                                            <span class="fw-medium text-muted">{{ __('Is Active') }}</span>
+                                            <span class="text-end">
                                                 @if($store->is_active == 1)
                                                     <span class="badge bg-success">{{ __('Yes') }}</span>
                                                 @elseif($store->is_active == 0)
@@ -54,41 +104,37 @@
                                                 @else
                                                     <span class="badge bg-secondary">{{ __('Unknown') }}</span>
                                                 @endif
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <th class="text-end pe-2 justify-content-between">{{ __('Status') }}</th>
-                                            <td class="text-start d-flex justify-content-between align-items-center">
-                                                <div class="text-start">
-                                                    @php
-                                                        $status = $store->status;
-                                                        $map = [
-                                                            'pending'  => ['class' => 'text-warning', 'icon' => 'ri-loader-4-line', 'label' => 'Pending'],
-                                                            'approved' => ['class' => 'text-success', 'icon' => 'ri-checkbox-circle-line', 'label' => 'Approved'],
-                                                            'rejected' => ['class' => 'text-danger', 'icon'  => 'ri-close-circle-line', 'label' => 'Rejected'],
-                                                        ];
-                                                    @endphp
+                                            </span>
+                                        </li>
+                                        <li class="list-group-item d-flex flex-wrap justify-content-between align-items-center gap-2 px-0">
+                                            <span class="fw-medium text-muted">{{ __('Status') }}</span>
+                                            <span class="d-flex flex-wrap align-items-center gap-2">
+                                                @php
+                                                    $status = $store->status;
+                                                    $map = [
+                                                        'pending'  => ['class' => 'text-warning', 'icon' => 'ri-loader-4-line', 'label' => 'Pending'],
+                                                        'approved' => ['class' => 'text-success', 'icon' => 'ri-checkbox-circle-line', 'label' => 'Approved'],
+                                                        'rejected' => ['class' => 'text-danger', 'icon'  => 'ri-close-circle-line', 'label' => 'Rejected'],
+                                                    ];
+                                                @endphp
 
-                                                    @if($status && isset($map[$status]))
-                                                        <span class="{{ $map[$status]['class'] }}"><i class="{{ $map[$status]['icon'] }}"></i> {{ __($map[$status]['label']) }}</span>
-                                                    @else
-                                                        {{ '--' }}
-                                                    @endif
-                                                </div>
+                                                @if($status && isset($map[$status]))
+                                                    <span class="{{ $map[$status]['class'] }}"><i class="{{ $map[$status]['icon'] }}"></i> {{ __($map[$status]['label']) }}</span>
+                                                @else
+                                                    {{ '--' }}
+                                                @endif
+
                                                 @if(!$store->trashed())
-                                                <div class="text-end">
                                                     <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#statusUpdateModal">
                                                         <i class="ri-fingerprint-line"></i>
                                                         <span class="btn-text d-none d-sm-inline">{{ __('Update Status') }}</span>
                                                     </button>
-                                                </div>
                                                 @endif
-                                            </td>
-                                        </tr>
+                                            </span>
+                                        </li>
+                                    </ul>
 
-                                        </tbody>
-                                    </table>
-
+                                    <h6 class="text-uppercase fs-13 text-muted mt-4 mb-2">{{ __('Activity') }}</h6>
                                     @php
                                         $auditLogs = [
                                             [
@@ -112,49 +158,42 @@
                                         }
                                     @endphp
 
-                                    @foreach($auditLogs as $log)
-                                        <hr class="my-0">
+                                    <ul class="activity-feed mb-0 ps-2">
+                                        @foreach($auditLogs as $log)
+                                            <li class="feed-item">
+                                                <strong>{{ $log['action'] }}</strong>
+                                                @if($log['user'])
+                                                    <span>{{ __('by') }} <em>{{ $log['user'] }}</em></span>
+                                                @endif
+                                                @if($log['at'])
+                                                    <span class="small text-muted d-block">{{ $log['at']->format('d F, Y h:i A') }}</span>
+                                                @endif
+                                            </li>
+                                        @endforeach
 
-                                        <div class="py-2">
-                                            <strong>{{ $log['action'] }}</strong>
-                                            @if($log['user'])
-                                                <span>by <em>{{ $log['user'] }}</em></span>
-                                            @endif
-                                            @if($log['at'])
-                                                <span class="small text-muted d-block d-md-inline ms-md-1">{{ $log['at']->format('d F, Y h:i A') }}</span>
-                                            @endif
-                                        </div>
-                                    @endforeach
-
-                                    @if($store->approvalLogs->isNotEmpty())
                                         @foreach($store->approvalLogs as $log)
-                                            <hr class="my-0">
-                                            <div class="py-2">
-                                                <div>
-                                                    <strong>{{ ucfirst($log->action_name) }}</strong>
-                                                    @if($log->actionedBy)
-                                                        <span>by <em>{{ $log->actionedBy->name }}</em></span>
-                                                    @endif
-                                                    @if($log->actioned_at)
-                                                        <span class="small text-muted d-block d-md-inline ms-md-1">{{ $log->actioned_at->format('d F, Y h:i A') }}</span>
-                                                    @endif
-                                                </div>
+                                            <li class="feed-item">
+                                                <strong>{{ ucfirst($log->action_name) }}</strong>
+                                                @if($log->actionedBy)
+                                                    <span>{{ __('by') }} <em>{{ $log->actionedBy->name }}</em></span>
+                                                @endif
+                                                @if($log->actioned_at)
+                                                    <span class="small text-muted d-block">{{ $log->actioned_at->format('d F, Y h:i A') }}</span>
+                                                @endif
                                                 @if($log->remarks)
                                                     <div class="mt-1">
                                                         <strong><em>{{ __('Remarks') }}:</em></strong>
                                                         <div class="text-break">{{ $log->remarks }}</div>
                                                     </div>
                                                 @endif
-                                            </div>
+                                            </li>
                                         @endforeach
-                                        <hr class="my-0">
-                                    @endif
-
+                                    </ul>
                                 </div>
-                                <div class="col-12 col-md-3 order-2">
+                                <div class="col-12 col-md-3 order-1 order-md-2 mb-3 mb-md-0">
                                     @if($store->image)
-                                        <div class="text-center pt-md-2 pt-2">
-                                            <img src="{{ asset('storage/'.$store->image) }}" class="img-thumbnail" style="width: 320px; height: 220px; object-fit: cover; border-radius: var(--vz-border-radius);" alt="{{ __('Store Image') }}">
+                                        <div class="text-center">
+                                            <img src="{{ asset('storage/'.$store->image) }}" class="img-thumbnail store-detail-image" alt="{{ __('Store Image') }}">
                                         </div>
                                     @endif
                                 </div>
