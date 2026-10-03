@@ -287,20 +287,23 @@
                                         @forelse($supplier->paymentAccounts as $paymentAccount)
                                             <div class="border rounded mb-2 p-2">
                                                 <div class="row mb-2">
+                                                    <div class="small text-muted">{{ __('Account Name') }}</div>
                                                     <div class="fw-semibold">{{ $paymentAccount->account_name }}</div>
-                                                    @if($paymentAccount->account_number)
-                                                        <div class="small text-muted">{{ $paymentAccount->account_number }}</div>
-                                                    @endif
                                                 </div>
-                                                <div class="row">
-                                                    <div class="col-6">
-                                                        <div class="small text-muted">{{ __('Bank') }}</div>
-                                                        <div>{{ $paymentAccount->bank_name }}</div>
-                                                    </div>
-                                                    <div class="col-6">
-                                                        <div class="small text-muted">{{ __('Branch') }}</div>
-                                                        <div>{{ $paymentAccount->branch_name }}</div>
-                                                    </div>
+
+                                                <div class="row mb-2">
+                                                    <div class="small text-muted">{{ __('Account Number') }}</div>
+                                                    <div class="fw-semibold">{{ $paymentAccount->account_number }}</div>
+                                                </div>
+
+                                                <div class="row mb-2">
+                                                    <div class="small text-muted">{{ __('Bank') }}</div>
+                                                    <div>{{ $paymentAccount->bank_name }}</div>
+                                                </div>
+
+                                                <div class="row mb-2">
+                                                    <div class="small text-muted">{{ __('Branch') }}</div>
+                                                    <div>{{ $paymentAccount->branch_name }}</div>
                                                 </div>
                                             </div>
                                         @empty
@@ -368,59 +371,60 @@
                                     </div>
                                 </div>
                             </div>
+
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div class="modal fade" id="statusUpdateModal" tabindex="-1" aria-labelledby="statusUpdateModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <form id="statusUpdateForm" action="{{ route('supplier.update-status', $supplier->id) }}" method="POST" data-current-status="{{ $supplier->status }}">
-                            @csrf
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="statusUpdateModalLabel"> {{ __('Update Supplier Status') }} </h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" ></button>
-                            </div>
-                            <hr>
-                            <div class="modal-body">
-                                <div id="statusUpdateError" class="alert alert-danger d-none"></div>
-                                <div class="row mb-2">
-                                    <label class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory"> {{ __('Select Status') }} </label>
-                                    <div class="col-12 col-md-8">
-                                        <div class="form-check form-check-inline pt-2 mb-2">
-                                            <input class="form-check-input" type="radio" name="status" id="statusPending" value="pending" @checked($supplier->status === 'pending')>
-                                            <label class="form-check-label" for="statusPending"> {{ __('Pending') }} </label>
-                                        </div>
-                                        <div class="form-check form-check-inline pt-2 mb-2">
-                                            <input class="form-check-input" type="radio" name="status" id="statusApproved" value="approved" @checked($supplier->status === 'approved')>
-                                            <label class="form-check-label" for="statusApproved"> {{ __('Approve') }} </label>
-                                        </div>
-                                        <div class="form-check form-check-inline pt-2 mb-2">
-                                            <input class="form-check-input" type="radio" name="status" id="statusRejected" value="rejected" @checked($supplier->status === 'rejected')>
-                                            <label class="form-check-label" for="statusRejected"> {{ __('Reject') }} </label>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <label for="remarks" class="col-12 col-md-4 col-form-label text-md-end text-start" > {{ __('Add Remarks') }} </label>
-                                    <div class="col-12 col-md-8 pt-2">
-                                        <textarea id="remarks" name="remarks" class="form-control" rows="2" ></textarea>
-                                    </div>
-                                </div>
-                                <input type="hidden" name="supplier_id" value="{{ $supplier->id }}">
-                            </div>
-                            <hr>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-sm btn-danger" data-bs-dismiss="modal" > {{ __('Cancel') }} </button>
-                                <button type="reset" class="btn btn-sm btn-warning" > {{ __('Reset') }} </button>
-                                <button type="submit" class="btn btn-sm btn-info" id="updateStatusBtn" > {{ __('Update Status') }} </button>
-                            </div>
-                        </form>
+    </div>
+
+    <div class="modal fade" id="statusUpdateModal" tabindex="-1" aria-labelledby="statusUpdateModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form id="statusUpdateForm" action="{{ route('supplier.update-status', $supplier->id) }}" method="POST" data-current-status="{{ $supplier->status }}">
+                    @csrf
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="statusUpdateModalLabel"> {{ __('Update Supplier Status') }} </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" ></button>
                     </div>
-                </div>
+                    <hr>
+                    <div class="modal-body">
+                        <div id="statusUpdateError" class="alert alert-danger d-none"></div>
+                        <div class="row mb-2">
+                            <label class="col-12 col-md-4 col-form-label text-md-end text-start form-mandatory"> {{ __('Select Status') }} </label>
+                            <div class="col-12 col-md-8">
+                                <div class="form-check form-check-inline pt-2 mb-2">
+                                    <input class="form-check-input" type="radio" name="status" id="statusPending" value="pending" @checked($supplier->status === 'pending')>
+                                    <label class="form-check-label" for="statusPending"> {{ __('Pending') }} </label>
+                                </div>
+                                <div class="form-check form-check-inline pt-2 mb-2">
+                                    <input class="form-check-input" type="radio" name="status" id="statusApproved" value="approved" @checked($supplier->status === 'approved')>
+                                    <label class="form-check-label" for="statusApproved"> {{ __('Approve') }} </label>
+                                </div>
+                                <div class="form-check form-check-inline pt-2 mb-2">
+                                    <input class="form-check-input" type="radio" name="status" id="statusRejected" value="rejected" @checked($supplier->status === 'rejected')>
+                                    <label class="form-check-label" for="statusRejected"> {{ __('Reject') }} </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <label for="remarks" class="col-12 col-md-4 col-form-label text-md-end text-start" > {{ __('Add Remarks') }} </label>
+                            <div class="col-12 col-md-8 pt-2">
+                                <textarea id="remarks" name="remarks" class="form-control" rows="2" ></textarea>
+                            </div>
+                        </div>
+                        <input type="hidden" name="supplier_id" value="{{ $supplier->id }}">
+                    </div>
+                    <hr>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-sm btn-danger" data-bs-dismiss="modal" > {{ __('Cancel') }} </button>
+                        <button type="reset" class="btn btn-sm btn-warning" > {{ __('Reset') }} </button>
+                        <button type="submit" class="btn btn-sm btn-info" id="updateStatusBtn" > {{ __('Update Status') }} </button>
+                    </div>
+                </form>
             </div>
-
         </div>
     </div>
     <!-- End Page Content -->
