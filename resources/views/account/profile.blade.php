@@ -12,6 +12,12 @@
             height: 280px;
             object-fit: cover;
         }
+
+        /* Mobile-View Tab Icons (Task 5) — .nav-link's inherited font-size
+           (13px) is too small for an icon-only tab target. */
+        .profile-tab-icon {
+            font-size: 18px;
+        }
     </style>
 @endpush
 
@@ -29,24 +35,34 @@
                         <div class="card-header">
                             <ul class="nav nav-tabs-custom rounded card-header-tabs border-bottom-0" role="tablist">
                                 <li class="nav-item">
-                                    {{-- TODO: For Mobile-View Need to Load Meaningful and Relavent Icon instead of Title-Text --}}
-                                    <a class="nav-link active" data-bs-toggle="tab" href="#profileDetails" role="tab">{{ __('Profile Details') }}</a>
+                                    <a class="nav-link active" data-bs-toggle="tab" href="#profileDetails" role="tab" title="{{ __('Profile Details') }}">
+                                        <i class="ri-user-line profile-tab-icon d-inline d-md-none"></i>
+                                        <span class="d-none d-md-inline">{{ __('Profile Details') }}</span>
+                                    </a>
                                 </li>
                                 <li class="nav-item">
-                                    {{-- TODO: For Mobile-View Need to Load Meaningful and Relavent Icon instead of Title-Text --}}
-                                    <a class="nav-link" data-bs-toggle="tab" href="#rolesPermissions" role="tab">{{ __('Roles & Permissions') }}</a>
+                                    <a class="nav-link" data-bs-toggle="tab" href="#rolesPermissions" role="tab" title="{{ __('Roles & Permissions') }}">
+                                        <i class="ri-shield-user-line profile-tab-icon d-inline d-md-none"></i>
+                                        <span class="d-none d-md-inline">{{ __('Roles & Permissions') }}</span>
+                                    </a>
                                 </li>
                                 <li class="nav-item">
-                                    {{-- TODO: For Mobile-View Need to Load Meaningful and Relavent Icon instead of Title-Text --}}
-                                    <a class="nav-link" data-bs-toggle="tab" href="#changePassword" role="tab">{{ __('Change Password') }}</a>
+                                    <a class="nav-link" data-bs-toggle="tab" href="#changePassword" role="tab" title="{{ __('Change Password') }}">
+                                        <i class="ri-key-line profile-tab-icon d-inline d-md-none"></i>
+                                        <span class="d-none d-md-inline">{{ __('Change Password') }}</span>
+                                    </a>
                                 </li>
                                 <li class="nav-item">
-                                    {{-- TODO: For Mobile-View Need to Load Meaningful and Relavent Icon instead of Title-Text --}}
-                                    <a class="nav-link" data-bs-toggle="tab" href="#changePasswordLogs" role="tab">{{ __('Password Change Logs') }}</a>
+                                    <a class="nav-link" data-bs-toggle="tab" href="#changePasswordLogs" role="tab" title="{{ __('Password Change Logs') }}">
+                                        <i class="ri-history-line profile-tab-icon d-inline d-md-none"></i>
+                                        <span class="d-none d-md-inline">{{ __('Password Change Logs') }}</span>
+                                    </a>
                                 </li>
                                 <li class="nav-item">
-                                    {{-- TODO: For Mobile-View Need to Load Meaningful and Relavent Icon instead of Title-Text --}}
-                                    <a class="nav-link" data-bs-toggle="tab" href="#loginHistory" role="tab">{{ __('Login History') }}</a>
+                                    <a class="nav-link" data-bs-toggle="tab" href="#loginHistory" role="tab" title="{{ __('Login History') }}">
+                                        <i class="ri-login-circle-line profile-tab-icon d-inline d-md-none"></i>
+                                        <span class="d-none d-md-inline">{{ __('Login History') }}</span>
+                                    </a>
                                 </li>
                             </ul>
                         </div>
@@ -140,21 +156,36 @@
                                             <div class="col-lg-4">
                                                 <div>
                                                     <label for="oldpasswordInput" class="form-label">Old Password*</label>
-                                                    <input type="password" class="form-control" id="oldpasswordInput" placeholder="Enter current password">
+                                                    <div class="position-relative">
+                                                        <input type="password" class="form-control pe-5" id="oldpasswordInput" placeholder="Enter current password">
+                                                        <span class="position-absolute top-50 end-0 translate-middle-y me-3 cursor-pointer" id="toggleOldPassword">
+                                                            <i id="toggleOldPasswordIcon" class="ri-eye-line"></i>
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </div>
                                             <!--end col-->
                                             <div class="col-lg-4">
                                                 <div>
                                                     <label for="newpasswordInput" class="form-label">New Password*</label>
-                                                    <input type="password" class="form-control" id="newpasswordInput" placeholder="Enter new password">
+                                                    <div class="position-relative">
+                                                        <input type="password" class="form-control pe-5" id="newpasswordInput" placeholder="Enter new password">
+                                                        <span class="position-absolute top-50 end-0 translate-middle-y me-3 cursor-pointer" id="toggleNewPassword">
+                                                            <i id="toggleNewPasswordIcon" class="ri-eye-line"></i>
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </div>
                                             <!--end col-->
                                             <div class="col-lg-4">
                                                 <div>
                                                     <label for="confirmpasswordInput" class="form-label">Confirm Password*</label>
-                                                    <input type="password" class="form-control" id="confirmpasswordInput" placeholder="Confirm password">
+                                                    <div class="position-relative">
+                                                        <input type="password" class="form-control pe-5" id="confirmpasswordInput" placeholder="Confirm password">
+                                                        <span class="position-absolute top-50 end-0 translate-middle-y me-3 cursor-pointer" id="toggleConfirmNewPassword">
+                                                            <i id="toggleConfirmNewPasswordIcon" class="ri-eye-line"></i>
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </div>
                                             <!--end col-->
@@ -278,6 +309,32 @@
 
 @push('scripts')
     <script>
+        $(document).ready(function () {
+            /*
+            |--------------------------------------------------------------------------
+            | CHANGE PASSWORD: SHOW/HIDE TOGGLE FOR EACH INPUT
+            |--------------------------------------------------------------------------
+            | Same toggle pattern as user/show.blade.php's Change Password Modal,
+            | repeated for all 3 fields on this page (Old/New/Confirm) instead of 2.
+            */
+            function bindPasswordToggle(toggleId, inputId, iconId) {
+                $(toggleId).on('click', function () {
+                    const input = $(inputId);
+                    const icon = $(iconId);
 
+                    if (input.attr('type') === 'password') {
+                        input.attr('type', 'text');
+                        icon.removeClass('ri-eye-line').addClass('ri-eye-off-line');
+                    } else {
+                        input.attr('type', 'password');
+                        icon.removeClass('ri-eye-off-line').addClass('ri-eye-line');
+                    }
+                });
+            }
+
+            bindPasswordToggle('#toggleOldPassword', '#oldpasswordInput', '#toggleOldPasswordIcon');
+            bindPasswordToggle('#toggleNewPassword', '#newpasswordInput', '#toggleNewPasswordIcon');
+            bindPasswordToggle('#toggleConfirmNewPassword', '#confirmpasswordInput', '#toggleConfirmNewPasswordIcon');
+        });
     </script>
 @endpush
