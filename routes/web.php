@@ -9,6 +9,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DistrictsController;
 use App\Http\Controllers\DivisionsController;
 use App\Http\Controllers\FAQsController;
+use App\Http\Controllers\OTPsController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\ProductDeliveriesController;
 use App\Http\Controllers\ProductPurchasesController;
@@ -228,6 +229,13 @@ Route::middleware('auth:web')->group(function () {
         });
     });
     Route::get('/get-branches-by-bank', [SuppliersController::class, 'getBranchesByBank'])->name('getBranchesByBank');
+
+    Route::group(['prefix' => 'otp', 'as' => 'otp.'], function () {
+        Route::post('send-mobile', [OTPsController::class, 'sendOTPToMobile'])->name('send.mobile');
+        Route::post('verify-mobile', [OTPsController::class, 'verifyMobileOTP'])->name('verify.mobile');
+        Route::post('send-email', [OTPsController::class, 'sendOTPToEmail'])->name('send.email');
+        Route::post('verify-email', [OTPsController::class, 'verifyEmailOTP'])->name('verify.email');
+    });
 
     Route::group(['prefix' => 'project', 'as' => 'project.'], function () {
         Route::get('/', [ProjectsController::class, 'index'])->name('index');

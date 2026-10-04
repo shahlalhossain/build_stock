@@ -86,7 +86,7 @@
                                         @if(count($authRoles) > 0)
                                             <div class="row flex-wrap">
                                                 @foreach($authRoles as $role)
-                                                    <div class="col-lg-6 col-12 mb-2">
+                                                    <div class="col-md-4 col-12 mb-2">
                                                         <span class="badge badge-label bg-success text-start">
                                                             <i class="mdi mdi-circle-medium"></i> {{ ucwords($role->name) }}
                                                         </span>
@@ -103,7 +103,7 @@
                                         @if(count($authPermissions) > 0)
                                             <div class="row flex-wrap">
                                                 @foreach($authPermissions as $permission)
-                                                    <div class="col-lg-6 col-12 mb-2">
+                                                    <div class="col-md-4 col-12 mb-2">
                                                         <span class="badge badge-label bg-success text-start">
                                                             <i class="mdi mdi-circle-medium"></i> {{ ucwords($permission->description ?? $permission->name) }}
                                                         </span>
