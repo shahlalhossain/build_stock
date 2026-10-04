@@ -74,7 +74,46 @@
                                     </div>
                                 </div>
                                 <div class="tab-pane" id="rolesPermissions" role="tabpanel">
-                                    {{-- TODO: LoggedIn User's Assigned Roles and Permissions --}}
+                                    {{-- TODO: LoggedIn User's Assigned Roles and Permissions. Task 4 --}}
+                                    @php
+                                        $authUser = auth()->user();
+                                        $authRoles = $authUser->roles;
+                                        $authPermissions = $authUser->getAllPermissions();
+                                    @endphp
+
+                                    <div class="mb-4">
+                                        <strong class="fw-bold border-bottom border-primary border-1 d-inline-block mb-2">{{ __('Assigned Roles') }}</strong>
+                                        @if(count($authRoles) > 0)
+                                            <div class="row flex-wrap">
+                                                @foreach($authRoles as $role)
+                                                    <div class="col-lg-6 col-12 mb-2">
+                                                        <span class="badge badge-label bg-success text-start">
+                                                            <i class="mdi mdi-circle-medium"></i> {{ ucwords($role->name) }}
+                                                        </span>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        @else
+                                            <p class="text-muted mb-0">{{ __('No Assigned Role Found') }}</p>
+                                        @endif
+                                    </div>
+
+                                    <div>
+                                        <strong class="fw-bold border-bottom border-primary border-1 d-inline-block mb-2">{{ __('Assigned Permissions') }}</strong>
+                                        @if(count($authPermissions) > 0)
+                                            <div class="row flex-wrap">
+                                                @foreach($authPermissions as $permission)
+                                                    <div class="col-lg-6 col-12 mb-2">
+                                                        <span class="badge badge-label bg-success text-start">
+                                                            <i class="mdi mdi-circle-medium"></i> {{ ucwords($permission->description ?? $permission->name) }}
+                                                        </span>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        @else
+                                            <p class="text-muted mb-0">{{ __('No Assigned Permission Found') }}</p>
+                                        @endif
+                                    </div>
                                 </div>
                                 <div class="tab-pane" id="changePassword" role="tabpanel">
                                     {{-- TODO: LoggedIn User's Password Change Functionality --}}
@@ -201,7 +240,7 @@
                                 </div>
                                 <h5 class="fs-16 mb-1">{{ auth()->user()->name }}</h5>
                                 <p class="text-muted mb-0">
-                                    {{-- TODO: LoggedIn User's Designation --}}
+                                    {{-- TODO: LoggedIn User's Designation. Task 3 --}}
                                 </p>
                             </div>
                         </div>
