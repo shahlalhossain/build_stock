@@ -78,7 +78,8 @@
                                     @php
                                         $authUser = auth()->user();
                                         $authRoles = $authUser->roles;
-                                        $authPermissions = $authUser->getAllPermissions();
+                                        $authPermissionsViaRoles = $authUser->getPermissionsViaRoles();
+                                        $authDirectPermissions = $authUser->permissions;
                                     @endphp
 
                                     <div class="mb-4">
@@ -98,11 +99,11 @@
                                         @endif
                                     </div>
 
-                                    <div>
-                                        <strong class="fw-bold border-bottom border-primary border-1 d-inline-block mb-2">{{ __('Assigned Permissions') }}</strong>
-                                        @if(count($authPermissions) > 0)
+                                    <div class="mb-4">
+                                        <strong class="fw-bold border-bottom border-primary border-1 d-inline-block mb-2">{{ __('Assigned Permissions (Via Roles)') }}</strong>
+                                        @if(count($authPermissionsViaRoles) > 0)
                                             <div class="row flex-wrap">
-                                                @foreach($authPermissions as $permission)
+                                                @foreach($authPermissionsViaRoles as $permission)
                                                     <div class="col-md-4 col-12 mb-2">
                                                         <span class="badge badge-label bg-success text-start">
                                                             <i class="mdi mdi-circle-medium"></i> {{ ucwords($permission->description ?? $permission->name) }}
@@ -111,7 +112,24 @@
                                                 @endforeach
                                             </div>
                                         @else
-                                            <p class="text-muted mb-0">{{ __('No Assigned Permission Found') }}</p>
+                                            <p class="text-muted mb-0">{{ __('No Permission Found via Roles') }}</p>
+                                        @endif
+                                    </div>
+
+                                    <div>
+                                        <strong class="fw-bold border-bottom border-primary border-1 d-inline-block mb-2">{{ __('Assigned Direct Permissions') }}</strong>
+                                        @if(count($authDirectPermissions) > 0)
+                                            <div class="row flex-wrap">
+                                                @foreach($authDirectPermissions as $permission)
+                                                    <div class="col-md-4 col-12 mb-2">
+                                                        <span class="badge badge-label bg-info text-start">
+                                                            <i class="mdi mdi-circle-medium"></i> {{ ucwords($permission->description ?? $permission->name) }}
+                                                        </span>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        @else
+                                            <p class="text-muted mb-0">{{ __('No Assigned Direct Permission Found') }}</p>
                                         @endif
                                     </div>
                                 </div>
