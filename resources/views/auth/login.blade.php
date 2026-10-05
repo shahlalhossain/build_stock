@@ -55,6 +55,11 @@
                                 <p class="text-muted">Login to Continue</p>
                             </div>
                             <div class="p-2 mt-4">
+                                @if ($errors->has('email') && $errors->first('email') === trans('auth.failed'))
+                                    <div class="alert alert-danger text-center mb-3" role="alert">
+                                        {{ $errors->first('email') }}
+                                    </div>
+                                @endif
                                 <form method="POST" action="{{ route('login') }}">
                                     @csrf
                                     <div class="mb-3">
@@ -62,7 +67,9 @@
                                         <input type="email" id="email" name="email" value="{{ old('email') }}" class="form-control @error('email') is-invalid @enderror" required autocomplete="email" autofocus placeholder="Enter Email">
 
                                         @error('email')
-                                            <span class="invalid-feedback" role="alert"><strong>{{ $message }}</strong></span>
+                                            @unless ($message === trans('auth.failed'))
+                                                <span class="invalid-feedback" role="alert"><strong>{{ $message }}</strong></span>
+                                            @endunless
                                         @enderror
                                     </div>
 
