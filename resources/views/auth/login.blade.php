@@ -121,7 +121,7 @@
                 <div class="col-lg-12">
                     <div class="text-center">
                         <p class="mb-0 text-muted">&copy;
-                            <script>document.write(new Date().getFullYear())</script> SalahTracker. Crafted and Developed with <i class="mdi mdi-heart text-danger"></i> by Shahlal Hossain
+                            <script>document.write(new Date().getFullYear())</script> BuildStock. Crafted and Developed with <i class="mdi mdi-heart text-danger"></i> by SHTech
                         </p>
                     </div>
                 </div>

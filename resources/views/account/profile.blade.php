@@ -47,6 +47,12 @@
                                     </a>
                                 </li>
                                 <li class="nav-item">
+                                    <a class="nav-link" data-bs-toggle="tab" href="#notification" role="tab" title="{{ __('Notification') }}">
+                                        <i class="ri-notification-3-line profile-tab-icon d-inline d-md-none"></i>
+                                        <span class="d-none d-md-inline">{{ __('Notification') }}</span>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
                                     <a class="nav-link" data-bs-toggle="tab" href="#changePassword" role="tab" title="{{ __('Change Password') }}">
                                         <i class="ri-key-line profile-tab-icon d-inline d-md-none"></i>
                                         <span class="d-none d-md-inline">{{ __('Change Password') }}</span>
@@ -62,6 +68,18 @@
                                     <a class="nav-link" data-bs-toggle="tab" href="#loginHistory" role="tab" title="{{ __('Login History') }}">
                                         <i class="ri-login-circle-line profile-tab-icon d-inline d-md-none"></i>
                                         <span class="d-none d-md-inline">{{ __('Login History') }}</span>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-bs-toggle="tab" href="#activityLogs" role="tab" title="{{ __('Activity Logs') }}">
+                                        <i class="ri-file-list-3-line profile-tab-icon d-inline d-md-none"></i>
+                                        <span class="d-none d-md-inline">{{ __('Activity Logs') }}</span>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-bs-toggle="tab" href="#accountSettings" role="tab" title="{{ __('Account Settings') }}">
+                                        <i class="ri-settings-4-line profile-tab-icon d-inline d-md-none"></i>
+                                        <span class="d-none d-md-inline">{{ __('Account Settings') }}</span>
                                     </a>
                                 </li>
                             </ul>
@@ -148,6 +166,9 @@
                                             <p class="text-muted mb-0">{{ __('No Assigned Direct Permission Found') }}</p>
                                         @endif
                                     </div>
+                                </div>
+                                <div class="tab-pane" id="notification" role="tabpanel">
+                                    {{-- TODO: LoggedIn User's Notification Preferences/List --}}
                                 </div>
                                 <div class="tab-pane" id="changePassword" role="tabpanel">
                                     <form id="changePasswordForm" action="javascript:void(0);">
@@ -276,6 +297,12 @@
                                             <a href="javascript:void(0);">{{ __('Logout') }}</a>
                                         </div>
                                     </div>
+                                </div>
+                                <div class="tab-pane" id="activityLogs" role="tabpanel">
+                                    {{-- TODO: LoggedIn User's Activity Logs --}}
+                                </div>
+                                <div class="tab-pane" id="accountSettings" role="tabpanel">
+                                    {{-- TODO: LoggedIn User's Account Settings --}}
                                 </div>
                             </div>
                         </div>
