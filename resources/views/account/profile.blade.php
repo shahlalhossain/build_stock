@@ -98,6 +98,7 @@
                                     <div class="table-responsive">
                                         <table class="table mb-0">
                                             <tbody>
+                                            {{-- TODO: Make the Following Data as Dynamic from the LoggedIn User Profile. Task 6 --}}
                                             <tr><th scope="row" style="width: 200px;">Name</th><td>Md Shahlal Hossain</td></tr>
                                             <tr><th scope="row">Email</th><td>shahlal@gmail.com</td></tr>
                                             <tr><th scope="row">Mobile</th><td>+8801731479874</td></tr>
@@ -315,7 +316,7 @@
                             <div class="text-center">
                                 <div class="profile-user position-relative d-inline-block mx-auto mb-4">
                                     {{-- TODO: Profile Photo/Image Size will be Square/Passport Size rather then Circle View. And Camera Icon should not be there, we will set the Camera Icon on Edit-Profile Mode. Task 2 --}}
-                                    <img src="assets/images/users/avatar-1.jpg" class="profile-photo-lg img-thumbnail user-profile-image material-shadow" alt="user-profile-image">
+                                    <img src="assets/images/users/user_avatar.png" class="profile-photo-lg img-thumbnail user-profile-image material-shadow" alt="user-profile-image">
                                 </div>
                                 <h5 class="fs-16 mb-1">{{ auth()->user()->name }}</h5>
                                 <p class="text-muted mb-0">
