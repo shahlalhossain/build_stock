@@ -230,7 +230,6 @@
                                     {{-- TODO: LoggedIn User's Password Change HIstory/Logs --}}
                                 </div>
                                 <div class="tab-pane" id="loginHistory" role="tabpanel">
-
                                     @php
                                         $loginActivities = auth()->user()->loginActivities()->latest('login_at')->get();
 
@@ -278,6 +277,7 @@
                                                 @endif
                                             </div>
                                         </div>
+                                        <hr style="padding: 0; margin: 0;">
                                     @empty
                                         <p class="text-muted mb-0">{{ __('No Login History Found') }}</p>
                                     @endforelse
