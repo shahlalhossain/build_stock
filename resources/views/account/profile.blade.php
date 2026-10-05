@@ -13,7 +13,7 @@
             object-fit: cover;
         }
 
-        /* Mobile-View Tab Icons (Task 5) — .nav-link's inherited font-size
+        /* Mobile-View Tab Icons — .nav-link's inherited font-size
            (13px) is too small for an icon-only tab target. */
         .profile-tab-icon {
             font-size: 18px;
@@ -150,42 +150,45 @@
                                     </div>
                                 </div>
                                 <div class="tab-pane" id="changePassword" role="tabpanel">
-                                    {{-- TODO: LoggedIn User's Password Change Functionality --}}
-                                    <form action="javascript:void(0);">
+                                    <form id="changePasswordForm" action="javascript:void(0);">
+                                        <div id="changePasswordApiErrors" class="mb-2"></div>
                                         <div class="row g-2">
                                             <div class="col-lg-4">
                                                 <div>
-                                                    <label for="oldpasswordInput" class="form-label">Old Password*</label>
+                                                    <label for="old_password" class="form-label form-mandatory">{{ __('Old Password') }}*</label>
                                                     <div class="position-relative">
-                                                        <input type="password" class="form-control pe-5" id="oldpasswordInput" placeholder="Enter current password">
+                                                        <input type="password" class="form-control pe-5" id="old_password" placeholder="Enter Current Password">
                                                         <span class="position-absolute top-50 end-0 translate-middle-y me-3 cursor-pointer" id="toggleOldPassword">
                                                             <i id="toggleOldPasswordIcon" class="ri-eye-line"></i>
                                                         </span>
                                                     </div>
+                                                    <div class="text-danger small mt-1 old-password-error"></div>
                                                 </div>
                                             </div>
                                             <!--end col-->
                                             <div class="col-lg-4">
                                                 <div>
-                                                    <label for="newpasswordInput" class="form-label">New Password*</label>
+                                                    <label for="new_password" class="form-label form-mandatory">{{ __('New Password') }}*</label>
                                                     <div class="position-relative">
-                                                        <input type="password" class="form-control pe-5" id="newpasswordInput" placeholder="Enter new password">
+                                                        <input type="password" class="form-control pe-5" id="new_password" placeholder="Enter New Password">
                                                         <span class="position-absolute top-50 end-0 translate-middle-y me-3 cursor-pointer" id="toggleNewPassword">
                                                             <i id="toggleNewPasswordIcon" class="ri-eye-line"></i>
                                                         </span>
                                                     </div>
+                                                    <div class="text-danger small mt-1 new-password-error"></div>
                                                 </div>
                                             </div>
                                             <!--end col-->
                                             <div class="col-lg-4">
                                                 <div>
-                                                    <label for="confirmpasswordInput" class="form-label">Confirm Password*</label>
+                                                    <label for="confirm_password" class="form-label form-mandatory">{{ __('Confirm Password') }}</label>
                                                     <div class="position-relative">
-                                                        <input type="password" class="form-control pe-5" id="confirmpasswordInput" placeholder="Confirm password">
+                                                        <input type="password" class="form-control pe-5" id="confirm_password" placeholder="Confirm New Password">
                                                         <span class="position-absolute top-50 end-0 translate-middle-y me-3 cursor-pointer" id="toggleConfirmNewPassword">
                                                             <i id="toggleConfirmNewPasswordIcon" class="ri-eye-line"></i>
                                                         </span>
                                                     </div>
+                                                    <div class="text-danger small mt-1 confirm-password-error"></div>
                                                 </div>
                                             </div>
                                             <!--end col-->
@@ -196,7 +199,7 @@
                                             </div>
                                             <div class="col-lg-6 text-end">
 
-                                                <button type="submit" class="btn btn-success">Change Password</button>
+                                                <button type="submit" class="btn btn-success" id="changePasswordBtn">Change Password</button>
 
                                             </div>
                                         </div>
@@ -335,6 +338,110 @@
             bindPasswordToggle('#toggleOldPassword', '#oldpasswordInput', '#toggleOldPasswordIcon');
             bindPasswordToggle('#toggleNewPassword', '#newpasswordInput', '#toggleNewPasswordIcon');
             bindPasswordToggle('#toggleConfirmNewPassword', '#confirmpasswordInput', '#toggleConfirmNewPasswordIcon');
+
+            /*
+            |--------------------------------------------------------------------------
+            | CHANGE PASSWORD: SUBMIT
+            |--------------------------------------------------------------------------
+            | Same validate-then-AJAX pattern as user/show.blade.php's Change Password
+            | Modal, with an added Old Password check (self-service password change).
+            */
+            function clearChangePasswordErrors() {
+                $('.old-password-error, .new-password-error, .confirm-password-error').text('');
+                $('#changePasswordApiErrors').html('');
+            }
+
+            function showApiErrors(errors) {
+                let html = '<ul class="text-danger ps-3 mb-2">';
+
+                if (typeof errors === 'object') {
+                    Object.values(errors).forEach(errArr => {
+                        errArr.forEach(msg => {
+                            html += `<li>${msg}</li>`;
+                        });
+                    });
+                } else {
+                    html += `<li>${errors}</li>`;
+                }
+
+                html += '</ul>';
+
+                $('#changePasswordApiErrors').html(html);
+            }
+
+            function validateChangePasswordForm(oldPassword, password, confirmPassword) {
+                let valid = true;
+                clearChangePasswordErrors();
+
+                if (!oldPassword) {
+                    $('.old-password-error').text('Old Password is Required');
+                    valid = false;
+                }
+
+                if (password.length < 6) {
+                    $('.new-password-error').text('Password must be at Least 6 Characters');
+                    valid = false;
+                } else if (!/[A-Z]/.test(password)) {
+                    $('.new-password-error').text('Need at Least One Uppercase Letter');
+                    valid = false;
+                } else if (!/[!@#$%^&*]/.test(password)) {
+                    $('.new-password-error').text('Need at Least One Special Character');
+                    valid = false;
+                }
+
+                if (password !== confirmPassword) {
+                    $('.confirm-password-error').text('Confirm Password does not Match');
+                    valid = false;
+                }
+
+                return valid;
+            }
+
+            $('#changePasswordForm').on('submit', function () {
+                let oldPassword = $('#oldpasswordInput').val();
+                let password = $('#newpasswordInput').val();
+                let confirmPassword = $('#confirmpasswordInput').val();
+
+                if (!validateChangePasswordForm(oldPassword, password, confirmPassword)) {
+                    return;
+                }
+
+                $('#changePasswordBtn').prop('disabled', true);
+
+                $.ajax({
+                    url: "{{ route('change-password') }}",
+                    type: "POST",
+                    data: {
+                        old_password: oldPassword,
+                        password: password,
+                        password_confirmation: confirmPassword,
+                        _token: "{{ csrf_token() }}"
+                    },
+                    success: function (response) {
+                        if (response.status === 'success') {
+                            $('#changePasswordForm')[0].reset();
+                            Toastify({
+                                text: response.message || "Password has been changed successfully",
+                                duration: 4000,
+                                gravity: "top",
+                                position: "right",
+                                close: true,
+                                className: "success-toast",
+                                stopOnFocus: true
+                            }).showToast();
+                        } else {
+                            showApiErrors(response.message);
+                        }
+                    },
+                    error: function (xhr) {
+                        let errors = xhr.responseJSON?.errors || xhr.responseJSON?.message;
+                        showApiErrors(errors);
+                    },
+                    complete: function () {
+                        $('#changePasswordBtn').prop('disabled', false);
+                    }
+                });
+            });
         });
     </script>
 @endpush
