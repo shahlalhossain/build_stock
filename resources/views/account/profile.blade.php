@@ -397,15 +397,15 @@
             }
 
             $('#changePasswordForm').on('submit', function () {
-                let oldPassword = $('#oldpassword').val();
-                let password = $('#newpassword').val();
-                let confirmPassword = $('#confirmpassword').val();
+                let oldPassword = $('#old_password').val();
+                let password = $('#new_password').val();
+                let confirmPassword = $('#confirm_password').val();
 
                 if (!validateChangePasswordForm(oldPassword, password, confirmPassword)) {
                     return;
                 }
 
-                $('#changePasswordBtn').prop('disabled', true);
+                $('#changePasswordButton').prop('disabled', true);
 
                 $.ajax({
                     url: "{{ route('change-password') }}",
@@ -437,7 +437,7 @@
                         showApiErrors(errors);
                     },
                     complete: function () {
-                        $('#changePasswordBtn').prop('disabled', false);
+                        $('#changePasswordButton').prop('disabled', false);
                     }
                 });
             });
