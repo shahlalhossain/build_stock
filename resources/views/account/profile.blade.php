@@ -233,6 +233,18 @@
                                     @php
                                         $loginActivities = auth()->user()->loginActivities()->latest('login_at')->get();
 
+                                        $currentAgent = new \Jenssegers\Agent\Agent();
+                                        $currentAgent->setUserAgent(request()->userAgent());
+
+                                        $currentLoginActivityId = auth()->user()->loginActivities()
+                                            ->where('is_active', true)
+                                            ->where('ip_address', request()->ip())
+                                            ->where('os', $currentAgent->platform() ?: 'Unknown')
+                                            ->where('browser', $currentAgent->browser() ?: 'Unknown')
+                                            ->where('device', $currentAgent->isDesktop() ? 'Desktop' : ($currentAgent->device() ?: 'Unknown'))
+                                            ->latest('login_at')
+                                            ->value('id');
+
                                         $loginActivityIcon = function (?string $device) {
                                             $device = blank($device) || $device === '0' ? '' : strtolower($device);
 
@@ -266,7 +278,12 @@
                                                 </div>
                                             </div>
                                             <div class="flex-grow-1 ms-3">
-                                                <h6>{{ $loginActivityValue($loginActivity->device, 'Unknown Device') }} &middot; {{ $loginActivityValue($loginActivity->os, 'Unknown OS') }} &middot; {{ $loginActivityValue($loginActivity->browser, 'Unknown Browser') }}</h6>
+                                                <h6>
+                                                    {{ $loginActivityValue($loginActivity->device, 'Unknown Device') }} &middot; {{ $loginActivityValue($loginActivity->os, 'Unknown OS') }} &middot; {{ $loginActivityValue($loginActivity->browser, 'Unknown Browser') }}
+                                                    @if($loginActivity->id === $currentLoginActivityId)
+                                                        <span class="badge bg-success-subtle text-success align-middle">{{ __('This Device') }}</span>
+                                                    @endif
+                                                </h6>
                                                 <p class="text-muted mb-0">{{ $loginActivityValue($loginActivity->ip_address, 'Unknown IP') }} - {{ $loginActivity->login_at?->format('M d \a\t h:iA') ?? '-' }}</p>
                                             </div>
                                             <div>
