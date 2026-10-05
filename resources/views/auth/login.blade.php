@@ -26,10 +26,10 @@
 
 <body>
 
-<div class="auth-page-wrapper pt-5">
+<div class="auth-page-wrapper d-flex flex-column min-vh-100">
 
     <!-- auth page content -->
-    <div class="auth-page-content">
+    <div class="auth-page-content flex-grow-1 d-flex align-items-center">
         <div class="container">
             <div class="row">
                 <div class="col-lg-12">
