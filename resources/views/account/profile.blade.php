@@ -192,18 +192,17 @@
                                                 </div>
                                             </div>
                                             <!--end col-->
-                                            <div class="col-lg-6">
-                                                <div class="mb-3">
-                                                    <a href="javascript:void(0);" class="link-primary text-decoration-underline">Forgot Password ?</a>
-                                                </div>
+                                        </div>
+                                        <!--end row-->
+
+                                        <div class="row pt-2">
+                                            <div class="col-md-6 text-start">
+
                                             </div>
-                                            <div class="col-lg-6 text-end">
-
-                                                <button type="submit" class="btn btn-success" id="changePasswordBtn">Change Password</button>
-
+                                            <div class="col-md-6 text-end">
+                                                <button type="submit" class="btn btn-sm btn-success" id="changePasswordButton">{{ __('Change Password') }}</button>
                                             </div>
                                         </div>
-                                        <!--end col-->
                                     </form>
                                 </div>
                                 <div class="tab-pane" id="changePasswordLogs" role="tabpanel">
