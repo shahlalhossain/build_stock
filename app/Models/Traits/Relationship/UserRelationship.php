@@ -2,11 +2,13 @@
 
 namespace App\Models\Traits\Relationship;
 
+use App\Models\LoginActivity;
 use App\Models\PasswordHistory;
 use App\Models\Store;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Class UserRelationship.
@@ -34,6 +36,11 @@ trait UserRelationship
     public function passwordHistories()
     {
         return $this->morphMany(PasswordHistory::class, 'model');
+    }
+
+    public function loginActivities(): HasMany
+    {
+        return $this->hasMany(LoginActivity::class, 'user_id');
     }
 
     /**

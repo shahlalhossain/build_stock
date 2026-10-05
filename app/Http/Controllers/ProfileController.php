@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\LoginActivity;
 use Exception;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -67,6 +70,53 @@ class ProfileController extends Controller
                 'errors' => $exception->errors(),
             ], 422);
         } catch (Exception $exception) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Something went wrong. Please try again',
+            ], 500);
+        }
+    }
+
+    public function logoutLoginActivity(Request $request, LoginActivity $loginActivity): JsonResponse
+    {
+        try {
+            if ($loginActivity->user_id !== $request->user()->id) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'You are not Authorized to Perform this Action',
+                ], 403);
+            }
+
+            $loginActivity->update(['is_active' => false, 'logout_at' => now()]);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Session has been Logged Out Successfully',
+            ], 200);
+        } catch (Exception $exception) {
+            Log::error($exception->getMessage());
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Something went wrong. Please try again',
+            ], 500);
+        }
+    }
+
+    public function logoutAllLoginActivities(Request $request): JsonResponse
+    {
+        try {
+            $request->user()->loginActivities()
+                ->where('is_active', true)
+                ->update(['is_active' => false, 'logout_at' => now()]);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'All Sessions have been Logged Out Successfully',
+            ], 200);
+        } catch (Exception $exception) {
+            Log::error($exception->getMessage());
+
             return response()->json([
                 'status' => 'error',
                 'message' => 'Something went wrong. Please try again',

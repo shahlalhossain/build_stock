@@ -231,72 +231,56 @@
                                 </div>
                                 <div class="tab-pane" id="loginHistory" role="tabpanel">
 
-                                    {{-- TODO: Have make this Dynamic and Workiable (Logout All and Individual Login Session Destroy - Not Delete) --}}
+                                    @php
+                                        $loginActivities = auth()->user()->loginActivities()->latest('login_at')->get();
+
+                                        $loginActivityIcon = function (?string $device) {
+                                            $device = blank($device) || $device === '0' ? '' : strtolower($device);
+
+                                            return match (true) {
+                                                str_contains($device, 'mobile') => 'ri-smartphone-line',
+                                                str_contains($device, 'tablet') => 'ri-tablet-line',
+                                                str_contains($device, 'desktop') => 'ri-macbook-line',
+                                                default => 'ri-computer-line',
+                                            };
+                                        };
+
+                                        $loginActivityValue = function (?string $value, string $fallback) {
+                                            return blank($value) || $value === '0' ? $fallback : $value;
+                                        };
+                                    @endphp
 
                                     <div class="mb-3 border-bottom pb-2">
                                         <div class="float-end">
-                                            <a href="javascript:void(0);" class="link-primary">{{ __('All Logout') }}</a>
+                                            <a href="javascript:void(0);" class="link-primary" id="logoutAllLoginActivities">{{ __('All Logout') }}</a>
                                         </div>
                                         <h5 class="card-title" style="font-size: 14px; font-weight: bold; font-style: italic;">
                                             {{ __('Login History') }}
                                         </h5>
                                     </div>
-                                    <div class="d-flex align-items-center mb-3">
-                                        <div class="flex-shrink-0 avatar-sm">
-                                            <div class="avatar-title bg-light text-primary rounded-3 fs-18 material-shadow">
-                                                <i class="ri-smartphone-line"></i>
+
+                                    @forelse($loginActivities as $loginActivity)
+                                        <div class="d-flex align-items-center mb-3" data-login-activity-id="{{ $loginActivity->id }}">
+                                            <div class="flex-shrink-0 avatar-sm">
+                                                <div class="avatar-title bg-light text-primary rounded-3 fs-18 material-shadow">
+                                                    <i class="{{ $loginActivityIcon($loginActivity->device) }}"></i>
+                                                </div>
+                                            </div>
+                                            <div class="flex-grow-1 ms-3">
+                                                <h6>{{ $loginActivityValue($loginActivity->device, 'Unknown Device') }} &middot; {{ $loginActivityValue($loginActivity->os, 'Unknown OS') }} &middot; {{ $loginActivityValue($loginActivity->browser, 'Unknown Browser') }}</h6>
+                                                <p class="text-muted mb-0">{{ $loginActivityValue($loginActivity->ip_address, 'Unknown IP') }} - {{ $loginActivity->login_at?->format('M d \a\t h:iA') ?? '-' }}</p>
+                                            </div>
+                                            <div>
+                                                @if($loginActivity->is_active)
+                                                    <a href="javascript:void(0);" class="logout-login-activity" data-id="{{ $loginActivity->id }}">{{ __('Logout') }}</a>
+                                                @else
+                                                    <span class="text-muted">{{ __('Logged Out') }}</span>
+                                                @endif
                                             </div>
                                         </div>
-                                        <div class="flex-grow-1 ms-3">
-                                            <h6>iPhone 12 Pro</h6>
-                                            <p class="text-muted mb-0">Los Angeles, United States - March 16 at 2:47PM</p>
-                                        </div>
-                                        <div>
-                                            <a href="javascript:void(0);">{{ __('Logout') }}</a>
-                                        </div>
-                                    </div>
-                                    <div class="d-flex align-items-center mb-3">
-                                        <div class="flex-shrink-0 avatar-sm">
-                                            <div class="avatar-title bg-light text-primary rounded-3 fs-18 material-shadow">
-                                                <i class="ri-tablet-line"></i>
-                                            </div>
-                                        </div>
-                                        <div class="flex-grow-1 ms-3">
-                                            <h6>Apple iPad Pro</h6>
-                                            <p class="text-muted mb-0">Washington, United States - November 06 at 10:43AM</p>
-                                        </div>
-                                        <div>
-                                            <a href="javascript:void(0);">{{ __('Logout') }}</a>
-                                        </div>
-                                    </div>
-                                    <div class="d-flex align-items-center mb-3">
-                                        <div class="flex-shrink-0 avatar-sm">
-                                            <div class="avatar-title bg-light text-primary rounded-3 fs-18 material-shadow">
-                                                <i class="ri-smartphone-line"></i>
-                                            </div>
-                                        </div>
-                                        <div class="flex-grow-1 ms-3">
-                                            <h6>Galaxy S21 Ultra 5G</h6>
-                                            <p class="text-muted mb-0">Conneticut, United States - June 12 at 3:24PM</p>
-                                        </div>
-                                        <div>
-                                            <a href="javascript:void(0);">{{ __('Logout') }}</a>
-                                        </div>
-                                    </div>
-                                    <div class="d-flex align-items-center">
-                                        <div class="flex-shrink-0 avatar-sm">
-                                            <div class="avatar-title bg-light text-primary rounded-3 fs-18 material-shadow">
-                                                <i class="ri-macbook-line"></i>
-                                            </div>
-                                        </div>
-                                        <div class="flex-grow-1 ms-3">
-                                            <h6>Dell Inspiron 14</h6>
-                                            <p class="text-muted mb-0">Phoenix, United States - July 26 at 8:10AM</p>
-                                        </div>
-                                        <div>
-                                            <a href="javascript:void(0);">{{ __('Logout') }}</a>
-                                        </div>
-                                    </div>
+                                    @empty
+                                        <p class="text-muted mb-0">{{ __('No Login History Found') }}</p>
+                                    @endforelse
                                 </div>
                                 <div class="tab-pane" id="activityLogs" role="tabpanel">
                                     {{-- TODO: LoggedIn User's Activity Logs --}}
@@ -465,6 +449,81 @@
                     },
                     complete: function () {
                         $('#changePasswordButton').prop('disabled', false);
+                    }
+                });
+            });
+
+            /*
+            |--------------------------------------------------------------------------
+            | LOGIN HISTORY: LOGOUT (SINGLE / ALL)
+            |--------------------------------------------------------------------------
+            | Marks login_histories rows as inactive for this user. Cannot kill a
+            | specific browser session (no session-id linkage), only closes the
+            | history record — "All Logout" includes the current session's row too.
+            */
+            $(document).on('click', '.logout-login-activity', function () {
+                const row = $(this).closest('[data-login-activity-id]');
+                const activityID = $(this).data('id');
+
+                $.ajax({
+                    url: '/login-history/' + activityID + '/logout',
+                    method: 'POST',
+                    data: { _token: "{{ csrf_token() }}" },
+                    success: function (response) {
+                        row.find('.logout-login-activity').replaceWith('<span class="text-muted">{{ __("Logged Out") }}</span>');
+                        Toastify({
+                            text: response.message || "Session has been Logged Out Successfully",
+                            duration: 4000,
+                            gravity: "top",
+                            position: "right",
+                            close: true,
+                            className: "success-toast",
+                            stopOnFocus: true
+                        }).showToast();
+                    },
+                    error: function (xhr) {
+                        Toastify({
+                            text: xhr.responseJSON?.message || "Something went wrong. Please try again",
+                            duration: 4000,
+                            gravity: "top",
+                            position: "right",
+                            close: true,
+                            className: "error-toast",
+                            stopOnFocus: true
+                        }).showToast();
+                    }
+                });
+            });
+
+            $('#logoutAllLoginActivities').on('click', function () {
+                $.ajax({
+                    url: '/login-history/logout-all',
+                    method: 'POST',
+                    data: { _token: "{{ csrf_token() }}" },
+                    success: function (response) {
+                        $('.logout-login-activity').each(function () {
+                            $(this).replaceWith('<span class="text-muted">{{ __("Logged Out") }}</span>');
+                        });
+                        Toastify({
+                            text: response.message || "All Sessions have been Logged Out Successfully",
+                            duration: 4000,
+                            gravity: "top",
+                            position: "right",
+                            close: true,
+                            className: "success-toast",
+                            stopOnFocus: true
+                        }).showToast();
+                    },
+                    error: function (xhr) {
+                        Toastify({
+                            text: xhr.responseJSON?.message || "Something went wrong. Please try again",
+                            duration: 4000,
+                            gravity: "top",
+                            position: "right",
+                            close: true,
+                            className: "error-toast",
+                            stopOnFocus: true
+                        }).showToast();
                     }
                 });
             });

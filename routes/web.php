@@ -46,6 +46,8 @@ Route::middleware('auth:web')->group(function () {
     Route::get('/edit-profile', [ProfileController::class, 'editProfile'])->name('edit-profile');
     Route::put('/update-profile', [ProfileController::class, 'updateProfile'])->name('update-profile');
     Route::post('/change-password', [ProfileController::class, 'changePassword'])->name('change-password');
+    Route::post('/login-history/{loginActivity}/logout', [ProfileController::class, 'logoutLoginActivity'])->name('login-history.logout');
+    Route::post('/login-history/logout-all', [ProfileController::class, 'logoutAllLoginActivities'])->name('login-history.logout-all');
 
     Route::group(['prefix' => 'permission', 'as' => 'permission.'], function () {
         Route::get('/', [PermissionController::class, 'index'])->name('index');
