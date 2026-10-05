@@ -334,9 +334,9 @@
                 });
             }
 
-            bindPasswordToggle('#toggleOldPassword', '#oldpasswordInput', '#toggleOldPasswordIcon');
-            bindPasswordToggle('#toggleNewPassword', '#newpasswordInput', '#toggleNewPasswordIcon');
-            bindPasswordToggle('#toggleConfirmNewPassword', '#confirmpasswordInput', '#toggleConfirmNewPasswordIcon');
+            bindPasswordToggle('#toggleOldPassword', '#old_password', '#toggleOldPasswordIcon');
+            bindPasswordToggle('#toggleNewPassword', '#new_password', '#toggleNewPasswordIcon');
+            bindPasswordToggle('#toggleConfirmNewPassword', '#confirm_password', '#toggleConfirmNewPasswordIcon');
 
             /*
             |--------------------------------------------------------------------------
@@ -397,9 +397,9 @@
             }
 
             $('#changePasswordForm').on('submit', function () {
-                let oldPassword = $('#oldpasswordInput').val();
-                let password = $('#newpasswordInput').val();
-                let confirmPassword = $('#confirmpasswordInput').val();
+                let oldPassword = $('#oldpassword').val();
+                let password = $('#newpassword').val();
+                let confirmPassword = $('#confirmpassword').val();
 
                 if (!validateChangePasswordForm(oldPassword, password, confirmPassword)) {
                     return;
