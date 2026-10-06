@@ -156,7 +156,85 @@
                                     </div>
                                 </div>
                                 <div class="tab-pane" id="notification" role="tabpanel">
-                                    {{-- TODO: LoggedIn User's Notification Preferences/List --}}
+                                    {{-- TODO: Design Only (Static Sample Data). Replace $sampleNotifications with the LoggedIn User's Notifications, then wire "Mark as Read" / "Delete" / "Mark All as Read" / Filters / Paginator. Markup mirrors the Header Notification Dropdown (layout/includes/header.blade.php) and reuses its class hooks (.notification-item, .notification-unread, .mark-notification-read, .delete-notification, data-id). --}}
+                                    @php
+                                        $sampleNotifications = [
+                                            ['id' => 1, 'unread' => true, 'color' => 'info', 'icon' => 'bx-badge-check', 'title' => 'Your Elite author reward is ready!', 'body' => 'Claim your reward before it expires at the end of this month.', 'time' => '30 minutes ago'],
+                                            ['id' => 2, 'unread' => true, 'color' => 'warning', 'icon' => 'bx-message-square-dots', 'title' => 'Angela Bernier replied to your comment.', 'body' => 'Thanks for the update, I will review the purchase order today.', 'time' => '2 hours ago'],
+                                            ['id' => 3, 'unread' => true, 'color' => 'danger', 'icon' => 'bx-message-square-dots', 'title' => 'You have received 20 new messages.', 'body' => 'Open the inbox to read and reply to your latest messages.', 'time' => '1 day ago'],
+                                            ['id' => 4, 'unread' => false, 'color' => 'success', 'icon' => 'bx-check-circle', 'title' => 'Invoice #12501 has been approved.', 'body' => 'The invoice was approved by the Finance Manager.', 'time' => '2 days ago'],
+                                            ['id' => 5, 'unread' => false, 'color' => 'success', 'icon' => 'bx-check-circle', 'title' => 'Invoice #12498 has been approved.', 'body' => 'The invoice was approved by the Finance Manager.', 'time' => '3 days ago'],
+                                        ];
+                                        $sampleUnreadCount = collect($sampleNotifications)->where('unread', true)->count();
+                                    @endphp
+
+                                    <div class="mb-3 border-bottom pb-2">
+                                        <div class="float-end">
+                                            <a href="javascript:void(0);" class="link-primary" id="markAllNotificationsRead">{{ __('Mark All as Read') }}</a>
+                                        </div>
+                                        <h5 class="card-title" style="font-size: 14px; font-weight: bold; font-style: italic;">
+                                            {{ __('Notifications') }}
+                                            <span class="badge bg-danger-subtle text-danger ms-1" id="profile-notification-unread-count">{{ $sampleUnreadCount }} {{ __('Unread') }}</span>
+                                        </h5>
+                                    </div>
+
+                                    <!-- Filters (design only) -->
+                                    <ul class="nav nav-pills nav-sm mb-3 gap-1" id="notificationFilters">
+                                        <li class="nav-item"><a class="nav-link active py-1" href="javascript:void(0);" data-filter="all">{{ __('All') }}</a></li>
+                                        <li class="nav-item"><a class="nav-link py-1" href="javascript:void(0);" data-filter="unread">{{ __('Unread') }}</a></li>
+                                        <li class="nav-item"><a class="nav-link py-1" href="javascript:void(0);" data-filter="read">{{ __('Read') }}</a></li>
+                                    </ul>
+
+                                    <!-- Notification List -->
+                                    <div class="list-group list-group-flush border border-secondary border-opacity-50 rounded" id="profile-notification-list">
+                                        @forelse($sampleNotifications as $notification)
+                                            <div class="list-group-item border-secondary border-opacity-50 notification-item {{ $notification['unread'] ? 'notification-unread bg-primary-subtle' : '' }}" data-notification-id="{{ $notification['id'] }}">
+                                                <div class="d-flex align-items-center">
+                                                    <!-- Icon -->
+                                                    <div class="avatar-xs me-3 flex-shrink-0">
+                                                        <span class="avatar-title bg-{{ $notification['color'] }}-subtle text-{{ $notification['color'] }} rounded-circle fs-16"><i class="bx {{ $notification['icon'] }}"></i></span>
+                                                    </div>
+                                                    <!-- Content -->
+                                                    <div class="flex-grow-1 min-w-0">
+                                                        <h6 class="mt-0 mb-1 fs-13 {{ $notification['unread'] ? 'fw-bold' : 'fw-normal' }}">
+                                                            {{ $notification['title'] }}
+                                                            @if($notification['unread'])
+                                                                <span class="badge bg-danger ms-1 align-middle">{{ __('New') }}</span>
+                                                            @endif
+                                                        </h6>
+                                                        <p class="mb-1 fs-12 text-muted text-truncate">{{ $notification['body'] }}</p>
+                                                        <p class="mb-0 fs-11 fw-medium text-muted"><i class="ri-time-line align-middle"></i> {{ $notification['time'] }}</p>
+                                                    </div>
+                                                    <!-- Actions -->
+                                                    <div class="d-flex align-items-center ms-2 gap-2 flex-shrink-0">
+                                                        <button type="button" class="btn btn-sm btn-soft-success mark-notification-read {{ $notification['unread'] ? '' : 'd-none' }}" data-id="{{ $notification['id'] }}" title="{{ __('Mark as Read') }}">
+                                                            <i class="bx bx-check"></i><span class="d-none d-md-inline"> {{ __('Mark as Read') }}</span>
+                                                        </button>
+                                                        <button type="button" class="btn btn-sm btn-soft-danger delete-notification" data-id="{{ $notification['id'] }}" title="{{ __('Delete') }}">
+                                                            <i class="bx bx-trash"></i><span class="d-none d-md-inline"> {{ __('Delete') }}</span>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @empty
+                                            <div class="list-group-item text-center text-muted py-4">
+                                                <i class="bx bx-bell-off fs-24 d-block mb-1"></i>
+                                                {{ __('No Notification Found') }}
+                                            </div>
+                                        @endforelse
+                                    </div>
+
+                                    <!-- Paginator (design only) -->
+                                    <nav class="d-flex flex-column flex-md-row align-items-center justify-content-between gap-2 mt-3" aria-label="{{ __('Notification Pages') }}">
+                                        <span class="text-muted fs-12">{{ __('Showing 1 to :count of :count Notifications', ['count' => count($sampleNotifications)]) }}</span>
+                                        <ul class="pagination pagination-sm mb-0">
+                                            <li class="page-item disabled"><a class="page-link" href="javascript:void(0);">&laquo;</a></li>
+                                            <li class="page-item active"><a class="page-link" href="javascript:void(0);">1</a></li>
+                                            <li class="page-item"><a class="page-link" href="javascript:void(0);">2</a></li>
+                                            <li class="page-item"><a class="page-link" href="javascript:void(0);">3</a></li>
+                                            <li class="page-item"><a class="page-link" href="javascript:void(0);">&raquo;</a></li>
+                                        </ul>
+                                    </nav>
                                 </div>
                                 <div class="tab-pane" id="changePassword" role="tabpanel">
                                     <form id="changePasswordForm" action="javascript:void(0);">
