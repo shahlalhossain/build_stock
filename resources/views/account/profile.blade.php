@@ -98,12 +98,12 @@
                                     <div class="table-responsive">
                                         <table class="table mb-0">
                                             <tbody>
-                                            {{-- TODO: Make the Following Data as Dynamic from the LoggedIn User Profile. Task 6 --}}
-                                            <tr><th scope="row" style="width: 200px;">Name</th><td>Md Shahlal Hossain</td></tr>
-                                            <tr><th scope="row">Email</th><td>shahlal@gmail.com</td></tr>
-                                            <tr><th scope="row">Mobile</th><td>+8801731479874</td></tr>
-                                            <tr><th scope="row">Role</th><td>Manager</td></tr>
-                                            <tr><th scope="row">Registered At</th><td>2012-12-12</td></tr>
+                                            @php $profileUser = auth()->user(); @endphp
+                                            <tr><th scope="row" style="width: 200px;">Name</th><td>{{ $profileUser->name }}</td></tr>
+                                            <tr><th scope="row">Email</th><td>{{ $profileUser->email ?: '-' }}</td></tr>
+                                            <tr><th scope="row">Mobile</th><td>{{ $profileUser->mobile ?: '-' }}</td></tr>
+                                            <tr><th scope="row">Role</th><td>{{ $profileUser->roles->pluck('name')->map(fn ($role) => ucwords($role))->implode(', ') ?: '-' }}</td></tr>
+                                            <tr><th scope="row">Registered At</th><td>{{ $profileUser->created_at?->format('Y-m-d') ?? '-' }}</td></tr>
                                             </tbody>
                                         </table>
                                     </div>
