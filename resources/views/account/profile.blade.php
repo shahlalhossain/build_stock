@@ -282,7 +282,7 @@
                                                 @endif
                                             </div>
                                         </div>
-                                        <hr style="border-color: lightgrey;">
+                                        <hr style="border-color: darkblue;">
                                     @empty
                                         <p class="text-muted mb-0">{{ __('No Login History Found') }}</p>
                                     @endforelse
