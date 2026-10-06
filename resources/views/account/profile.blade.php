@@ -102,7 +102,6 @@
                                             <tr><th scope="row" style="width: 200px;">Name</th><td>{{ $profileUser->name }}</td></tr>
                                             <tr><th scope="row">Email</th><td>{{ $profileUser->email ?: '-' }}</td></tr>
                                             <tr><th scope="row">Mobile</th><td>{{ $profileUser->mobile ?: '-' }}</td></tr>
-                                            <tr><th scope="row">Role</th><td>{{ $profileUser->roles->pluck('name')->map(fn ($role) => ucwords($role))->implode(', ') ?: '-' }}</td></tr>
                                             <tr><th scope="row">Registered At</th><td>{{ $profileUser->created_at?->format('Y-m-d') ?? '-' }}</td></tr>
                                             </tbody>
                                         </table>
