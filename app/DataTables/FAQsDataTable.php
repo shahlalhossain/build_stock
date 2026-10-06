@@ -16,7 +16,7 @@ class FAQsDataTable extends DataTable
     /**
      * Build the DataTable class.
      *
-     * @param QueryBuilder<FAQ> $query Results from query() method.
+     * @param  QueryBuilder<FAQ>  $query  Results from query() method.
      */
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
@@ -38,6 +38,7 @@ class FAQsDataTable extends DataTable
                 if ($this->showTrashed) {
                     return view('faq.actions_trashed', ['faq' => $faq]);
                 }
+
                 return view('faq.actions', ['faq' => $faq]);
             })
             ->rawColumns(['is_active']);
@@ -51,6 +52,7 @@ class FAQsDataTable extends DataTable
     public function query(FAQ $model): QueryBuilder
     {
         $query = $model->newQuery()->with(['creator', 'updater']);
+
         return $this->showTrashed ? $query->onlyTrashed() : $query->withoutTrashed();
     }
 
@@ -68,9 +70,9 @@ class FAQsDataTable extends DataTable
             ->parameters([
                 'serverSide' => true,
                 'processing' => true,
-                'stateSave'  => false,
+                'stateSave' => false,
                 'pageLength' => 10,
-                'lengthMenu' => [[10, 20, 30, 40, 50, 100, -1], [10, 20, 30, 40, 50, 100, "All"]],
+                'lengthMenu' => [[10, 20, 30, 40, 50, 100, -1], [10, 20, 30, 40, 50, 100, 'All']],
             ]);
     }
 
@@ -95,6 +97,6 @@ class FAQsDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'FAQs_' . date('YmdHis');
+        return 'FAQs_'.date('YmdHis');
     }
 }

@@ -5,15 +5,13 @@ namespace App\Listeners;
 use App\Events\Permission\PermissionCreated;
 use App\Events\Permission\PermissionDeleted;
 use App\Events\Permission\PermissionUpdated;
+use Illuminate\Events\Dispatcher;
 
 /**
  * Class PermissionEventListener.
  */
 class PermissionEventListener
 {
-    /**
-     * @param $event
-     */
     public function onCreated($event)
     {
         activity('permission')
@@ -27,9 +25,6 @@ class PermissionEventListener
             ->log(':causer.name created permission :subject.name with permissions: :properties.permissions');
     }
 
-    /**
-     * @param $event
-     */
     public function onUpdated($event)
     {
         activity('permission')
@@ -43,9 +38,6 @@ class PermissionEventListener
             ->log(':causer.name updated permission :subject.name with permissions: :properties.permissions');
     }
 
-    /**
-     * @param $event
-     */
     public function onDeleted($event)
     {
         activity('permission')
@@ -56,7 +48,7 @@ class PermissionEventListener
     /**
      * Register the listeners for the subscriber.
      *
-     * @param  \Illuminate\Events\Dispatcher  $events
+     * @param  Dispatcher  $events
      */
     public function subscribe($events)
     {

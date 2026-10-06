@@ -14,7 +14,7 @@ class RolesDataTable extends DataTable
     /**
      * Build the DataTable class.
      *
-     * @param QueryBuilder $query Results from query() method.
+     * @param  QueryBuilder  $query  Results from query() method.
      */
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
@@ -56,12 +56,13 @@ class RolesDataTable extends DataTable
      */
     public function query(Role $model): QueryBuilder
     {
-//        if ($this->showTrashed) {
-//            return $model->newQuery()->withCount(['permissions', 'users'])->orderBy('id')->where('id', '!=', 1)->onlyTrashed();   // Show Trashed Records
-//        }
-//        return $model->newQuery()->withCount(['permissions', 'users'])->orderBy('id')->where('id', '!=',1)->withoutTrashed();    // Show Active Records
+        //        if ($this->showTrashed) {
+        //            return $model->newQuery()->withCount(['permissions', 'users'])->orderBy('id')->where('id', '!=', 1)->onlyTrashed();   // Show Trashed Records
+        //        }
+        //        return $model->newQuery()->withCount(['permissions', 'users'])->orderBy('id')->where('id', '!=',1)->withoutTrashed();    // Show Active Records
 
         $query = $model->newQuery()->withCount(['permissions', 'users'])->orderBy('id')->where('id', '!=', 1);
+
         return $this->showTrashed ? $query->onlyTrashed() : $query->withoutTrashed();
     }
 
@@ -79,9 +80,9 @@ class RolesDataTable extends DataTable
             ->parameters([
                 'serverSide' => true,
                 'processing' => true,
-                'stateSave'  => false,
+                'stateSave' => false,
                 'pageLength' => 10,
-                'lengthMenu' => [[10, 20, 30, 40, 50, 100, -1], [10, 20, 30, 40, 50, 100, "All"]],
+                'lengthMenu' => [[10, 20, 30, 40, 50, 100, -1], [10, 20, 30, 40, 50, 100, 'All']],
             ]);
     }
 
@@ -91,7 +92,7 @@ class RolesDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            //Column::make('id')->orderable(true)->searchable(true)->addClass('text-center'),
+            // Column::make('id')->orderable(true)->searchable(true)->addClass('text-center'),
             Column::computed('DT_RowIndex')->title('SN')->orderable(false)->searchable(false)->addClass('text-center'),
             Column::make('name')->orderable(true)->searchable(true),
             Column::computed('users')->sortable(false)->searchable(false)->addClass('text-center'),
@@ -109,6 +110,6 @@ class RolesDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'Roles_' . date('YmdHis');
+        return 'Roles_'.date('YmdHis');
     }
 }

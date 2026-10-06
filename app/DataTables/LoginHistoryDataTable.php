@@ -12,6 +12,7 @@ use Yajra\DataTables\Services\DataTable;
 class LoginHistoryDataTable extends DataTable
 {
     protected string $type = 'all';
+
     public function __construct(string $type = 'all')
     {
         $this->type = $type;
@@ -78,9 +79,9 @@ class LoginHistoryDataTable extends DataTable
             ->parameters([
                 'serverSide' => true,
                 'processing' => true,
-                'stateSave'  => false,
+                'stateSave' => false,
                 'pageLength' => 10,
-                'lengthMenu' => [[10, 20, 30, 40, 50, 100, -1], [10, 20, 30, 40, 50, 100, "All"]],
+                'lengthMenu' => [[10, 20, 30, 40, 50, 100, -1], [10, 20, 30, 40, 50, 100, 'All']],
             ]);
     }
 
@@ -108,6 +109,6 @@ class LoginHistoryDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'LoginHistory_' . date('YmdHis');
+        return 'LoginHistory_'.date('YmdHis');
     }
 }

@@ -53,20 +53,20 @@ class Notice extends Model
     ];
 
     protected $casts = [
-        'published_at'      => 'datetime',
-        'effective_date'    => 'date',
-        'expiry_date'       => 'date',
+        'published_at' => 'datetime',
+        'effective_date' => 'date',
+        'expiry_date' => 'date',
 
-        'reviewed_at'       => 'datetime',
-        'approved_at'       => 'datetime',
-        'rejected_at'       => 'datetime',
+        'reviewed_at' => 'datetime',
+        'approved_at' => 'datetime',
+        'rejected_at' => 'datetime',
 
-        'is_featured'       => 'boolean',
-        'is_pinned'         => 'boolean',
-        'is_active'         => 'boolean',
+        'is_featured' => 'boolean',
+        'is_pinned' => 'boolean',
+        'is_active' => 'boolean',
 
-        'priority'          => 'integer',
-        'view_count'        => 'integer',
+        'priority' => 'integer',
+        'view_count' => 'integer',
     ];
 
     protected $hidden = [];

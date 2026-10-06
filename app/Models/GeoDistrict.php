@@ -9,7 +9,7 @@ use Spatie\Activitylog\LogOptions;
 
 class GeoDistrict extends Model
 {
-//    use SoftDeletes;
+    //    use SoftDeletes;
 
     protected $table = 'location_districts';
 
@@ -47,26 +47,27 @@ class GeoDistrict extends Model
      */
     protected function casts(): array
     {
-        return ['created_at' => 'datetime', 'updated_at' => 'datetime',];
+        return ['created_at' => 'datetime', 'updated_at' => 'datetime'];
     }
 
     protected static $recordEvents = ['created', 'updated', 'deleted'];
-    public function getActivitylogOptions() : LogOptions
+
+    public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()->logOnly(['*']);
     }
 
-    public function creator() : BelongsTo
+    public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function updater() : BelongsTo
+    public function updater(): BelongsTo
     {
         return $this->belongsTo(User::class, 'updated_by');
     }
 
-    public function deleter() : BelongsTo
+    public function deleter(): BelongsTo
     {
         return $this->belongsTo(User::class, 'deleted_by');
     }

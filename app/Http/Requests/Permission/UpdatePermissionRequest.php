@@ -3,7 +3,6 @@
 namespace App\Http\Requests\Permission;
 
 use App\Models\User;
-use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -24,43 +23,41 @@ class UpdatePermissionRequest extends FormRequest
 
     /**
      * Get the validation rules that apply to the request.
-     *
-     * @return array
      */
-    public function rules() : array
+    public function rules(): array
     {
         // If using route model binding
         $permissionId = $this->route('permission')?->id ?? $this->route('permission');
 
         return [
-            'type'          => ['required', Rule::in([User::TYPE_ADMIN, User::TYPE_USER])],
-            'guard_name'    => ['required', 'string', 'max:255'],
-            'name'          => ['required', 'string', 'max:255', Rule::unique('permissions')->ignore($permissionId)->where('guard_name', $this->guard_name)->whereNull('deleted_at')],
-            'description'   => ['nullable', 'string', 'max:255'],
-            'parent_id'     => ['nullable', 'exists:permissions,id', Rule::notIn([$permissionId])],
+            'type' => ['required', Rule::in([User::TYPE_ADMIN, User::TYPE_USER])],
+            'guard_name' => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255', Rule::unique('permissions')->ignore($permissionId)->where('guard_name', $this->guard_name)->whereNull('deleted_at')],
+            'description' => ['nullable', 'string', 'max:255'],
+            'parent_id' => ['nullable', 'exists:permissions,id', Rule::notIn([$permissionId])],
         ];
     }
 
-    public function messages() : array
+    public function messages(): array
     {
         return [
-            'type.required'       => 'Permission type is Required',
-            'type.in'             => 'Selected Permission Type is Invalid.',
+            'type.required' => 'Permission type is Required',
+            'type.in' => 'Selected Permission Type is Invalid.',
 
             'guard_name.required' => 'Guard Name is Required',
-            'guard_name.string'   => 'Guard Name must be a Valid String',
-            'guard_name.max'      => 'Guard Name may not exceed 255 Characters',
+            'guard_name.string' => 'Guard Name must be a Valid String',
+            'guard_name.max' => 'Guard Name may not exceed 255 Characters',
 
-            'name.required'       => 'Permission Name is Required',
-            'name.string'         => 'Permission Name must be a Valid String',
-            'name.max'            => 'Permission Name may not exceed 255 Characters',
-            'name.unique'         => 'This Permission already Exists for the Selected Guard',
+            'name.required' => 'Permission Name is Required',
+            'name.string' => 'Permission Name must be a Valid String',
+            'name.max' => 'Permission Name may not exceed 255 Characters',
+            'name.unique' => 'This Permission already Exists for the Selected Guard',
 
-            'description.string'  => 'Description must be a Valid String',
-            'description.max'     => 'Description may not exceed 255 Characters',
+            'description.string' => 'Description must be a Valid String',
+            'description.max' => 'Description may not exceed 255 Characters',
 
-            'parent_id.exists'    => 'Selected Parent Permission does not Exist',
-            'parent_id.not_in'    => 'A Permission cannot be its own Parent',
+            'parent_id.exists' => 'Selected Parent Permission does not Exist',
+            'parent_id.not_in' => 'A Permission cannot be its own Parent',
         ];
     }
 }

@@ -6,10 +6,7 @@ use App\Models\GeoThana;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
-use Yajra\DataTables\Html\Button;
 use Yajra\DataTables\Html\Column;
-use Yajra\DataTables\Html\Editor\Editor;
-use Yajra\DataTables\Html\Editor\Fields;
 use Yajra\DataTables\Services\DataTable;
 
 class ThanasDataTable extends DataTable
@@ -17,31 +14,31 @@ class ThanasDataTable extends DataTable
     /**
      * Build the DataTable class.
      *
-     * @param QueryBuilder<GeoThana> $query Results from query() method.
+     * @param  QueryBuilder<GeoThana>  $query  Results from query() method.
      */
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
             ->setRowId('id')
-            ->editColumn('Name', function(GeoThana $thana) {
+            ->editColumn('Name', function (GeoThana $thana) {
                 return ucwords($thana->name_en);
             })
-            ->editColumn('Name (in Bangla)', function(GeoThana $thana) {
+            ->editColumn('Name (in Bangla)', function (GeoThana $thana) {
                 return ucwords($thana->name_bn);
             })
-            ->editColumn('Created By', function(GeoThana $thana) {
+            ->editColumn('Created By', function (GeoThana $thana) {
                 return ucwords($thana->creator?->name);
             })
-            ->editColumn('Updated By', function(GeoThana $thana) {
+            ->editColumn('Updated By', function (GeoThana $thana) {
                 return ucwords($thana->updater?->name);
             })
-            ->editColumn('created_at', function(GeoThana $thana) {
+            ->editColumn('created_at', function (GeoThana $thana) {
                 return $thana->created_at->format('Y-m-d H:i');
             })
-            ->editColumn('updated_at', function(GeoThana $thana) {
+            ->editColumn('updated_at', function (GeoThana $thana) {
                 return $thana->created_at->format('Y-m-d H:i');
             })
-            ->addColumn('actions', function(GeoThana $thana) {
+            ->addColumn('actions', function (GeoThana $thana) {
                 return view('thana.actions', ['thana' => $thana]);
             });
     }
@@ -70,9 +67,9 @@ class ThanasDataTable extends DataTable
             ->parameters([
                 'serverSide' => true,
                 'processing' => true,
-                'stateSave'  => false,
+                'stateSave' => false,
                 'pageLength' => 10,
-                'lengthMenu' => [[10, 20, 30, 40, 50, 100, -1], [10, 20, 30, 40, 50, 100, "All"]],
+                'lengthMenu' => [[10, 20, 30, 40, 50, 100, -1], [10, 20, 30, 40, 50, 100, 'All']],
             ]);
     }
 
@@ -103,6 +100,6 @@ class ThanasDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'Thanas_' . date('YmdHis');
+        return 'Thanas_'.date('YmdHis');
     }
 }

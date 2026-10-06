@@ -6,10 +6,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
-use Yajra\DataTables\Html\Button;
 use Yajra\DataTables\Html\Column;
-use Yajra\DataTables\Html\Editor\Editor;
-use Yajra\DataTables\Html\Editor\Fields;
 use Yajra\DataTables\Services\DataTable;
 
 class UsersDataTable extends DataTable
@@ -19,17 +16,17 @@ class UsersDataTable extends DataTable
     /**
      * Build the DataTable class.
      *
-     * @param QueryBuilder $query Results from query() method.
+     * @param  QueryBuilder  $query  Results from query() method.
      */
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
             ->setRowId('id')
             ->addIndexColumn()
-            ->editColumn('created_at', function(User $user) {
+            ->editColumn('created_at', function (User $user) {
                 return $user->created_at->format('Y-m-d H:i');
             })
-            ->editColumn('updated_at', function(User $user) {
+            ->editColumn('updated_at', function (User $user) {
                 return $user->created_at->format('Y-m-d H:i');
             })
             ->addColumn('is_active', function (User $user) {
@@ -41,6 +38,7 @@ class UsersDataTable extends DataTable
                 if ($this->showTrashed) {
                     return view('user.actions_trashed', ['user' => $user]);
                 }
+
                 return view('user.actions', ['user' => $user]);
             })
             ->rawColumns(['is_active']);
@@ -74,14 +72,14 @@ class UsersDataTable extends DataTable
             ->parameters([
                 'serverSide' => true,
                 'processing' => true,
-                'stateSave'  => false,
+                'stateSave' => false,
                 'pageLength' => 10,
-                'lengthMenu' => [[10, 20, 30, 40, 50, 100, -1], [10, 20, 30, 40, 50, 100, "All"]],
+                'lengthMenu' => [[10, 20, 30, 40, 50, 100, -1], [10, 20, 30, 40, 50, 100, 'All']],
                 'columnDefs' => [
                     [
-                        'targets'       => 0,
-                        'orderable'     => false,
-                        'searchable'    => false,
+                        'targets' => 0,
+                        'orderable' => false,
+                        'searchable' => false,
                     ],
                 ],
             ]);
@@ -93,7 +91,7 @@ class UsersDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            //Column::make('id')->orderable(true)->searchable(true)->addClass('text-center'),
+            // Column::make('id')->orderable(true)->searchable(true)->addClass('text-center'),
             Column::computed('DT_RowIndex')->title('SN')->orderable(false)->searchable(false)->addClass('text-center'),
             Column::make('name')->orderable(true)->searchable(true),
             Column::make('username')->orderable(true)->searchable(true)->addClass('text-center'),
@@ -116,6 +114,6 @@ class UsersDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'Users_' . date('YmdHis');
+        return 'Users_'.date('YmdHis');
     }
 }

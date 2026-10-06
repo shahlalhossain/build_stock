@@ -5,15 +5,13 @@ namespace App\Listeners;
 use App\Events\Role\RoleCreated;
 use App\Events\Role\RoleDeleted;
 use App\Events\Role\RoleUpdated;
+use Illuminate\Events\Dispatcher;
 
 /**
  * Class RoleEventListener.
  */
 class RoleEventListener
 {
-    /**
-     * @param $event
-     */
     public function onCreated($event)
     {
         activity('role')
@@ -28,9 +26,6 @@ class RoleEventListener
             ->log(':causer.name created role :subject.name with permissions: :properties.permissions');
     }
 
-    /**
-     * @param $event
-     */
     public function onUpdated($event)
     {
         activity('role')
@@ -45,9 +40,6 @@ class RoleEventListener
             ->log(':causer.name updated role :subject.name with permissions: :properties.permissions');
     }
 
-    /**
-     * @param $event
-     */
     public function onDeleted($event)
     {
         activity('role')
@@ -58,7 +50,7 @@ class RoleEventListener
     /**
      * Register the listeners for the subscriber.
      *
-     * @param  \Illuminate\Events\Dispatcher  $events
+     * @param  Dispatcher  $events
      */
     public function subscribe($events)
     {

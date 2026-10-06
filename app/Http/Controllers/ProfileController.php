@@ -6,6 +6,8 @@ use App\Models\LoginActivity;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
@@ -87,7 +89,17 @@ class ProfileController extends Controller
                 ], 403);
             }
 
+            if ($loginActivity->id === LoginActivity::currentIdFor($request->user(), $request)) {
+                $this->endCurrentSession($request);
+
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Session has been Logged Out Successfully',
+                ], 200);
+            }
+
             $loginActivity->update(['is_active' => false, 'logout_at' => now()]);
+            $this->destroySessions($loginActivity->session_id);
 
             return response()->json([
                 'status' => 'success',
@@ -106,9 +118,15 @@ class ProfileController extends Controller
     public function logoutAllLoginActivities(Request $request): JsonResponse
     {
         try {
-            $request->user()->loginActivities()
+            $user = $request->user();
+
+            $user->loginActivities()
                 ->where('is_active', true)
                 ->update(['is_active' => false, 'logout_at' => now()]);
+
+            $this->destroySessions(null, $user->id, $request->session()->getId());
+
+            $this->endCurrentSession($request);
 
             return response()->json([
                 'status' => 'success',
@@ -121,6 +139,34 @@ class ProfileController extends Controller
                 'status' => 'error',
                 'message' => 'Something went wrong. Please try again',
             ], 500);
+        }
+    }
+
+    /**
+     * Logs the user out but keeps the session id, so the login page can tell the
+     * visitor their session expired (see redirectGuestsTo in bootstrap/app.php).
+     */
+    private function endCurrentSession(Request $request): void
+    {
+        Auth::guard('web')->logout();
+        $request->session()->regenerateToken();
+    }
+
+    /**
+     * Kills browser sessions for the database session driver: one by id, or all of a user's but one.
+     */
+    private function destroySessions(?string $sessionId, ?int $userId = null, ?string $exceptSessionId = null): void
+    {
+        if (config('session.driver') !== 'database') {
+            return;
+        }
+
+        $query = DB::table(config('session.table', 'sessions'));
+
+        if ($sessionId !== null) {
+            $query->where('id', $sessionId)->delete();
+        } elseif ($userId !== null) {
+            $query->where('user_id', $userId)->where('id', '!=', $exceptSessionId)->delete();
         }
     }
 }

@@ -3,7 +3,6 @@
 namespace App\DataTables;
 
 use App\Models\AuditLog;
-use App\Models\LoginActivity;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
@@ -17,13 +16,13 @@ class AuditLogsDataTable extends DataTable
         return (new EloquentDataTable($query))
             ->setRowId('id')
             ->addIndexColumn()
-            ->editColumn('event', function(AuditLog $auditLog) {
+            ->editColumn('event', function (AuditLog $auditLog) {
                 return ucwords($auditLog->event);
             })
-            ->editColumn('causer_id', function(AuditLog $auditLog) {
+            ->editColumn('causer_id', function (AuditLog $auditLog) {
                 return ucwords($auditLog->user?->name);
             })
-            ->editColumn('created_at', function(AuditLog $auditLog) {
+            ->editColumn('created_at', function (AuditLog $auditLog) {
                 return $auditLog->created_at->format('Y-m-d H:i A');
             })
             ->rawColumns([]);
@@ -51,9 +50,9 @@ class AuditLogsDataTable extends DataTable
             ->parameters([
                 'serverSide' => true,
                 'processing' => true,
-                'stateSave'  => false,
+                'stateSave' => false,
                 'pageLength' => 15,
-                'lengthMenu' => [[15, 20, 30, 40, 50, 100, -1], [15, 20, 30, 40, 50, 100, "All"]],
+                'lengthMenu' => [[15, 20, 30, 40, 50, 100, -1], [15, 20, 30, 40, 50, 100, 'All']],
             ]);
     }
 
@@ -77,6 +76,6 @@ class AuditLogsDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'AuditLog_' . date('YmdHis');
+        return 'AuditLog_'.date('YmdHis');
     }
 }

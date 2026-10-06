@@ -37,7 +37,7 @@ class DeleteUserRequest extends FormRequest
      *
      * @return void
      *
-     * @throws \Illuminate\Auth\Access\AuthorizationException
+     * @throws AuthorizationException
      */
     protected function failedAuthorization()
     {

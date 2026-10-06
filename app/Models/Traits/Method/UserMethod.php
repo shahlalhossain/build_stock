@@ -2,6 +2,7 @@
 
 namespace App\Models\Traits\Method;
 
+use Creativeorange\Gravatar\Exceptions\InvalidEmailException;
 use Illuminate\Support\Collection;
 
 /**
@@ -9,9 +10,6 @@ use Illuminate\Support\Collection;
  */
 trait UserMethod
 {
-    /**
-     * @return bool
-     */
     public function isMasterAdmin(): bool
     {
         return $this->id === 1;
@@ -41,10 +39,6 @@ trait UserMethod
         return $this->isAdmin() && $this->hasRole(config('boilerplate.access.role.admin'));
     }
 
-    /**
-     * @param $type
-     * @return bool
-     */
     public function isType($type): bool
     {
         return $this->type === $type;
@@ -58,33 +52,21 @@ trait UserMethod
         return config('boilerplate.access.users.change_email');
     }
 
-    /**
-     * @return bool
-     */
     public function isActive(): bool
     {
         return $this->active;
     }
 
-    /**
-     * @return bool
-     */
     public function isVerified(): bool
     {
         return $this->email_verified_at !== null;
     }
 
-    /**
-     * @return bool
-     */
     public function isSocial(): bool
     {
         return $this->provider && $this->provider_id;
     }
 
-    /**
-     * @return Collection
-     */
     public function getPermissionDescriptions(): Collection
     {
         return $this->permissions->pluck('description');
@@ -94,7 +76,7 @@ trait UserMethod
      * @param  bool  $size
      * @return mixed|string
      *
-     * @throws \Creativeorange\Gravatar\Exceptions\InvalidEmailException
+     * @throws InvalidEmailException
      */
     public function getAvatar($size = null)
     {

@@ -12,10 +12,15 @@ class LoginEvent
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public $user;
+
     public $ipAddress;
+
     public $userAgent;
+
     public $device;
+
     public $browser;
+
     public $os;
 
     /**
@@ -23,11 +28,11 @@ class LoginEvent
      */
     public function __construct(User $user, $ipAddress, $userAgent, $device, $browser, $os)
     {
-        $this->user         = $user;
-        $this->ipAddress    = $ipAddress;
-        $this->userAgent    = $userAgent;
-        $this->device       = $device;
-        $this->browser      = $browser;
-        $this->os           = $os;
+        $this->user = $user;
+        $this->ipAddress = $ipAddress;
+        $this->userAgent = $userAgent;
+        $this->device = $device;
+        $this->browser = $browser;
+        $this->os = $os;
     }
 }

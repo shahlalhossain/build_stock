@@ -55,6 +55,11 @@
                                 <p class="text-muted">Login to Continue</p>
                             </div>
                             <div class="p-2 mt-4">
+                                @if (session('session_expired'))
+                                    <div class="alert alert-warning text-center mb-3" role="alert">
+                                        {{ __('Your Login Session has been Expired. Please Login again to Access the Application') }}
+                                    </div>
+                                @endif
                                 @if ($errors->has('email') && $errors->first('email') === trans('auth.failed'))
                                     <div class="alert alert-danger text-center mb-3" role="alert">
                                         {{ $errors->first('email') }}

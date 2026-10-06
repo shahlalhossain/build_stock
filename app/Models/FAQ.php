@@ -10,8 +10,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 class FAQ extends Model
 {
-    use SoftDeletes,
-        LogsActivity;
+    use LogsActivity,
+        SoftDeletes;
 
     protected $table = 'faqs';
 
@@ -34,37 +34,37 @@ class FAQ extends Model
         return [
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
-            'is_active'  => 'boolean',
+            'is_active' => 'boolean',
         ];
     }
 
     protected static $recordEvents = ['created', 'updated', 'deleted'];
 
-    public function getActivitylogOptions() : LogOptions
+    public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
             ->logOnly(['*'])
             ->logOnlyDirty()
             ->useLogName('FAQ')
-            ->setDescriptionForEvent(fn(string $eventName) => "Record has been {$eventName}");
+            ->setDescriptionForEvent(fn (string $eventName) => "Record has been {$eventName}");
     }
 
-    public function creator() : BelongsTo
+    public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function updater() : BelongsTo
+    public function updater(): BelongsTo
     {
         return $this->belongsTo(User::class, 'updated_by');
     }
 
-    public function deleter() : BelongsTo
+    public function deleter(): BelongsTo
     {
         return $this->belongsTo(User::class, 'deleted_by');
     }
 
-    public function faqCategory() : BelongsTo
+    public function faqCategory(): BelongsTo
     {
         return $this->belongsTo(FAQCategory::class, 'faq_category_id', 'id');
     }

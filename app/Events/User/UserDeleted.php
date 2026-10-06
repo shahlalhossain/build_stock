@@ -12,14 +12,8 @@ class UserDeleted
 {
     use SerializesModels;
 
-    /**
-     * @var
-     */
     public $user;
 
-    /**
-     * @param $user
-     */
     public function __construct(User $user)
     {
         $this->user = $user;

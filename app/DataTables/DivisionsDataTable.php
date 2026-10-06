@@ -4,13 +4,9 @@ namespace App\DataTables;
 
 use App\Models\GeoDivision;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
-use Matrix\Operators\Division;
 use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
-use Yajra\DataTables\Html\Button;
 use Yajra\DataTables\Html\Column;
-use Yajra\DataTables\Html\Editor\Editor;
-use Yajra\DataTables\Html\Editor\Fields;
 use Yajra\DataTables\Services\DataTable;
 
 class DivisionsDataTable extends DataTable
@@ -18,31 +14,31 @@ class DivisionsDataTable extends DataTable
     /**
      * Build the DataTable class.
      *
-     * @param QueryBuilder<GeoDivision> $query Results from query() method.
+     * @param  QueryBuilder<GeoDivision>  $query  Results from query() method.
      */
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
             ->setRowId('id')
-            ->editColumn('Name', function(GeoDivision $division) {
+            ->editColumn('Name', function (GeoDivision $division) {
                 return ucwords($division->name_en);
             })
-            ->editColumn('Name (in Bangla)', function(GeoDivision $division) {
+            ->editColumn('Name (in Bangla)', function (GeoDivision $division) {
                 return ucwords($division->name_bn);
             })
-            ->editColumn('Created By', function(GeoDivision $division) {
+            ->editColumn('Created By', function (GeoDivision $division) {
                 return ucwords($division->creator?->name);
             })
-            ->editColumn('Updated By', function(GeoDivision $division) {
+            ->editColumn('Updated By', function (GeoDivision $division) {
                 return ucwords($division->updater?->name);
             })
-            ->editColumn('created_at', function(GeoDivision $division) {
+            ->editColumn('created_at', function (GeoDivision $division) {
                 return $division->created_at->format('Y-m-d H:i');
             })
-            ->editColumn('updated_at', function(GeoDivision $division) {
+            ->editColumn('updated_at', function (GeoDivision $division) {
                 return $division->created_at->format('Y-m-d H:i');
             })
-            ->addColumn('actions', function(GeoDivision $division) {
+            ->addColumn('actions', function (GeoDivision $division) {
                 return view('division.actions', ['division' => $division]);
             });
     }
@@ -71,9 +67,9 @@ class DivisionsDataTable extends DataTable
             ->parameters([
                 'serverSide' => true,
                 'processing' => true,
-                'stateSave'  => false,
+                'stateSave' => false,
                 'pageLength' => 10,
-                'lengthMenu' => [[10, 20, 30, 40, 50, 100, -1], [10, 20, 30, 40, 50, 100, "All"]],
+                'lengthMenu' => [[10, 20, 30, 40, 50, 100, -1], [10, 20, 30, 40, 50, 100, 'All']],
             ]);
     }
 
@@ -104,6 +100,6 @@ class DivisionsDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'Divisions_' . date('YmdHis');
+        return 'Divisions_'.date('YmdHis');
     }
 }

@@ -3,14 +3,10 @@
 namespace App\DataTables;
 
 use App\Models\GeoDistrict;
-use App\Models\GeoDivision;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
-use Yajra\DataTables\Html\Button;
 use Yajra\DataTables\Html\Column;
-use Yajra\DataTables\Html\Editor\Editor;
-use Yajra\DataTables\Html\Editor\Fields;
 use Yajra\DataTables\Services\DataTable;
 
 class DistrictsDataTable extends DataTable
@@ -18,31 +14,31 @@ class DistrictsDataTable extends DataTable
     /**
      * Build the DataTable class.
      *
-     * @param QueryBuilder<GeoDistrict> $query Results from query() method.
+     * @param  QueryBuilder<GeoDistrict>  $query  Results from query() method.
      */
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
             ->setRowId('id')
-            ->editColumn('Name', function(GeoDistrict $district) {
+            ->editColumn('Name', function (GeoDistrict $district) {
                 return ucwords($district->name_en);
             })
-            ->editColumn('Name (in Bangla)', function(GeoDistrict $district) {
+            ->editColumn('Name (in Bangla)', function (GeoDistrict $district) {
                 return ucwords($district->name_bn);
             })
-            ->editColumn('Created By', function(GeoDistrict $district) {
+            ->editColumn('Created By', function (GeoDistrict $district) {
                 return ucwords($district->creator?->name);
             })
-            ->editColumn('Updated By', function(GeoDistrict $district) {
+            ->editColumn('Updated By', function (GeoDistrict $district) {
                 return ucwords($district->updater?->name);
             })
-            ->editColumn('created_at', function(GeoDistrict $district) {
+            ->editColumn('created_at', function (GeoDistrict $district) {
                 return $district->created_at->format('Y-m-d H:i');
             })
-            ->editColumn('updated_at', function(GeoDistrict $district) {
+            ->editColumn('updated_at', function (GeoDistrict $district) {
                 return $district->created_at->format('Y-m-d H:i');
             })
-            ->addColumn('actions', function(GeoDistrict $district) {
+            ->addColumn('actions', function (GeoDistrict $district) {
                 return view('district.actions', ['district' => $district]);
             });
     }
@@ -71,9 +67,9 @@ class DistrictsDataTable extends DataTable
             ->parameters([
                 'serverSide' => true,
                 'processing' => true,
-                'stateSave'  => false,
+                'stateSave' => false,
                 'pageLength' => 10,
-                'lengthMenu' => [[10, 20, 30, 40, 50, 100, -1], [10, 20, 30, 40, 50, 100, "All"]],
+                'lengthMenu' => [[10, 20, 30, 40, 50, 100, -1], [10, 20, 30, 40, 50, 100, 'All']],
             ]);
     }
 
@@ -104,6 +100,6 @@ class DistrictsDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'Districts_' . date('YmdHis');
+        return 'Districts_'.date('YmdHis');
     }
 }

@@ -17,9 +17,6 @@ trait RoleMethod
         return $this->name === config('boilerplate.access.role.admin');
     }
 
-    /**
-     * @return Collection
-     */
     public function getPermissionDescriptions(): Collection
     {
         return $this->permissions->pluck('description');

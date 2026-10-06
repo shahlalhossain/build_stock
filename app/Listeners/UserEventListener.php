@@ -8,15 +8,13 @@ use App\Events\User\UserDestroyed;
 use App\Events\User\UserRestored;
 use App\Events\User\UserUpdated;
 use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Events\Dispatcher;
 
 /**
  * Class UserEventListener.
  */
 class UserEventListener
 {
-    /**
-     * @param $event
-     */
     public function onLoggedIn($event)
     {
         // Update the logging in users time & IP
@@ -26,9 +24,6 @@ class UserEventListener
         ]);
     }
 
-    /**
-     * @param $event
-     */
     public function onPasswordReset($event)
     {
         $event->user->update([
@@ -36,55 +31,46 @@ class UserEventListener
         ]);
     }
 
-    /**
-     * @param $event
-     */
     public function onCreated($event)
     {
         activity('user')
             ->performedOn($event->user)
             ->withProperties([
                 'user' => [
-                    'type'      => $event->user->type,
-                    'name'      => $event->user->name,
-                    'mobile'    => $event->user->mobile,
-                    'email'     => $event->user->email,
+                    'type' => $event->user->type,
+                    'name' => $event->user->name,
+                    'mobile' => $event->user->mobile,
+                    'email' => $event->user->email,
                     'is_active' => $event->user->active,
                     'mobile_verified_at' => $event->user->email_verified_at,
-                    'email_verified_at'  => $event->user->email_verified_at,
+                    'email_verified_at' => $event->user->email_verified_at,
                 ],
-//                'roles' => $event->user->roles->count() ? $event->user->roles->pluck('name')->implode(', ') : 'None',
-//                'permissions' => $event->user->permissions ? $event->user->permissions->pluck('description')->implode(', ') : 'None',
+                //                'roles' => $event->user->roles->count() ? $event->user->roles->pluck('name')->implode(', ') : 'None',
+                //                'permissions' => $event->user->permissions ? $event->user->permissions->pluck('description')->implode(', ') : 'None',
             ])
             ->log(':causer.name created user :subject.name');
     }
 
-    /**
-     * @param $event
-     */
     public function onUpdated($event)
     {
         activity('user')
             ->performedOn($event->user)
             ->withProperties([
                 'user' => [
-                    'type'      => $event->user->type,
-                    'name'      => $event->user->name,
-                    'mobile'    => $event->user->mobile,
-                    'email'     => $event->user->email,
+                    'type' => $event->user->type,
+                    'name' => $event->user->name,
+                    'mobile' => $event->user->mobile,
+                    'email' => $event->user->email,
                     'is_active' => $event->user->active,
                     'mobile_verified_at' => $event->user->email_verified_at,
-                    'email_verified_at'  => $event->user->email_verified_at,
+                    'email_verified_at' => $event->user->email_verified_at,
                 ],
-//                'roles' => $event->user->roles->count() ? $event->user->roles->pluck('name')->implode(', ') : 'None',
-//                'permissions' => $event->user->permissions ? $event->user->permissions->pluck('description')->implode(', ') : 'None',
+                //                'roles' => $event->user->roles->count() ? $event->user->roles->pluck('name')->implode(', ') : 'None',
+                //                'permissions' => $event->user->permissions ? $event->user->permissions->pluck('description')->implode(', ') : 'None',
             ])
             ->log(':causer.name updated user :subject.name');
     }
 
-    /**
-     * @param $event
-     */
     public function onDeleted($event)
     {
         activity('users')
@@ -92,9 +78,6 @@ class UserEventListener
             ->log(':causer.name deleted users :subject.name');
     }
 
-    /**
-     * @param $event
-     */
     public function onRestored($event)
     {
         activity('users')
@@ -102,9 +85,6 @@ class UserEventListener
             ->log(':causer.name restored users :subject.name');
     }
 
-    /**
-     * @param $event
-     */
     public function onDestroyed($event)
     {
         activity('users')
@@ -112,9 +92,6 @@ class UserEventListener
             ->log(':causer.name permanently deleted users :subject.name');
     }
 
-    /**
-     * @param $event
-     */
     public function onStatusChanged($event)
     {
         activity('users')
@@ -125,7 +102,7 @@ class UserEventListener
     /**
      * Register the listeners for the subscriber.
      *
-     * @param  \Illuminate\Events\Dispatcher  $events
+     * @param  Dispatcher  $events
      */
     public function subscribe($events)
     {
@@ -135,7 +112,7 @@ class UserEventListener
         $events->listen(UserDeleted::class, 'App\Listeners\UserEventListener@onDeleted');
         $events->listen(UserRestored::class, 'App\Listeners\UserEventListener@onRestored');
         $events->listen(UserDestroyed::class, 'App\Listeners\UserEventListener@onDestroyed');
-        //TODO: UserRoleAssigned & UserRoleUpdated
-        //TODO: UserPermissionAssigned & UserPermissionUpdated
+        // TODO: UserRoleAssigned & UserRoleUpdated
+        // TODO: UserPermissionAssigned & UserPermissionUpdated
     }
 }

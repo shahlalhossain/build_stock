@@ -29,12 +29,12 @@ class Address extends Model
 
     protected $guarded = [];
 
-    public function model() : MorphTo
+    public function model(): MorphTo
     {
         return $this->morphTo(__FUNCTION__, 'model_name', 'model_id');
     }
 
-    public function addressType() : BelongsTo
+    public function addressType(): BelongsTo
     {
         return $this->belongsTo(AddressType::class, 'address_type_id');
     }

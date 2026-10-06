@@ -4,13 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Brand extends Model
 {
-    use SoftDeletes, LogsActivity;
+    use LogsActivity, SoftDeletes;
 
     protected $table = 'brands';
 
@@ -47,10 +47,10 @@ class Brand extends Model
     protected function casts(): array
     {
         return [
-            'created_at'        => 'datetime',
-            'updated_at'        => 'datetime',
-            'priority_order'    => 'integer',
-            'is_active'         => 'boolean',
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
+            'priority_order' => 'integer',
+            'is_active' => 'boolean',
         ];
     }
 
@@ -61,7 +61,7 @@ class Brand extends Model
         'restored',
     ];
 
-    public function getActivitylogOptions() : LogOptions
+    public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
             ->useLogName('brand')
@@ -69,17 +69,17 @@ class Brand extends Model
             ->logOnlyDirty();
     }
 
-    public function creator() : BelongsTo
+    public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function updater() : BelongsTo
+    public function updater(): BelongsTo
     {
         return $this->belongsTo(User::class, 'updated_by');
     }
 
-    public function deleter() : BelongsTo
+    public function deleter(): BelongsTo
     {
         return $this->belongsTo(User::class, 'deleted_by');
     }

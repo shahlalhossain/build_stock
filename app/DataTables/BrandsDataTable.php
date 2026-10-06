@@ -7,11 +7,7 @@ use App\Models\Brand;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
-use Yajra\DataTables\Html\Button;
 use Yajra\DataTables\Html\Column;
-use Yajra\DataTables\Html\Editor\Editor;
-use Yajra\DataTables\Html\Editor\Fields;
-use Yajra\DataTables\Html\SearchPane;
 use Yajra\DataTables\Services\DataTable;
 
 #[AllowDynamicProperties]
@@ -20,14 +16,14 @@ class BrandsDataTable extends DataTable
     /**
      * Build the DataTable class.
      *
-     * @param QueryBuilder $query Results from query() method.
+     * @param  QueryBuilder  $query  Results from query() method.
      */
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
             ->setRowId('id')
             ->addIndexColumn()
-            ->editColumn('Name', function(Brand $brand) {
+            ->editColumn('Name', function (Brand $brand) {
                 return ucwords($brand->name);
             })
             ->addColumn('is_active', function (Brand $brand) {
@@ -35,33 +31,34 @@ class BrandsDataTable extends DataTable
             })
             ->editColumn('status', function (Brand $brand) {
                 if ($brand->status === 'pending') {
-                    return '<span class="badge bg-warning">' . ucwords($brand->status) . '</span>';
+                    return '<span class="badge bg-warning">'.ucwords($brand->status).'</span>';
                 } elseif ($brand->status === 'approved') {
-                    return '<span class="badge bg-success">' . ucwords($brand->status) . '</span>';
+                    return '<span class="badge bg-success">'.ucwords($brand->status).'</span>';
                 } elseif ($brand->status === 'rejected') {
-                    return '<span class="badge bg-danger">' . ucwords($brand->status) . '</span>';
+                    return '<span class="badge bg-danger">'.ucwords($brand->status).'</span>';
                 } else {
-                    return '<span class="badge bg-secondary">' . ucwords('Unknown') . '</span>';
+                    return '<span class="badge bg-secondary">'.ucwords('Unknown').'</span>';
                 }
             })
 
-            ->editColumn('Created By', function(Brand $brand) {
+            ->editColumn('Created By', function (Brand $brand) {
                 return ucwords($brand->creator?->name);
             })
-            ->editColumn('Updated By', function(Brand $brand) {
+            ->editColumn('Updated By', function (Brand $brand) {
                 return ucwords($brand->updater?->name);
             })
 
-            ->editColumn('created_at', function(Brand $brand) {
+            ->editColumn('created_at', function (Brand $brand) {
                 return $brand->created_at->format('Y-m-d H:i');
             })
-            ->editColumn('updated_at', function(Brand $brand) {
+            ->editColumn('updated_at', function (Brand $brand) {
                 return $brand->created_at->format('Y-m-d H:i');
             })
             ->addColumn('actions', function (Brand $brand) {
                 if ($this->showTrashed) {
                     return view('brand.actions_trashed', ['brand' => $brand]);
                 }
+
                 return view('brand.actions', ['brand' => $brand]);
             })
             ->rawColumns(['status', 'is_active']);
@@ -75,6 +72,7 @@ class BrandsDataTable extends DataTable
         if ($this->showTrashed) {
             return $model->newQuery()->onlyTrashed();   // Show Trashed Records
         }
+
         return $model->newQuery()->withoutTrashed();    // Show Active Records
     }
 
@@ -92,10 +90,10 @@ class BrandsDataTable extends DataTable
             ->parameters([
                 'serverSide' => true,
                 'processing' => true,
-                'stateSave'  => false,
+                'stateSave' => false,
                 'pageLength' => 10,
-                'lengthMenu' => [[10, 20, 30, 40, 50, 100, -1], [10, 20, 30, 40, 50, 100, "All"]],
-        ]);
+                'lengthMenu' => [[10, 20, 30, 40, 50, 100, -1], [10, 20, 30, 40, 50, 100, 'All']],
+            ]);
     }
 
     /**
@@ -104,7 +102,7 @@ class BrandsDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            //Column::make('id')->orderable(true)->searchable(true)->addClass('text-center'),
+            // Column::make('id')->orderable(true)->searchable(true)->addClass('text-center'),
             Column::computed('DT_RowIndex')->title('SN')->orderable(false)->searchable(false)->addClass('text-center'),
             Column::make('name')->orderable(true)->searchable(true),
             Column::computed('is_active')->title('Active')->orderable(false)->searchable(false)->addClass('text-center'),
@@ -127,6 +125,6 @@ class BrandsDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'Brands_' . date('YmdHis');
+        return 'Brands_'.date('YmdHis');
     }
 }

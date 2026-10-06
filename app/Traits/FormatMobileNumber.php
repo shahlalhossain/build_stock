@@ -4,9 +4,9 @@ namespace App\Traits;
 
 trait FormatMobileNumber
 {
-    public function formatMobileNumber($mobileNumber) : ?string
+    public function formatMobileNumber($mobileNumber): ?string
     {
-        if (!$mobileNumber) {
+        if (! $mobileNumber) {
             return null;
         }
 

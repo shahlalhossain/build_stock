@@ -2,6 +2,11 @@
 
 namespace App\Services;
 
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
+
 /**
  * Class BaseRepository.
  *
@@ -12,14 +17,14 @@ abstract class BaseService
     /**
      * The repository model.
      *
-     * @var \Illuminate\Database\Eloquent\Model
+     * @var Model
      */
     protected $model;
 
     /**
      * The query builder.
      *
-     * @var \Illuminate\Database\Eloquent\Builder
+     * @var Builder
      */
     protected $query;
 
@@ -68,7 +73,7 @@ abstract class BaseService
     /**
      * Get all the model records in the database.
      *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return Collection
      */
     public function all()
     {
@@ -94,7 +99,7 @@ abstract class BaseService
     /**
      * Get the first specified model record from the database.
      *
-     * @return \Illuminate\Database\Eloquent\Model
+     * @return Model
      */
     public function first()
     {
@@ -110,7 +115,7 @@ abstract class BaseService
     /**
      * Get the first specified model record from the database or throw an exception if not found.
      *
-     * @return \Illuminate\Database\Eloquent\Model
+     * @return Model
      */
     public function firstOrFail()
     {
@@ -126,7 +131,7 @@ abstract class BaseService
     /**
      * Get all the specified model records in the database.
      *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return Collection
      */
     public function get()
     {
@@ -142,8 +147,7 @@ abstract class BaseService
     /**
      * Get the specified model record from the database.
      *
-     * @param $id
-     * @return \Illuminate\Database\Eloquent\Model
+     * @return Model
      */
     public function getById($id)
     {
@@ -155,10 +159,7 @@ abstract class BaseService
     }
 
     /**
-     * @param $item
-     * @param $column
-     * @param  array  $columns
-     * @return \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Eloquent\Model|object|null
+     * @return Builder|Model|object|null
      */
     public function getByColumn($item, $column, array $columns = ['*'])
     {
@@ -172,7 +173,6 @@ abstract class BaseService
     /**
      * Delete the specified model record from the database.
      *
-     * @param $id
      * @return bool|null
      *
      * @throws \Exception
@@ -213,10 +213,9 @@ abstract class BaseService
 
     /**
      * @param  int  $limit
-     * @param  array  $columns
      * @param  string  $pageName
      * @param  null  $page
-     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     * @return LengthAwarePaginator
      */
     public function paginate($limit = 25, array $columns = ['*'], $pageName = 'page', $page = null)
     {
@@ -263,7 +262,6 @@ abstract class BaseService
     /**
      * Set Eloquent relationships to eager load.
      *
-     * @param $relations
      * @return $this
      */
     public function with($relations)

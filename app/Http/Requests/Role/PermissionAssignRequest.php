@@ -16,22 +16,21 @@ class PermissionAssignRequest extends FormRequest
 
     /**
      * Get the validation rules that apply to the request.
-     * @return array
      */
-    public function rules() : array
+    public function rules(): array
     {
         return [
-            'permissions'   => ['nullable', 'array'],
+            'permissions' => ['nullable', 'array'],
             'permissions.*' => ['integer', 'exists:permissions,id'],
         ];
     }
 
-    public function messages() : array
+    public function messages(): array
     {
         return [
-            'permissions.array'     => 'Permissions must be Provided as an Array',
+            'permissions.array' => 'Permissions must be Provided as an Array',
             'permissions.*.integer' => 'Each Permission must be a Valid ID',
-            'permissions.*.exists'  => 'One or More Selected Permissions are Invalid',
+            'permissions.*.exists' => 'One or More Selected Permissions are Invalid',
         ];
     }
 }

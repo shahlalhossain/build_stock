@@ -15,17 +15,17 @@ trait RoleRelationship
         return $this->belongsToMany(Permission::class, 'role_has_permissions');
     }
 
-    public function creator() : BelongsTo
+    public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function updater() : BelongsTo
+    public function updater(): BelongsTo
     {
         return $this->belongsTo(User::class, 'updated_by');
     }
 
-    public function deleter() : BelongsTo
+    public function deleter(): BelongsTo
     {
         return $this->belongsTo(User::class, 'deleted_by');
     }

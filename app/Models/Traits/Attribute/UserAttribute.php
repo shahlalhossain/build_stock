@@ -9,20 +9,16 @@ use Illuminate\Support\Facades\Hash;
  */
 trait UserAttribute
 {
-
-    public function getCreatorNameAttribute() : string
+    public function getCreatorNameAttribute(): string
     {
         return $this->creator?->name ?? 'System';
     }
 
-    public function getUpdaterNameAttribute() : string
+    public function getUpdaterNameAttribute(): string
     {
         return $this->updater?->name ?? 'System';
     }
 
-    /**
-     * @param $password
-     */
     public function setPasswordAttribute($password): void
     {
         // If password was accidentally passed in already hashed, try not to double hash it

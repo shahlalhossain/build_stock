@@ -4,8 +4,6 @@ namespace App\Models;
 
 use App\Models\Traits\Relationship\PermissionRelationship;
 use App\Models\Traits\Scope\PermissionScope;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -14,12 +12,11 @@ use Spatie\Permission\Traits\HasPermissions;
 
 class Permission extends SpatiePermission
 {
-    use PermissionRelationship,
-        PermissionScope,
+    use HasPermissions,
         LogsActivity,
-        HasPermissions,
+        PermissionRelationship,
+        PermissionScope,
         SoftDeletes;
-
 
     protected $table = 'permissions';
 
@@ -36,12 +33,13 @@ class Permission extends SpatiePermission
     ];
 
     protected static $recordEvents = ['created', 'updated', 'deleted'];
-    public function getActivitylogOptions() : LogOptions
+
+    public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
             ->logOnly(['type', 'guard_name', 'parent_id', 'name', 'description'])
             ->useLogName('Permission')
             ->logOnlyDirty()
-            ->setDescriptionForEvent(fn(string $eventName) => "Record has been {$eventName}");
+            ->setDescriptionForEvent(fn (string $eventName) => "Record has been {$eventName}");
     }
 }

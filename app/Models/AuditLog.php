@@ -14,7 +14,7 @@ class AuditLog extends Model
         return [
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
-            'is_active'  => 'boolean',
+            'is_active' => 'boolean',
         ];
     }
 

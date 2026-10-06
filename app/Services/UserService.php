@@ -2,20 +2,20 @@
 
 namespace App\Services;
 
-use App\Models\User;
 use App\Events\User\UserCreated;
 use App\Events\User\UserDeleted;
 use App\Events\User\UserDestroyed;
 use App\Events\User\UserRestored;
 use App\Events\User\UserUpdated;
+use App\Exceptions\GeneralException;
+use App\Models\User;
+use Exception;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use App\Exceptions\GeneralException;
-use Exception;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Throwable;
 
@@ -41,7 +41,7 @@ class UserService extends BaseService
         return $this->model::byType($type)->get();
     }
 
-    public function createUser(array $data = []) : User
+    public function createUser(array $data = []): User
     {
         DB::beginTransaction();
 
@@ -57,7 +57,7 @@ class UserService extends BaseService
             Log::error($exception->getMessage());
             throw new GeneralException(__('There was a Problem Creating User. Please Try Again.'));
         }
-        //event(new UserCreated($user));
+        // event(new UserCreated($user));
         DB::commit();
 
         return $user;
@@ -69,7 +69,7 @@ class UserService extends BaseService
 
         try {
             // Remove Profile Picture
-            if (!empty($data['remove_profile_picture']) && $user->profile_picture) {
+            if (! empty($data['remove_profile_picture']) && $user->profile_picture) {
                 if (Storage::disk('public')->exists($user->profile_picture)) {
                     Storage::disk('public')->delete($user->profile_picture);
                 }
@@ -86,24 +86,25 @@ class UserService extends BaseService
             }
 
             $user->update([
-                'type'              => $data['type'] ?? null,
-                'name'              => $data['name'] ?? null,
-                'mobile'            => $data['mobile'] ?? null,
-                'email'             => $data['email'] ?? null,
-                'profile_picture'   => $data['profile_picture_path'],
-                'updated_by'        => Auth::id(),
+                'type' => $data['type'] ?? null,
+                'name' => $data['name'] ?? null,
+                'mobile' => $data['mobile'] ?? null,
+                'email' => $data['email'] ?? null,
+                'profile_picture' => $data['profile_picture_path'],
+                'updated_by' => Auth::id(),
             ]);
-            //event(new UserUpdated($user));
+            // event(new UserUpdated($user));
             DB::commit();
         } catch (Exception $exception) {
             Log::alert($exception->getMessage());
             DB::rollBack();
             throw new GeneralException(__('There was a Problem on Updating the User.'));
         }
+
         return $user;
     }
 
-    public function updateProfile(User $user, array $data = []) : User
+    public function updateProfile(User $user, array $data = []): User
     {
         // TODO:
         $user->name = $data['name'] ?? null;
@@ -118,7 +119,7 @@ class UserService extends BaseService
         return tap($user)->save();
     }
 
-    public function updatePassword(User $user, $data, $expired = false) : User
+    public function updatePassword(User $user, $data, $expired = false): User
     {
         if (isset($data['current_password'])) {
             throw_if(
@@ -137,36 +138,37 @@ class UserService extends BaseService
         return tap($user)->update();
     }
 
-    public function destroyUser($id) : bool
+    public function destroyUser($id): bool
     {
         DB::beginTransaction();
 
         try {
-            $user = User::findOrFail((int)$id);
+            $user = User::findOrFail((int) $id);
 
             if ($user->id === auth()->id()) {
                 throw new GeneralException(__('You Cannot Destroy Yourself.'));
             }
 
-            $user->is_active   = false;
-            $user->deleted_by  = Auth::id();
-            $user->deleted_at  = now();
+            $user->is_active = false;
+            $user->deleted_by = Auth::id();
+            $user->deleted_at = now();
 
             $result = $user->save();
             // event(new UserDestroyed($user));
             DB::commit();
+
             return $result;
         } catch (ModelNotFoundException $exception) {
             DB::rollBack();
             throw $exception;
         } catch (Throwable $exception) {
             DB::rollBack();
-            Log::error('User Destroy Failed in Service:' . $exception->getMessage());
+            Log::error('User Destroy Failed in Service:'.$exception->getMessage());
             throw new GeneralException(__('There was an issue on Destroy User.'));
         }
     }
 
-    public function restoreUser($id) : bool
+    public function restoreUser($id): bool
     {
         DB::beginTransaction();
         try {
@@ -178,18 +180,19 @@ class UserService extends BaseService
             $result = $user->save();
             // event(new UserRestored($user));
             DB::commit();
+
             return $result;
         } catch (ModelNotFoundException $exception) {
             DB::rollBack();
             throw $exception;
         } catch (Throwable $exception) {
             DB::rollBack();
-            Log::error('User Restore Failed: ' . $exception->getMessage());
+            Log::error('User Restore Failed: '.$exception->getMessage());
             throw new GeneralException(__('There was an issue on Restoring the User.'));
         }
     }
 
-    public function deleteUser($id) : bool
+    public function deleteUser($id): bool
     {
         DB::beginTransaction();
         try {
@@ -204,6 +207,7 @@ class UserService extends BaseService
             $user->permissions()->detach();
             $result = $user->forceDelete();
             DB::commit();
+
             // event(new UserDeleted($user));
             return $result;
         } catch (ModelNotFoundException $exception) {
@@ -211,48 +215,49 @@ class UserService extends BaseService
             throw $exception;
         } catch (Throwable $exception) {
             DB::rollBack();
-            Log::error('User Permanent Deletion Failed in Service:' . $exception->getMessage());
+            Log::error('User Permanent Deletion Failed in Service:'.$exception->getMessage());
             throw new GeneralException(__('There was an issue on Deleting the User.'));
         }
     }
 
-    protected function storeUser(array $data = []) : User
+    protected function storeUser(array $data = []): User
     {
         $userData = [
-            'type'                  => $data['type'] ?? $this->model::TYPE_USER,
-            'username'              => $this->generateNextUsername(),
-            'name'                  => trim($data['name']) ?? null,
-            'mobile'                => $this->formatMobileNumber($data['mobile']),
-            'email'                 => trim($data['email']) ?? null,
-            'password'              => trim($data['password']) ?? null,
+            'type' => $data['type'] ?? $this->model::TYPE_USER,
+            'username' => $this->generateNextUsername(),
+            'name' => trim($data['name']) ?? null,
+            'mobile' => $this->formatMobileNumber($data['mobile']),
+            'email' => trim($data['email']) ?? null,
+            'password' => trim($data['password']) ?? null,
 
-            'profile_picture'       => $data['profile_picture_path'] ?? null,
+            'profile_picture' => $data['profile_picture_path'] ?? null,
 
-            'is_mobile_verified'    => $data['is_mobile_verified'] ?? 0,
-            'is_email_verified'     => $data['is_email_verified'] ?? 0,
-            'mobile_verified_at'    => $data['mobile_verified_at'] ?? null,
-            'email_verified_at'     => $data['email_verified_at'] ?? null,
+            'is_mobile_verified' => $data['is_mobile_verified'] ?? 0,
+            'is_email_verified' => $data['is_email_verified'] ?? 0,
+            'mobile_verified_at' => $data['mobile_verified_at'] ?? null,
+            'email_verified_at' => $data['email_verified_at'] ?? null,
 
-            'is_active'             => true,
+            'is_active' => true,
             'registration_platform' => 'CMS',
-            'created_by'            => auth()->user()->id,
-            'updated_by'            => auth()->user()->id,
-            'timezone'              => 'Asia/Dhaka',
+            'created_by' => auth()->user()->id,
+            'updated_by' => auth()->user()->id,
+            'timezone' => 'Asia/Dhaka',
         ];
 
         return $this->model::create($userData);
     }
 
-    public function generateNextUsername() : string
+    public function generateNextUsername(): string
     {
         $maxUsername = User::max('username');
-        if (!is_numeric($maxUsername)) {
+        if (! is_numeric($maxUsername)) {
             return '100000001';
         }
-        return (string)((int)$maxUsername + 1);
+
+        return (string) ((int) $maxUsername + 1);
     }
 
-    public function formatMobileNumber($mobileNumber) : string
+    public function formatMobileNumber($mobileNumber): string
     {
         // TODO: Move it to Public Trait
         // Take Last 11 Digits

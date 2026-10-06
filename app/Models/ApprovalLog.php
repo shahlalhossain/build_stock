@@ -23,12 +23,12 @@ class ApprovalLog extends Model
         'actioned_at' => 'datetime',
     ];
 
-    public function model() : MorphTo
+    public function model(): MorphTo
     {
         return $this->morphTo();
     }
 
-    public function actionedBy() : BelongsTo
+    public function actionedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'actioned_by');
     }

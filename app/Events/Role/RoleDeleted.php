@@ -12,14 +12,8 @@ class RoleDeleted
 {
     use SerializesModels;
 
-    /**
-     * @var
-     */
     public $role;
 
-    /**
-     * @param $role
-     */
     public function __construct(Role $role)
     {
         $this->role = $role;

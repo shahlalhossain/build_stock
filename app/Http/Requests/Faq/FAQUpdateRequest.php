@@ -15,33 +15,33 @@ class FAQUpdateRequest extends FormRequest
         return true;
     }
 
-    public function rules() : array
+    public function rules(): array
     {
         return [
-            'faq_category_id'   => 'required|exists:faq_categories,id',
-            'question'          => ['required', 'string', 'max:255', Rule::unique('faqs', 'question')->ignore($this->faq)],
-            'answer'            => 'required|string|max:255',
-            'language'          => 'nullable|string|in:Bangla,English',
+            'faq_category_id' => 'required|exists:faq_categories,id',
+            'question' => ['required', 'string', 'max:255', Rule::unique('faqs', 'question')->ignore($this->faq)],
+            'answer' => 'required|string|max:255',
+            'language' => 'nullable|string|in:Bangla,English',
         ];
     }
 
-    public function messages() : array
+    public function messages(): array
     {
         return [
-            'faq_category_id.required'  => __('Category is Required'),
-            'faq_category_id.exists'    => __('Selected Category is Invalid'),
+            'faq_category_id.required' => __('Category is Required'),
+            'faq_category_id.exists' => __('Selected Category is Invalid'),
 
             'question.required' => __('Question is Required'),
-            'question.unique'   => __('This Question has already been taken'),
-            'question.string'   => __('Question must be a Valid String'),
-            'question.max'      => __('Question may not Exceed 255 Characters'),
+            'question.unique' => __('This Question has already been taken'),
+            'question.string' => __('Question must be a Valid String'),
+            'question.max' => __('Question may not Exceed 255 Characters'),
 
             'answer.required' => __('Answer is Required'),
-            'answer.string'   => __('Answer must be a Valid String'),
-            'answer.max'      => __('Answer may not Exceed 255 Characters'),
+            'answer.string' => __('Answer must be a Valid String'),
+            'answer.max' => __('Answer may not Exceed 255 Characters'),
 
             'language.string' => __('Language must be a Valid String'),
-            'language.in'     => __('Language must be either Bangla or English'),
+            'language.in' => __('Language must be either Bangla or English'),
         ];
     }
 }

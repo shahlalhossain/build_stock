@@ -42,17 +42,17 @@ class ProductService extends BaseService
         DB::beginTransaction();
         try {
             $productData = [
-                'category_id'       => $data['category_id'] ?? null,
-                'sub_category_id'   => $data['sub_category_id'] ?? null,
-                'brand_id'          => $data['brand_id'] ?? null,
-                'unit_id'           => $data['unit_id'] ?? null,
-                'name'              => $data['name'] ?? null,
-                'code'              => $this->generateProductCode(),
-                'sku'               => $this->generateSKU(),
-                'description'       => $data['description'] ?? null,
-                'is_active'         => true,
-                'created_by'        => Auth::id(),
-                'updated_by'        => Auth::id(),
+                'category_id' => $data['category_id'] ?? null,
+                'sub_category_id' => $data['sub_category_id'] ?? null,
+                'brand_id' => $data['brand_id'] ?? null,
+                'unit_id' => $data['unit_id'] ?? null,
+                'name' => $data['name'] ?? null,
+                'code' => $this->generateProductCode(),
+                'sku' => $this->generateSKU(),
+                'description' => $data['description'] ?? null,
+                'is_active' => true,
+                'created_by' => Auth::id(),
+                'updated_by' => Auth::id(),
             ];
 
             $product = $this->model::create($productData);
@@ -84,13 +84,13 @@ class ProductService extends BaseService
             $name = $data['name'] ?? null;
 
             $updateData = [
-                'category_id'       => $data['category_id'] ?? null,
-                'sub_category_id'   => $data['sub_category_id'] ?? null,
-                'brand_id'          => $data['brand_id'] ?? null,
-                'unit_id'           => $data['unit_id'] ?? null,
-                'name'              => $name,
-                'description'       => $data['description'] ?? null,
-                'updated_by'        => Auth::id(),
+                'category_id' => $data['category_id'] ?? null,
+                'sub_category_id' => $data['sub_category_id'] ?? null,
+                'brand_id' => $data['brand_id'] ?? null,
+                'unit_id' => $data['unit_id'] ?? null,
+                'name' => $name,
+                'description' => $data['description'] ?? null,
+                'updated_by' => Auth::id(),
             ];
 
             // Generate New SKU Only if Product Name Changed
@@ -99,10 +99,10 @@ class ProductService extends BaseService
             }
 
             // Check Whether Attributes have Changed
-            $attributeValueIds          = $data['attribute_value_ids'] ?? [];
-            $existingAttributeValueIds  = $product->attributeValues()->pluck('attribute_values.id')->map(fn ($id) => (int) $id)->sort()->values()->toArray();
-            $newAttributeValueIds       = collect($attributeValueIds)->map(fn ($id) => (int) $id)->sort()->values()->toArray();
-            $attributesChanged          = $existingAttributeValueIds !== $newAttributeValueIds;
+            $attributeValueIds = $data['attribute_value_ids'] ?? [];
+            $existingAttributeValueIds = $product->attributeValues()->pluck('attribute_values.id')->map(fn ($id) => (int) $id)->sort()->values()->toArray();
+            $newAttributeValueIds = collect($attributeValueIds)->map(fn ($id) => (int) $id)->sort()->values()->toArray();
+            $attributesChanged = $existingAttributeValueIds !== $newAttributeValueIds;
 
             $product->update($updateData);
 
@@ -146,12 +146,12 @@ class ProductService extends BaseService
             $result = $product->saveQuietly();
 
             ApprovalLog::create([
-                'model_type'    => Product::class,
-                'model_id'      => $product->id,
-                'action_name'   => $status,
-                'actioned_by'   => Auth::id(),
-                'actioned_at'   => now(),
-                'remarks'       => $remarks,
+                'model_type' => Product::class,
+                'model_id' => $product->id,
+                'action_name' => $status,
+                'actioned_by' => Auth::id(),
+                'actioned_at' => now(),
+                'remarks' => $remarks,
             ]);
 
             activity()
@@ -160,9 +160,9 @@ class ProductService extends BaseService
                 ->useLog('product')
                 ->event('statusUpdated')
                 ->withProperties([
-                    'old_status'    => $oldStatus,
-                    'new_status'    => $status,
-                    'remarks'       => $remarks,
+                    'old_status' => $oldStatus,
+                    'new_status' => $status,
+                    'remarks' => $remarks,
                 ])
                 ->log('statusUpdated');
 
@@ -180,7 +180,6 @@ class ProductService extends BaseService
             throw new GeneralException(__('There was an issue on Product Status Update'));
         }
     }
-
 
     /**
      * @throws GeneralException
@@ -384,7 +383,7 @@ class ProductService extends BaseService
         foreach ($combinations as $attributeValueIds) {
             $productVariant = $existingByCombination->get($this->combinationKey($attributeValueIds));
 
-            if (!$productVariant) {
+            if (! $productVariant) {
                 $productVariant = new ProductVariant(['product_id' => $product->id]);
             } elseif ($productVariant->trashed()) {
                 $productVariant->deleted_at = null;
@@ -394,7 +393,7 @@ class ProductService extends BaseService
 
             $sku = $productVariant->sku;
 
-            if (!$sku) {
+            if (! $sku) {
                 $nextSkuSequence ??= $this->nextVariantSkuSequence($product);
                 $sku = $product->code.'-'.str_pad((string) $nextSkuSequence, 3, '0', STR_PAD_LEFT);
                 $nextSkuSequence++;
@@ -407,7 +406,7 @@ class ProductService extends BaseService
                 'updated_by' => Auth::id(),
             ]);
 
-            if (!$productVariant->exists) {
+            if (! $productVariant->exists) {
                 $productVariant->created_by = Auth::id();
             }
 
@@ -511,13 +510,14 @@ class ProductService extends BaseService
     protected function generateProductCode(): int
     {
         $maxCode = Product::max('code');
+
         return $maxCode !== null ? (int) $maxCode + 1 : 10000000;
     }
 
     /**
      * Generate the next Sequential Product SKU (e.g. PRD-0001).
      */
-    protected function generateSKU() : string
+    protected function generateSKU(): string
     {
         $lastNumber = Product::withTrashed()
             ->where('code', 'like', 'PRD-%')

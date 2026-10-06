@@ -234,17 +234,7 @@
                                     @php
                                         $loginActivities = auth()->user()->loginActivities()->latest('login_at')->get();
 
-                                        $currentAgent = new \Jenssegers\Agent\Agent();
-                                        $currentAgent->setUserAgent(request()->userAgent());
-
-                                        $currentLoginActivityId = auth()->user()->loginActivities()
-                                            ->where('is_active', true)
-                                            ->where('ip_address', request()->ip())
-                                            ->where('os', $currentAgent->platform() ?: 'Unknown')
-                                            ->where('browser', $currentAgent->browser() ?: 'Unknown')
-                                            ->where('device', $currentAgent->isDesktop() ? 'Desktop' : ($currentAgent->device() ?: 'Unknown'))
-                                            ->latest('login_at')
-                                            ->value('id');
+                                        $currentLoginActivityId = \App\Models\LoginActivity::currentIdFor(auth()->user(), request());
 
                                         $loginActivityIcon = function (?string $device) {
                                             $device = blank($device) || $device === '0' ? '' : strtolower($device);
