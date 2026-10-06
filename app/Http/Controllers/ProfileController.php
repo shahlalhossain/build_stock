@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\DataTables\ProfileActivityLogsDataTable;
 use App\Models\LoginActivity;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -15,9 +16,9 @@ use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
-    public function profile(): View
+    public function profile(ProfileActivityLogsDataTable $activityLogsDataTable): JsonResponse|View
     {
-        return view('account.profile');
+        return $activityLogsDataTable->render('account.profile');
     }
 
     public function editProfile(): View

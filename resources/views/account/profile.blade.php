@@ -287,7 +287,15 @@
                                     @endforelse
                                 </div>
                                 <div class="tab-pane" id="activityLogs" role="tabpanel">
-                                    {{-- TODO: LoggedIn User's Activity Logs. Task 7 --}}
+                                    <div class="mb-3 border-bottom pb-2">
+                                        <h5 class="card-title" style="font-size: 14px; font-weight: bold; font-style: italic;">
+                                            {{ __('Activity Logs') }}
+                                        </h5>
+                                    </div>
+
+                                    <table id="profile-activity-logs-table" class="table table-hover table-bordered dt-responsive nowrap table-striped align-middle" style="width:100%">
+
+                                    </table>
                                 </div>
                                 <div class="tab-pane" id="accountSettings" role="tabpanel">
                                     {{-- TODO: LoggedIn User's Account Settings --}}
@@ -325,8 +333,14 @@
 @endsection
 
 @push('scripts')
+    {{ $dataTable->scripts(attributes: ['type' => 'module']) }}
     <script>
         $(document).ready(function () {
+            // The table is initialised while its tab is hidden, so column widths need a recalculation on show.
+            $('a[href="#activityLogs"]').on('shown.bs.tab', function () {
+                $('#profile-activity-logs-table').DataTable().columns.adjust();
+            });
+
             /*
             |--------------------------------------------------------------------------
             | CHANGE PASSWORD: SHOW/HIDE TOGGLE FOR EACH INPUT
