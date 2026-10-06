@@ -99,10 +99,10 @@
                                         <table class="table mb-0">
                                             <tbody>
                                             @php $profileUser = auth()->user(); @endphp
-                                            <tr><th scope="row" style="width: 200px;">Name</th><td>{{ $profileUser->name }}</td></tr>
-                                            <tr><th scope="row">Email</th><td>{{ $profileUser->email ?: '-' }}</td></tr>
-                                            <tr><th scope="row">Mobile</th><td>{{ $profileUser->mobile ?: '-' }}</td></tr>
-                                            <tr><th scope="row">Registered At</th><td>{{ $profileUser->created_at?->format('Y-m-d') ?? '-' }}</td></tr>
+                                            <tr><th scope="row" style="width: 200px;">{{ __('Name') }}</th><td>{{ $profileUser->name }}</td></tr>
+                                            <tr><th scope="row">{{ __('Email') }}</th><td>{{ $profileUser->email ?: '-' }}</td></tr>
+                                            <tr><th scope="row">{{ __('Mobile') }}</th><td>{{ $profileUser->mobile ?: '-' }}</td></tr>
+                                            <tr><th scope="row">{{ __('Registered At') }}</th><td>{{ $profileUser->created_at?->format('Y-m-d') ?? '-' }}</td></tr>
                                             </tbody>
                                         </table>
                                     </div>
