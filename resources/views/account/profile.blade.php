@@ -59,12 +59,6 @@
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" data-bs-toggle="tab" href="#changePasswordLogs" role="tab" title="{{ __('Password Change Logs') }}">
-                                        <i class="ri-history-line profile-tab-icon d-inline d-md-none"></i>
-                                        <span class="d-none d-md-inline">{{ __('Password Change Logs') }}</span>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
                                     <a class="nav-link" data-bs-toggle="tab" href="#loginHistory" role="tab" title="{{ __('Login History') }}">
                                         <i class="ri-login-circle-line profile-tab-icon d-inline d-md-none"></i>
                                         <span class="d-none d-md-inline">{{ __('Login History') }}</span>
@@ -74,12 +68,6 @@
                                     <a class="nav-link" data-bs-toggle="tab" href="#activityLogs" role="tab" title="{{ __('Activity Logs') }}">
                                         <i class="ri-file-list-3-line profile-tab-icon d-inline d-md-none"></i>
                                         <span class="d-none d-md-inline">{{ __('Activity Logs') }}</span>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" data-bs-toggle="tab" href="#accountSettings" role="tab" title="{{ __('Account Settings') }}">
-                                        <i class="ri-settings-4-line profile-tab-icon d-inline d-md-none"></i>
-                                        <span class="d-none d-md-inline">{{ __('Account Settings') }}</span>
                                     </a>
                                 </li>
                             </ul>
@@ -226,9 +214,6 @@
                                         </div>
                                     </form>
                                 </div>
-                                <div class="tab-pane" id="changePasswordLogs" role="tabpanel">
-                                    {{-- TODO: LoggedIn User's Password Change HIstory/Logs --}}
-                                </div>
                                 <div class="tab-pane" id="loginHistory" role="tabpanel">
                                     @php
                                         $loginActivities = auth()->user()->loginActivities()->latest('login_at')->get();
@@ -296,9 +281,6 @@
                                     <table id="profile-activity-logs-table" class="table table-hover table-bordered dt-responsive nowrap table-striped align-middle" style="width:100%">
 
                                     </table>
-                                </div>
-                                <div class="tab-pane" id="accountSettings" role="tabpanel">
-                                    {{-- TODO: LoggedIn User's Account Settings --}}
                                 </div>
                             </div>
                         </div>
