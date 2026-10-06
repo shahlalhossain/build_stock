@@ -273,19 +273,16 @@
 
                                     @forelse($loginActivities as $loginActivity)
                                         <div class="d-flex align-items-center mb-3" data-login-activity-id="{{ $loginActivity->id }}">
-                                            <div class="flex-shrink-0 avatar-sm">
-                                                <div class="avatar-title bg-light text-primary rounded-3 fs-18 material-shadow">
+                                            @php $isCurrentDevice = $loginActivity->id === $currentLoginActivityId; @endphp
+                                            <div class="flex-shrink-0 avatar-xs">
+                                                <div class="avatar-title rounded-2 fs-18 material-shadow {{ $isCurrentDevice ? 'bg-success text-white' : 'bg-light text-primary' }}"
+                                                     @if($isCurrentDevice) title="{{ __('This Device') }}" @endif>
                                                     <i class="{{ $loginActivityIcon($loginActivity->device) }}"></i>
                                                 </div>
                                             </div>
                                             <div class="flex-grow-1 ms-3">
-                                                <h6>
-                                                    {{ $loginActivityValue($loginActivity->device, 'Unknown Device') }} &middot; {{ $loginActivityValue($loginActivity->os, 'Unknown OS') }} &middot; {{ $loginActivityValue($loginActivity->browser, 'Unknown Browser') }}
-                                                    @if($loginActivity->id === $currentLoginActivityId)
-                                                        <span class="badge bg-success-subtle text-success align-middle">{{ __('This Device') }}</span>
-                                                    @endif
-                                                </h6>
-                                                <p class="text-muted mb-0">{{ $loginActivityValue($loginActivity->ip_address, 'Unknown IP') }} - {{ $loginActivity->login_at?->format('M d \a\t h:iA') ?? '-' }}</p>
+                                                <span class="fw-semibold">{{ $loginActivityValue($loginActivity->device, 'Unknown Device') }} -- {{ $loginActivityValue($loginActivity->os, 'Unknown OS') }} -- {{ $loginActivityValue($loginActivity->browser, 'Unknown Browser') }}</span>
+                                                <span class="text-muted"> -- {{ $loginActivityValue($loginActivity->ip_address, 'Unknown IP') }} -- {{ $loginActivity->login_at?->format('M d \a\t h:iA') ?? '-' }}</span>
                                             </div>
                                             <div>
                                                 @if($loginActivity->is_active)

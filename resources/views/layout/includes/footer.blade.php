@@ -6,7 +6,7 @@
                 <script>document.write(new Date().getFullYear())</script> © BuildStock
             </div>
             <div class="col-sm-6">
-                <div class="text-sm-end d-none d-sm-block">Design & Develop by Shahlal Hossain</div>
+                <div class="text-sm-end d-none d-sm-block">Design & Develop by SHTech</div>
             </div>
         </div>
     </div>
