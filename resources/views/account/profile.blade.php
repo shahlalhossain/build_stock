@@ -89,7 +89,7 @@
                                 <div class="tab-pane active" id="profileDetails" role="tabpanel">
                                     <div class="mb-3 border-bottom">
                                         <div class="float-end">
-                                            <a href="javascript:void(0);" class="link-primary">Update Information</a>
+                                            <a href="javascript:void(0);" class="link-primary">{{ __('Update Information') }}</a>
                                         </div>
                                         <h5 class="card-title" style="font-size: 14px; font-weight: bold; font-style: italic;">
                                             {{ __('Personal Details') }}
@@ -287,7 +287,7 @@
                                     @endforelse
                                 </div>
                                 <div class="tab-pane" id="activityLogs" role="tabpanel">
-                                    {{-- TODO: LoggedIn User's Activity Logs --}}
+                                    {{-- TODO: LoggedIn User's Activity Logs. Task 7 --}}
                                 </div>
                                 <div class="tab-pane" id="accountSettings" role="tabpanel">
                                     {{-- TODO: LoggedIn User's Account Settings --}}
