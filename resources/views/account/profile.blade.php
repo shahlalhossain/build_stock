@@ -53,6 +53,12 @@
                                     </a>
                                 </li>
                                 <li class="nav-item">
+                                    <a class="nav-link" data-bs-toggle="tab" href="#notificationPreferences" role="tab" title="{{ __('Notification Preferences') }}">
+                                        <i class="ri-settings-3-line profile-tab-icon d-inline d-md-none"></i>
+                                        <span class="d-none d-md-inline">{{ __('Notification Preferences') }}</span>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
                                     <a class="nav-link" data-bs-toggle="tab" href="#changePassword" role="tab" title="{{ __('Change Password') }}">
                                         <i class="ri-key-line profile-tab-icon d-inline d-md-none"></i>
                                         <span class="d-none d-md-inline">{{ __('Change Password') }}</span>
@@ -236,6 +242,8 @@
                                         </ul>
                                     </nav>
                                 </div>
+                                @include('account.partials.notification-preferences')
+
                                 <div class="tab-pane" id="changePassword" role="tabpanel">
                                     <form id="changePasswordForm" action="javascript:void(0);">
                                         <div id="changePasswordApiErrors" class="mb-2"></div>

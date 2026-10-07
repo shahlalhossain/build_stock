@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\DataTables\ProfileActivityLogsDataTable;
 use App\Models\LoginActivity;
+use App\Services\UserNotificationPreferenceService;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -16,9 +17,14 @@ use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
-    public function profile(ProfileActivityLogsDataTable $activityLogsDataTable): JsonResponse|View
+    /**
+     * Shows the logged-in user's profile page (including their notification channel switches).
+     */
+    public function profile(ProfileActivityLogsDataTable $activityLogsDataTable, UserNotificationPreferenceService $preferenceService): JsonResponse|View
     {
-        return $activityLogsDataTable->render('account.profile');
+        return $activityLogsDataTable->render('account.profile', [
+            'notificationChannels' => $preferenceService->channelsFor(Auth::user()),
+        ]);
     }
 
     public function editProfile(): View
