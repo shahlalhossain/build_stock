@@ -33,6 +33,13 @@
                 </li>
                 <div class="divider"></div>
 
+                <li class="nav-item {{ request()->routeIs('my-notification.*') ? 'active-menu' : '' }}">
+                    <a class="nav-link" href="{{ route('my-notification.index') }}">
+                        <i class="ri-notification-3-line"></i><span>{{ __('My Notifications') }}</span>
+                    </a>
+                </li>
+                <div class="divider"></div>
+
 {{--                <li class="nav-item {{ request()->routeIs('brand.*') ? 'active-menu' : '' }}">--}}
 {{--                    <a class="nav-link" href="{{ route('brand.index') }}">--}}
 {{--                        <i class="ri-apps-2-line"></i><span>{{ __('Manage Brands') }}</span>--}}
@@ -160,6 +167,56 @@
                     </li>
                     <div class="divider"></div>
                 @endcan
+
+                @canany(['notification.index', 'notification.send', 'notification-log.index', 'notification-channel.index', 'notification-setting.index', 'notification-template.index'])
+                    <li class="nav-item">
+                        <a class="nav-link menu-link" href="#manageNotifications" data-bs-toggle="collapse" role="button" aria-expanded="{{ request()->routeIs('notification.*', 'notification-log.*', 'notification-channel.*', 'notification-setting.*', 'notification-template.*') ? 'true' : 'false' }}" aria-controls="manageNotifications">
+                            <i class="ri-notification-3-line"></i><span>{{ __('Notifications') }}</span>
+                        </a>
+
+                        <div class="collapse menu-dropdown {{ request()->routeIs('notification.*', 'notification-log.*', 'notification-channel.*', 'notification-setting.*', 'notification-template.*') ? 'show' : '' }}" id="manageNotifications">
+                            <ul class="nav nav-sm flex-column">
+                                @can('notification.index')
+                                    <div class="divider"></div>
+                                    <li class="nav-item {{ request()->routeIs('notification.index', 'notification.show') ? 'active-menu' : '' }}">
+                                        <a href="{{ route('notification.index') }}" class="nav-link"><i class="ri-notification-3-line"></i> {{ __('Notification List') }}</a>
+                                    </li>
+                                @endcan
+                                @can('notification.send')
+                                    <div class="divider"></div>
+                                    <li class="nav-item {{ request()->routeIs('notification.create') ? 'active-menu' : '' }}">
+                                        <a href="{{ route('notification.create') }}" class="nav-link"><i class="ri-send-plane-line"></i> {{ __('Send Notification') }}</a>
+                                    </li>
+                                @endcan
+                                @can('notification-log.index')
+                                    <div class="divider"></div>
+                                    <li class="nav-item {{ request()->routeIs('notification-log.*') ? 'active-menu' : '' }}">
+                                        <a href="{{ route('notification-log.index') }}" class="nav-link"><i class="ri-file-list-3-line"></i> {{ __('Notification Logs') }}</a>
+                                    </li>
+                                @endcan
+                                @can('notification-channel.index')
+                                    <div class="divider"></div>
+                                    <li class="nav-item {{ request()->routeIs('notification-channel.*') ? 'active-menu' : '' }}">
+                                        <a href="{{ route('notification-channel.index') }}" class="nav-link"><i class="ri-apps-2-line"></i> {{ __('Channels') }}</a>
+                                    </li>
+                                @endcan
+                                @can('notification-setting.index')
+                                    <div class="divider"></div>
+                                    <li class="nav-item {{ request()->routeIs('notification-setting.*') ? 'active-menu' : '' }}">
+                                        <a href="{{ route('notification-setting.index') }}" class="nav-link"><i class="ri-apps-2-line"></i> {{ __('Settings') }}</a>
+                                    </li>
+                                @endcan
+                                @can('notification-template.index')
+                                    <div class="divider"></div>
+                                    <li class="nav-item {{ request()->routeIs('notification-template.*') ? 'active-menu' : '' }}">
+                                        <a href="{{ route('notification-template.index') }}" class="nav-link"><i class="ri-apps-2-line"></i> {{ __('Templates') }}</a>
+                                    </li>
+                                @endcan
+                            </ul>
+                        </div>
+                    </li>
+                    <div class="divider"></div>
+                @endcanany
 
                 <li class="nav-item {{ request()->routeIs('supplier.*') ? 'active-menu' : '' }}">
                     <a class="nav-link" href="{{ route('supplier.index') }}">

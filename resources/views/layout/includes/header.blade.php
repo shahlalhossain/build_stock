@@ -47,28 +47,18 @@
                     </button>
                 </div>
 
-{{--                TODO: --}}
-{{--                1. After 8 Notification Records, Section Inside Content will be Scrollable--}}
-{{--                2. Not Mobile Responsive, should be Mobile Responsive--}}
-{{--                3. No CSS is Expected--}}
-{{--                4. On Click "Mark as Read", Will be create new Record (logs) in Database (notification_id, user_id, is_read, ready_at). Ajax Route Call - Future Scope - We will work on it later on.--}}
-{{--                5. After "Mark as Read", Title will be Normal (Not Bold). Update "Unread Notification Count".--}}
-{{--                6. On Click "Delete", Will be create new Record (logs) in Database (notification_id, user_id, is_deleted, deleted_at). Ajax Route Call - Future Scope - We will work on it later on.--}}
-{{--                7. After "Delete", Notification will be vanish (DOM Delete), No Page Refresh/Reload. Update "Unread Notification Count" - if it is "Unread".--}}
-{{--                8. "See All Notifications" will be link to a Notification List Page--}}
-{{--                Notes: Velzon Admin Template (Bootstrap) is Using--}}
-
+                {{-- Notification bell: the list is filled from "my-notification.summary" by layout/includes/notification-bell-script.blade.php --}}
                 <div class="dropdown topbar-head-dropdown ms-1 header-item" id="notificationDropdown">
 
                     <!-- Notification Bell -->
                     <button type="button" class="btn btn-icon btn-topbar material-shadow-none btn-ghost-secondary rounded-circle" id="page-header-notifications-dropdown" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-haspopup="true" aria-expanded="false">
                         <i class="bx bx-bell fs-22"></i>
                         <!-- Unread Count -->
-                        <span id="notification-count" class="position-absolute topbar-badge fs-10 translate-middle badge rounded-pill bg-danger">3</span>
+                        <span id="notification-count" class="position-absolute topbar-badge fs-10 translate-middle badge rounded-pill bg-danger d-none">0</span>
                     </button>
 
                     <!-- Notification Dropdown -->
-                    <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end p-0" aria-labelledby="page-header-notifications-dropdown" style="width: 480px;">
+                    <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end p-0" aria-labelledby="page-header-notifications-dropdown" style="width: 480px; max-width: 95vw;">
 
                         <!-- Header -->
                         <div class="dropdown-head bg-primary bg-pattern rounded-top">
@@ -78,290 +68,17 @@
                                         <h6 class="m-0 fs-16 fw-semibold text-white">Notifications</h6>
                                     </div>
                                     <div class="col-auto">
-                                        <span class="badge bg-light text-body fs-13"><span id="notification-header-count">3</span> New</span>
+                                        <span class="badge bg-light text-body fs-13 d-none"><span id="notification-header-count">0</span> New</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Notification List -->
-                        <div id="notification-list">
-
-                            <!-- Notification 1 -->
-                            <div class="text-reset notification-item d-block dropdown-item position-relative notification-unread" data-notification-id="1">
-                                <div class="d-flex align-items-start">
-                                    <!-- Icon -->
-                                    <div class="avatar-xs me-3 flex-shrink-0">
-                                        <span class="avatar-title bg-info-subtle text-info rounded-circle fs-16"><i class="bx bx-badge-check"></i></span>
-                                    </div>
-                                    <!-- Content -->
-                                    <div class="flex-grow-1">
-                                        <h6 class="mt-0 mb-1 fs-13 fw-semibold">Your Elite author reward is ready!</h6>
-                                        <p class="mb-0 fs-11 fw-medium text-muted">30 minutes ago</p>
-                                    </div>
-                                    <!-- Actions -->
-                                    <div class="d-flex align-items-center ms-2 gap-2">
-                                        <!-- Mark as Read -->
-                                        <button type="button" class="btn btn-sm btn-icon btn-ghost-success mark-notification-read" data-id="1" title="Mark as read">
-                                            <i class="bx bx-check fs-16"></i>
-                                        </button>
-                                        <!-- Delete -->
-                                        <button type="button" class="btn btn-sm btn-icon btn-ghost-danger delete-notification" data-id="1" title="Delete">
-                                            <i class="bx bx-trash fs-16"></i>
-                                        </button>
-
-                                    </div>
-
-                                </div>
-                            </div>
-
-                            <!-- Notification 2 -->
-                            <div class="text-reset notification-item d-block dropdown-item position-relative notification-unread" data-notification-id="2">
-                                <div class="d-flex align-items-start">
-                                    <div class="avatar-xs me-3 flex-shrink-0">
-                                        <span class="avatar-title bg-warning-subtle text-warning rounded-circle fs-16"><i class="bx bx-message-square-dots"></i></span>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <h6 class="mt-0 mb-1 fs-13 fw-semibold">Angela Bernier replied to your comment.</h6>
-                                        <p class="mb-0 fs-11 fw-medium text-muted">2 hours ago</p>
-                                    </div>
-                                    <div class="d-flex align-items-center ms-2 gap-2">
-                                        <button type="button" class="btn btn-sm btn-icon btn-ghost-success mark-notification-read" data-id="2" title="Mark as read">
-                                            <i class="bx bx-check fs-16"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-icon btn-ghost-danger delete-notification" data-id="2" title="Delete">
-                                            <i class="bx bx-trash fs-16"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Notification 3 -->
-                            <div class="text-reset notification-item d-block dropdown-item position-relative notification-unread" data-notification-id="3">
-                                <div class="d-flex align-items-start">
-                                    <div class="avatar-xs me-3 flex-shrink-0">
-                                        <span class="avatar-title bg-danger-subtle text-danger rounded-circle fs-16"><i class="bx bx-message-square-dots"></i></span>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <h6 class="mt-0 mb-1 fs-13 fw-semibold">You have received 20 new messages.</h6>
-                                        <p class="mb-0 fs-11 fw-medium text-muted">1 day ago</p>
-                                    </div>
-                                    <div class="d-flex align-items-center ms-2 gap-2">
-                                        <button type="button" class="btn btn-sm btn-icon btn-ghost-success mark-notification-read" data-id="3" title="Mark as read">
-                                            <i class="bx bx-check fs-16"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-icon btn-ghost-danger delete-notification" data-id="3" title="Delete">
-                                            <i class="bx bx-trash fs-16"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Notification 4 -->
-                            <div class="text-reset notification-item d-block dropdown-item position-relative" data-notification-id="4">
-                                <div class="d-flex align-items-start">
-                                    <div class="avatar-xs me-3 flex-shrink-0">
-                                        <span class="avatar-title bg-success-subtle text-success rounded-circle fs-16"><i class="bx bx-check-circle"></i></span>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <h6 class="mt-0 mb-1 fs-13 fw-semibold">Invoice #12501 has been approved.</h6>
-                                        <p class="mb-0 fs-11 fw-medium text-muted">2 days ago</p>
-                                    </div>
-                                    <div class="d-flex align-items-center ms-2 gap-2">
-                                        <!-- Mark as Read hidden for already-read notification -->
-                                        <button type="button" class="btn btn-sm btn-icon btn-ghost-success mark-notification-read d-none" data-id="4" title="Mark as read">
-                                            <i class="bx bx-check fs-16"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-icon btn-ghost-danger delete-notification" data-id="4" title="Delete">
-                                            <i class="bx bx-trash fs-16"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Notification 5 -->
-                            <div class="text-reset notification-item d-block dropdown-item position-relative" data-notification-id="5">
-                                <div class="d-flex align-items-start">
-                                    <div class="avatar-xs me-3 flex-shrink-0">
-                                        <span class="avatar-title bg-success-subtle text-success rounded-circle fs-16"><i class="bx bx-check-circle"></i></span>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <h6 class="mt-0 mb-1 fs-13 fw-semibold">Invoice #12501 has been approved.</h6>
-                                        <p class="mb-0 fs-11 fw-medium text-muted">2 days ago</p>
-                                    </div>
-                                    <div class="d-flex align-items-center ms-2 gap-2">
-                                        <!-- Mark as Read hidden for already-read notification -->
-                                        <button type="button" class="btn btn-sm btn-icon btn-ghost-success mark-notification-read d-none" data-id="4" title="Mark as read">
-                                            <i class="bx bx-check fs-16"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-icon btn-ghost-danger delete-notification" data-id="4" title="Delete">
-                                            <i class="bx bx-trash fs-16"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Notification 6 -->
-                            <div class="text-reset notification-item d-block dropdown-item position-relative" data-notification-id="6">
-                                <div class="d-flex align-items-start">
-                                    <div class="avatar-xs me-3 flex-shrink-0">
-                                        <span class="avatar-title bg-success-subtle text-success rounded-circle fs-16"><i class="bx bx-check-circle"></i></span>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <h6 class="mt-0 mb-1 fs-13 fw-semibold">Invoice #12501 has been approved.</h6>
-                                        <p class="mb-0 fs-11 fw-medium text-muted">2 days ago</p>
-                                    </div>
-                                    <div class="d-flex align-items-center ms-2 gap-2">
-                                        <!-- Mark as Read hidden for already-read notification -->
-                                        <button type="button" class="btn btn-sm btn-icon btn-ghost-success mark-notification-read d-none" data-id="4" title="Mark as read">
-                                            <i class="bx bx-check fs-16"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-icon btn-ghost-danger delete-notification" data-id="4" title="Delete">
-                                            <i class="bx bx-trash fs-16"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Notification 7 -->
-                            <div class="text-reset notification-item d-block dropdown-item position-relative notification-unread" data-notification-id="7">
-                                <div class="d-flex align-items-start">
-                                    <!-- Icon -->
-                                    <div class="avatar-xs me-3 flex-shrink-0">
-                                        <span class="avatar-title bg-info-subtle text-info rounded-circle fs-16"><i class="bx bx-badge-check"></i></span>
-                                    </div>
-                                    <!-- Content -->
-                                    <div class="flex-grow-1">
-                                        <h6 class="mt-0 mb-1 fs-13 fw-semibold">Your Elite author reward is ready!</h6>
-                                        <p class="mb-0 fs-11 fw-medium text-muted">30 minutes ago</p>
-                                    </div>
-                                    <!-- Actions -->
-                                    <div class="d-flex align-items-center ms-2 gap-2">
-                                        <!-- Mark as Read -->
-                                        <button type="button" class="btn btn-sm btn-icon btn-ghost-success mark-notification-read" data-id="1" title="Mark as read">
-                                            <i class="bx bx-check fs-16"></i>
-                                        </button>
-                                        <!-- Delete -->
-                                        <button type="button" class="btn btn-sm btn-icon btn-ghost-danger delete-notification" data-id="1" title="Delete">
-                                            <i class="bx bx-trash fs-16"></i>
-                                        </button>
-
-                                    </div>
-
-                                </div>
-                            </div>
-
-                            <!-- Notification 8 -->
-                            <div class="text-reset notification-item d-block dropdown-item position-relative notification-unread" data-notification-id="8">
-                                <div class="d-flex align-items-start">
-                                    <div class="avatar-xs me-3 flex-shrink-0">
-                                        <span class="avatar-title bg-warning-subtle text-warning rounded-circle fs-16"><i class="bx bx-message-square-dots"></i></span>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <h6 class="mt-0 mb-1 fs-13 fw-semibold">Angela Bernier replied to your comment.</h6>
-                                        <p class="mb-0 fs-11 fw-medium text-muted">2 hours ago</p>
-                                    </div>
-                                    <div class="d-flex align-items-center ms-2 gap-2">
-                                        <button type="button" class="btn btn-sm btn-icon btn-ghost-success mark-notification-read" data-id="2" title="Mark as read">
-                                            <i class="bx bx-check fs-16"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-icon btn-ghost-danger delete-notification" data-id="2" title="Delete">
-                                            <i class="bx bx-trash fs-16"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Notification 9 -->
-                            <div class="text-reset notification-item d-block dropdown-item position-relative notification-unread" data-notification-id="9">
-                                <div class="d-flex align-items-start">
-                                    <div class="avatar-xs me-3 flex-shrink-0">
-                                        <span class="avatar-title bg-danger-subtle text-danger rounded-circle fs-16"><i class="bx bx-message-square-dots"></i></span>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <h6 class="mt-0 mb-1 fs-13 fw-semibold">You have received 20 new messages.</h6>
-                                        <p class="mb-0 fs-11 fw-medium text-muted">1 day ago</p>
-                                    </div>
-                                    <div class="d-flex align-items-center ms-2 gap-2">
-                                        <button type="button" class="btn btn-sm btn-icon btn-ghost-success mark-notification-read" data-id="3" title="Mark as read">
-                                            <i class="bx bx-check fs-16"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-icon btn-ghost-danger delete-notification" data-id="3" title="Delete">
-                                            <i class="bx bx-trash fs-16"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Notification 10 -->
-                            <div class="text-reset notification-item d-block dropdown-item position-relative" data-notification-id="10">
-                                <div class="d-flex align-items-start">
-                                    <div class="avatar-xs me-3 flex-shrink-0">
-                                        <span class="avatar-title bg-success-subtle text-success rounded-circle fs-16"><i class="bx bx-check-circle"></i></span>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <h6 class="mt-0 mb-1 fs-13 fw-semibold">Invoice #12501 has been approved.</h6>
-                                        <p class="mb-0 fs-11 fw-medium text-muted">2 days ago</p>
-                                    </div>
-                                    <div class="d-flex align-items-center ms-2 gap-2">
-                                        <!-- Mark as Read hidden for already-read notification -->
-                                        <button type="button" class="btn btn-sm btn-icon btn-ghost-success mark-notification-read d-none" data-id="4" title="Mark as read">
-                                            <i class="bx bx-check fs-16"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-icon btn-ghost-danger delete-notification" data-id="4" title="Delete">
-                                            <i class="bx bx-trash fs-16"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Notification 11 -->
-                            <div class="text-reset notification-item d-block dropdown-item position-relative" data-notification-id="11">
-                                <div class="d-flex align-items-start">
-                                    <div class="avatar-xs me-3 flex-shrink-0">
-                                        <span class="avatar-title bg-success-subtle text-success rounded-circle fs-16"><i class="bx bx-check-circle"></i></span>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <h6 class="mt-0 mb-1 fs-13 fw-semibold">Invoice #12501 has been approved.</h6>
-                                        <p class="mb-0 fs-11 fw-medium text-muted">2 days ago</p>
-                                    </div>
-                                    <div class="d-flex align-items-center ms-2 gap-2">
-                                        <!-- Mark as Read hidden for already-read notification -->
-                                        <button type="button" class="btn btn-sm btn-icon btn-ghost-success mark-notification-read d-none" data-id="4" title="Mark as read">
-                                            <i class="bx bx-check fs-16"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-icon btn-ghost-danger delete-notification" data-id="4" title="Delete">
-                                            <i class="bx bx-trash fs-16"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Notification 12 -->
-                            <div class="text-reset notification-item d-block dropdown-item position-relative" data-notification-id="12">
-                                <div class="d-flex align-items-start">
-                                    <div class="avatar-xs me-3 flex-shrink-0">
-                                        <span class="avatar-title bg-success-subtle text-success rounded-circle fs-16"><i class="bx bx-check-circle"></i></span>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <h6 class="mt-0 mb-1 fs-13 fw-semibold">Invoice #12501 has been approved.</h6>
-                                        <p class="mb-0 fs-11 fw-medium text-muted">2 days ago</p>
-                                    </div>
-                                    <div class="d-flex align-items-center ms-2 gap-2">
-                                        <!-- Mark as Read hidden for already-read notification -->
-                                        <button type="button" class="btn btn-sm btn-icon btn-ghost-success mark-notification-read d-none" data-id="4" title="Mark as read">
-                                            <i class="bx bx-check fs-16"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-icon btn-ghost-danger delete-notification" data-id="4" title="Delete">
-                                            <i class="bx bx-trash fs-16"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <!-- Notification List (scrolls after about 8 notifications) -->
+                        <div id="notification-list" class="overflow-y-auto" style="max-height: 480px;"></div>
 
                         <!-- Empty State -->
-                        <div id="notification-empty" class="text-center py-5 d-none">
+                        <div id="notification-empty" class="text-center py-5">
                             <div class="avatar-md mx-auto mb-3">
                                 <div class="avatar-title bg-light text-primary rounded-circle fs-24">
                                     <i class="bx bx-bell-off"></i>
@@ -373,8 +90,7 @@
 
                         <!-- Fixed Footer -->
                         <div class="border-top p-2 text-center">
-{{--                            <a href="{{ route('notifications.index') }}"--}}
-                            <a href="#"  class="btn btn-soft-success waves-effect waves-light w-100">
+                            <a href="{{ route('my-notification.index') }}" class="btn btn-soft-success waves-effect waves-light w-100">
                                 See All Notifications
                                 <i class="ri-arrow-right-line align-middle ms-1"></i>
                             </a>

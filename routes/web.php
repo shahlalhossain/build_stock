@@ -6,9 +6,17 @@ use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\BrandsController;
 use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DeviceTokensController;
 use App\Http\Controllers\DistrictsController;
 use App\Http\Controllers\DivisionsController;
 use App\Http\Controllers\FAQsController;
+use App\Http\Controllers\MyNotificationsController;
+use App\Http\Controllers\NotificationChannelsController;
+use App\Http\Controllers\NotificationLogsController;
+use App\Http\Controllers\NotificationPreferencesController;
+use App\Http\Controllers\NotificationsController;
+use App\Http\Controllers\NotificationSettingsController;
+use App\Http\Controllers\NotificationTemplatesController;
 use App\Http\Controllers\OTPsController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\ProductDeliveriesController;
@@ -135,6 +143,84 @@ Route::middleware('auth:web')->group(function () {
             Route::delete('/', [BrandsController::class, 'destroy'])->name('destroy');
             Route::post('restore', [BrandsController::class, 'restore'])->name('restore');
             Route::delete('force-delete', [BrandsController::class, 'delete'])->name('delete');
+        });
+    });
+
+    // Push device tokens: every logged-in user manages their own
+    Route::post('device-token', [DeviceTokensController::class, 'store'])->name('device-token.store');
+    Route::delete('device-token', [DeviceTokensController::class, 'destroy'])->name('device-token.destroy');
+
+    // "My Notifications" board: every logged-in user manages only their own notifications
+    Route::group(['prefix' => 'my-notifications', 'as' => 'my-notification.'], function () {
+        Route::get('/', [MyNotificationsController::class, 'index'])->name('index');
+        Route::get('summary', [MyNotificationsController::class, 'summary'])->name('summary');
+        Route::post('read-all', [MyNotificationsController::class, 'markAllRead'])->name('read-all');
+        Route::post('{receiver}/read', [MyNotificationsController::class, 'markRead'])->name('read');
+        Route::delete('{receiver}', [MyNotificationsController::class, 'destroy'])->name('destroy');
+    });
+
+    // Each user switches notification channels on/off for themselves
+    Route::put('notification-preference', [NotificationPreferencesController::class, 'update'])->name('notification-preference.update');
+
+    // Manual notifications: compose, preview, send, and see the delivery details
+    Route::group(['prefix' => 'notification', 'as' => 'notification.'], function () {
+        Route::get('/', [NotificationsController::class, 'index'])->name('index')->middleware('permission:notification.index');
+        Route::get('create', [NotificationsController::class, 'create'])->name('create')->middleware('permission:notification.send');
+        Route::get('receiver-search', [NotificationsController::class, 'receiverSearch'])->name('receiver-search')->middleware('permission:notification.send');
+        Route::post('preview', [NotificationsController::class, 'preview'])->name('preview')->middleware('permission:notification.send');
+        Route::post('/', [NotificationsController::class, 'store'])->name('store')->middleware('permission:notification.send');
+        Route::get('{notificationMessage}', [NotificationsController::class, 'show'])->name('show')->middleware('permission:notification.show');
+    });
+
+    // Notification logs (technical delivery history)
+    Route::group(['prefix' => 'notification-log', 'as' => 'notification-log.'], function () {
+        Route::get('/', [NotificationLogsController::class, 'index'])->name('index')->middleware('permission:notification-log.index');
+        Route::get('{notificationLog}', [NotificationLogsController::class, 'show'])->name('show')->middleware('permission:notification-log.show');
+    });
+
+    // Notification Management (permission protected)
+    Route::group(['prefix' => 'notification-channel', 'as' => 'notification-channel.'], function () {
+        Route::get('/', [NotificationChannelsController::class, 'index'])->name('index')->middleware('permission:notification-channel.index');
+        Route::get('create', [NotificationChannelsController::class, 'create'])->name('create')->middleware('permission:notification-channel.create');
+        Route::post('/', [NotificationChannelsController::class, 'store'])->name('store')->middleware('permission:notification-channel.create');
+        Route::get('/trash', [NotificationChannelsController::class, 'trash'])->name('trash')->middleware('permission:notification-channel.trash');
+        Route::group(['prefix' => '{notificationChannel}'], function () {
+            Route::get('/', [NotificationChannelsController::class, 'show'])->name('show')->withTrashed()->middleware('permission:notification-channel.show');
+            Route::get('edit', [NotificationChannelsController::class, 'edit'])->name('edit')->middleware('permission:notification-channel.edit');
+            Route::patch('/', [NotificationChannelsController::class, 'update'])->name('update')->middleware('permission:notification-channel.edit');
+            Route::post('toggle-status', [NotificationChannelsController::class, 'toggleStatus'])->name('toggle-status')->middleware('permission:notification-channel.update-status');
+            Route::delete('/', [NotificationChannelsController::class, 'destroy'])->name('destroy')->middleware('permission:notification-channel.destroy');
+            Route::post('restore', [NotificationChannelsController::class, 'restore'])->name('restore')->middleware('permission:notification-channel.restore');
+            Route::delete('force-delete', [NotificationChannelsController::class, 'delete'])->name('delete')->middleware('permission:notification-channel.delete');
+        });
+    });
+
+    Route::group(['prefix' => 'notification-setting', 'as' => 'notification-setting.'], function () {
+        Route::get('/', [NotificationSettingsController::class, 'index'])->name('index')->middleware('permission:notification-setting.index');
+        Route::get('create', [NotificationSettingsController::class, 'create'])->name('create')->middleware('permission:notification-setting.create');
+        Route::post('/', [NotificationSettingsController::class, 'store'])->name('store')->middleware('permission:notification-setting.create');
+        Route::get('/trash', [NotificationSettingsController::class, 'trash'])->name('trash')->middleware('permission:notification-setting.trash');
+        Route::group(['prefix' => '{notificationSetting}'], function () {
+            Route::get('/', [NotificationSettingsController::class, 'show'])->name('show')->withTrashed()->middleware('permission:notification-setting.show');
+            Route::get('edit', [NotificationSettingsController::class, 'edit'])->name('edit')->middleware('permission:notification-setting.edit');
+            Route::patch('/', [NotificationSettingsController::class, 'update'])->name('update')->middleware('permission:notification-setting.edit');
+            Route::post('toggle-status', [NotificationSettingsController::class, 'toggleStatus'])->name('toggle-status')->middleware('permission:notification-setting.update-status');
+            Route::delete('/', [NotificationSettingsController::class, 'destroy'])->name('destroy')->middleware('permission:notification-setting.destroy');
+            Route::post('restore', [NotificationSettingsController::class, 'restore'])->name('restore')->middleware('permission:notification-setting.restore');
+            Route::delete('force-delete', [NotificationSettingsController::class, 'delete'])->name('delete')->middleware('permission:notification-setting.delete');
+        });
+    });
+
+    Route::group(['prefix' => 'notification-template', 'as' => 'notification-template.'], function () {
+        Route::get('/', [NotificationTemplatesController::class, 'index'])->name('index')->middleware('permission:notification-template.index');
+        Route::get('create', [NotificationTemplatesController::class, 'create'])->name('create')->middleware('permission:notification-template.create');
+        Route::post('/', [NotificationTemplatesController::class, 'store'])->name('store')->middleware('permission:notification-template.create');
+        Route::group(['prefix' => '{notificationTemplate}'], function () {
+            Route::get('/', [NotificationTemplatesController::class, 'show'])->name('show')->middleware('permission:notification-template.show');
+            Route::get('edit', [NotificationTemplatesController::class, 'edit'])->name('edit')->middleware('permission:notification-template.edit');
+            Route::patch('/', [NotificationTemplatesController::class, 'update'])->name('update')->middleware('permission:notification-template.edit');
+            Route::post('toggle-status', [NotificationTemplatesController::class, 'toggleStatus'])->name('toggle-status')->middleware('permission:notification-template.update-status');
+            Route::delete('/', [NotificationTemplatesController::class, 'destroy'])->name('destroy')->middleware('permission:notification-template.delete');
         });
     });
 
