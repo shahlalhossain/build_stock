@@ -17,6 +17,7 @@
         "laravel/ui": "^4.6",
         "predis/predis": "^2.3",
         "psr/log": "^3.0",
+        "pusher/pusher-php-server": "^7.3",
         "spatie/laravel-activitylog": "^4.10",
         "spatie/laravel-permission": "^6.17",
         "yajra/laravel-datatables": "^12.0",

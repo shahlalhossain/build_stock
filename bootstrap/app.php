@@ -16,6 +16,10 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
+    ->withBroadcasting(
+        __DIR__.'/../routes/channels.php',
+        ['prefix' => '', 'middleware' => ['web', 'auth:web']],
+    )
     ->withMiddleware(function (Middleware $middleware) {
         // A guest whose session id has a login record had a session that is gone
         // (forced logout or timeout) — tell them on the login page.
