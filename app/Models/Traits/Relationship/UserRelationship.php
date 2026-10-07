@@ -6,6 +6,8 @@ use App\Models\LoginActivity;
 use App\Models\PasswordHistory;
 use App\Models\Store;
 use App\Models\User;
+use App\Models\UserDeviceToken;
+use App\Models\UserNotificationPreference;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -60,5 +62,21 @@ trait UserRelationship
     public function storekeptStores(): BelongsToMany
     {
         return $this->stores()->wherePivot('role_type', 'storekeeper');
+    }
+
+    /**
+     * The browsers/phones this user has registered for push notifications.
+     */
+    public function deviceTokens(): HasMany
+    {
+        return $this->hasMany(UserDeviceToken::class, 'user_id');
+    }
+
+    /**
+     * This user's own on/off switches for notification channels.
+     */
+    public function notificationPreferences(): HasMany
+    {
+        return $this->hasMany(UserNotificationPreference::class, 'user_id');
     }
 }
