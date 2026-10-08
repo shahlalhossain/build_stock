@@ -150,12 +150,12 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.ajax({
-                            url: '/admin/permission/' + permissionID,
+                            url: '/permission/' + permissionID,
                             type: 'DELETE',
                             data: { _token: csrfToken },
                             success: function (response) {
                                 Swal.fire('Destroyed', 'The Record has been Destroyed.', 'success')
-                                    .then(() => { window.location.href = '/admin/permission'; });
+                                    .then(() => { window.location.href = '/permission'; });
                             },
                             error: function (xhr, status, error) {
                                 Swal.fire('Error!', 'There was an issue deleting the Record.', 'error');
@@ -179,12 +179,12 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.ajax({
-                            url: '/admin/permission/' + permissionID + '/restore',
+                            url: '/permission/' + permissionID + '/restore',
                             method: 'POST',
                             data: { "_token": csrfToken },
                             success: function (response) {
                                 Swal.fire('Deleted', 'The Record is Now in Active List.', 'success')
-                                    .then(() => { window.location.href = '/admin/permission/trash'; });
+                                    .then(() => { window.location.href = '/permission/trash'; });
                             },
                             error: function (xhr, status, error) {
                                 Swal.fire('Error!', 'There was an Issue on Restoring the Record.', 'error');
@@ -208,12 +208,12 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.ajax({
-                            url: '/admin/permission/' + permissionID + '/force-delete',
+                            url: '/permission/' + permissionID + '/force-delete',
                             method: 'DELETE',
                             data: { "_token": csrfToken },
                             success: function (response) {
                                 Swal.fire('Deleted', 'The Record has been Deleted.', 'success')
-                                    .then(() => { window.location.href = '/admin/permission/trash'; });
+                                    .then(() => { window.location.href = '/permission/trash'; });
                             },
                             error: function (xhr, status, error) {
                                 Swal.fire('Error!', 'There was an Issue on Deleting the Record.', 'error');

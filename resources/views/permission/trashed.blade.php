@@ -66,12 +66,12 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     $.ajax({
-                        url: '/admin/permission/' + permissionID + '/restore',
+                        url: '/permission/' + permissionID + '/restore',
                         method: 'POST',
                         data: { "_token": "{{ csrf_token() }}" },
                         success: function(response) {
                             Swal.fire('Restored', 'The Record has been Restored.', 'success')
-                                .then(() => { window.location.href = '/admin/permission/trash'; });
+                                .then(() => { window.location.href = '/permission/trash'; });
                         },
                         error: function(xhr, status, error) {
                             Swal.fire('Error!', 'There was an Issue on Restoring the Record.', 'error');
@@ -95,12 +95,12 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     $.ajax({
-                        url: '/admin/permission/' + permissionID + '/force-delete',
+                        url: '/permission/' + permissionID + '/force-delete',
                         method: 'DELETE',
                         data: { "_token": "{{ csrf_token() }}"},
                         success: function (response) {
                             Swal.fire('Deleted', 'The Record has been Deleted.', 'success')
-                                .then(() => { window.location.href = '/admin/permission/trash'; });
+                                .then(() => { window.location.href = '/permission/trash'; });
                         },
                         error: function (xhr, status, error) {
                             Swal.fire('Error!', 'There was an Issue on Deleting the Record.', 'error');
