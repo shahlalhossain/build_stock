@@ -212,12 +212,12 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.ajax({
-                            url: '/admin/role/' + roleID,
+                            url: '/role/' + roleID,
                             method: 'DELETE',
                             data: { "_token": csrfToken },
                             success: function (response) {
                                 Swal.fire('Destroyed', 'The Record has been Destroyed.', 'success')
-                                    .then(() => { window.location.href = '/admin/role'; });
+                                    .then(() => { window.location.href = '/role'; });
                             },
                             error: function (xhr, status, error) {
                                 Swal.fire('Error!', 'There was an Issue on Destroying the Record.', 'error');
@@ -241,12 +241,12 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.ajax({
-                            url: '/admin/role/' + roleID + '/restore',
+                            url: '/role/' + roleID + '/restore',
                             method: 'POST',
                             data: { "_token": csrfToken },
                             success: function (response) {
                                 Swal.fire('Deleted', 'The Record is Now in Active List.', 'success')
-                                    .then(() => { window.location.href = '/admin/role/trash'; });
+                                    .then(() => { window.location.href = '/role/trash'; });
                             },
                             error: function (xhr, status, error) {
                                 Swal.fire('Error!', 'There was an Issue on Restoring the Record.', 'error');
@@ -270,12 +270,12 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.ajax({
-                            url: '/admin/role/' + roleID + '/force-delete',
+                            url: '/role/' + roleID + '/force-delete',
                             method: 'DELETE',
                             data: { "_token": csrfToken },
                             success: function (response) {
                                 Swal.fire('Deleted', 'The Record has been Deleted.', 'success')
-                                    .then(() => { window.location.href = '/admin/role/trash'; });
+                                    .then(() => { window.location.href = '/role/trash'; });
                             },
                             error: function (xhr, status, error) {
                                 Swal.fire('Error!', 'There was an Issue on Deleting the Record.', 'error');

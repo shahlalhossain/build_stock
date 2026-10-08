@@ -62,12 +62,12 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     $.ajax({
-                        url: '/admin/role/' + roleID,
+                        url: '/role/' + roleID,
                         method: 'DELETE',
                         data: { "_token": "{{ csrf_token() }}"},
                         success: function (response) {
                             Swal.fire('Destroyed', 'The Record has been Destroyed.', 'success')
-                                .then(() => { window.location.href = '/admin/role'; });
+                                .then(() => { window.location.href = '/role'; });
                         },
                         error: function (xhr, status, error) {
                             Swal.fire('Error!', 'There was an Issue on Destroying the Record.', 'error');
