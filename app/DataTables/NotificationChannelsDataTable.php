@@ -82,7 +82,6 @@ class NotificationChannelsDataTable extends DataTable
             Column::make('code')->orderable(true)->searchable(true),
             Column::make('driver')->orderable(true)->searchable(true),
             Column::computed('is_active')->title('Active')->orderable(false)->searchable(false)->addClass('text-center'),
-            Column::make('sort_order')->orderable(true)->searchable(false)->addClass('text-center'),
             Column::make('created_at')->orderable(true)->searchable(true)->addClass('text-center'),
             Column::computed('actions')
                 ->orderable(false)
