@@ -53,6 +53,8 @@ class AuditLogController extends Controller
         $data['auditLogs'] = $query->paginate(10)->withQueryString();
         $data['type'] = $type;
 
+//        dd($data['auditLogs'][9]);
+
         return view('audit_log.list2', $data);
     }
 

@@ -77,7 +77,7 @@
                                             <div id="collapse-{{ $auditLog->id }}" class="accordion-collapse collapse" aria-labelledby="heading-{{ $auditLog->id }}" data-bs-parent="#auditAccordion">
                                                 <div class="accordion-body p-2">
                                                     <strong class="p-2">Event:</strong>
-                                                    {{ $auditLog->log_name }} {{ ucwords($auditLog->event) }}
+                                                    {{ ucwords($auditLog->log_name) }} {{ ucwords($auditLog->event) }}
 
                                                     <div class="divider"></div>
 
@@ -101,20 +101,21 @@
                                                                     </thead>
                                                                     <tbody>
                                                                     @foreach($old as $key => $value)
+                                                                        @php $newValue = $new[$key] ?? '-' @endphp
                                                                         <tr>
                                                                             <td class="p-2"><strong>{{ $key }}</strong></td>
+
                                                                             <td class="p-2 text-danger">
                                                                                 @if(in_array($key, ['created_at','updated_at','deleted_at']) && $value)
-                                                                                    {{ $newValue !== '-' ? \Carbon\Carbon::parse($newValue)->format('Y-m-d h:i:s A') : '-' }}
+                                                                                    {{ \Carbon\Carbon::parse($value)->format('Y-m-d h:i:s A') }}
                                                                                 @else
                                                                                     {{ is_bool($value) ? (int)$value : $value }}
                                                                                 @endif
                                                                             </td>
 
                                                                             <td class="p-2 text-success">
-                                                                                @php $newValue = $new[$key] ?? '-' @endphp
-                                                                                @if(in_array($key, ['created_at','updated_at','deleted_at']) && $newValue)
-                                                                                    {{ $newValue !== '-' ? \Carbon\Carbon::parse($newValue)->format('Y-m-d h:i:s A') : '-' }}
+                                                                                @if(in_array($key, ['created_at','updated_at','deleted_at']) && $newValue !== '-')
+                                                                                    {{ \Carbon\Carbon::parse($newValue)->format('Y-m-d h:i:s A') }}
                                                                                 @else
                                                                                     {{ is_bool($newValue) ? (int)$newValue : $newValue }}
                                                                                 @endif
