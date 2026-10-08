@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\DataTables\PermissionsDataTable;
 use App\Exceptions\GeneralException;
-use App\Http\Requests\Permission\StoreBrandRequest;
-use App\Http\Requests\Permission\UpdateBrandRequest;
+use App\Http\Requests\Permission\StorePermissionRequest;
+use App\Http\Requests\Permission\UpdatePermissionRequest;
 use App\Models\Permission;
 use App\Services\PermissionService;
 use Exception;
@@ -42,7 +42,7 @@ class PermissionController
         return view('permission.create', $data);
     }
 
-    public function store(StoreBrandRequest $permissionRequest)
+    public function store(StorePermissionRequest $permissionRequest)
     {
         try {
             $this->permissionService->storePermission($permissionRequest->validated());
@@ -74,7 +74,7 @@ class PermissionController
         return view('permission.edit', $data);
     }
 
-    public function update(UpdateBrandRequest $permissionRequest, Permission $permission): RedirectResponse
+    public function update(UpdatePermissionRequest $permissionRequest, Permission $permission): RedirectResponse
     {
         try {
             $this->permissionService->updatePermission($permission, $permissionRequest->validated());
