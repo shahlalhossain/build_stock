@@ -62,7 +62,7 @@
 
                         <!-- Header -->
                         <div class="dropdown-head bg-primary bg-pattern rounded-top">
-                            <div class="p-3">
+                            <div class="ps-3 pt-2 pb-2">
                                 <div class="row align-items-center">
                                     <div class="col">
                                         <h6 class="m-0 fs-16 fw-semibold text-white">Notifications</h6>
@@ -90,7 +90,7 @@
 
                         <!-- Fixed Footer -->
                         <div class="border-top p-2 text-center">
-                            <a href="{{ route('my-notification.index') }}" class="btn btn-soft-success waves-effect waves-light w-100">
+                            <a href="{{ route('my-notification.index') }}" class="btn btn-sm btn-soft-success waves-effect waves-light w-100">
                                 See All Notifications
                                 <i class="ri-arrow-right-line align-middle ms-1"></i>
                             </a>

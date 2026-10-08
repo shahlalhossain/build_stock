@@ -127,7 +127,7 @@ class UsersController extends Controller
             // Sync Roles
             $user->syncRoles($request->roles ?? []);
 
-            return redirect()->route('admin.user.show', $user->id)->with('success', "Updated & Synced User's Roles Successfully");
+            return redirect()->route('user.show', $user->id)->with('success', "Updated & Synced User's Roles Successfully");
         } catch (Throwable $exception) {
             Log::error('Unexpected Error on Updating User Roles: '.$exception->getMessage());
 
@@ -155,7 +155,7 @@ class UsersController extends Controller
             // Sync Permissions
             $user->syncPermissions($request->permissions ?? []);
 
-            return redirect()->route('admin.user.show', $user->id)->with('success', "Updated & Synced User's Permissions Successfully");
+            return redirect()->route('user.show', $user->id)->with('success', "Updated & Synced User's Permissions Successfully");
         } catch (Throwable $exception) {
             Log::error('Unexpected Error on Updating User Permissions: '.$exception->getMessage());
 

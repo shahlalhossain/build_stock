@@ -69,7 +69,7 @@ class RoleController extends Controller
         try {
             $this->roleService->storeRole($roleRequest->validated());
 
-            return redirect()->route('admin.role.index')->with('success', 'New Role Created Successfully.');
+            return redirect()->route('role.index')->with('success', 'New Role Created Successfully.');
         } catch (GeneralException $generalException) {
             Log::error('Role Creation Failed: '.$generalException->getMessage());
 
@@ -119,7 +119,7 @@ class RoleController extends Controller
         try {
             $this->roleService->updateRole($role, $roleRequest->validated());
 
-            return redirect()->route('admin.role.index')->with('success', 'Role Updated Successfully.');
+            return redirect()->route('role.index')->with('success', 'Role Updated Successfully.');
         } catch (GeneralException $generalException) {
             Log::error('Role Update Failed: '.$generalException->getMessage());
 
